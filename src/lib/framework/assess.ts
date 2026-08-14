@@ -45,9 +45,9 @@ export async function assess() {
 
   const [spot, xauHist, eurHist, jpyHist] = await Promise.all([
     t("oanda-spot", () => src.oandaPrices(["XAU_USD", "EUR_USD", "USD_JPY", "BCO_USD"]), {} as Record<string, number>),
-    t("XAU-candles", () => src.oandaCandles("XAU_USD", 25), []),
-    t("EUR-candles", () => src.oandaCandles("EUR_USD", 25), []),
-    t("JPY-candles", () => src.oandaCandles("USD_JPY", 25), []),
+    t<src.Obs[]>("XAU-candles", () => src.oandaCandles("XAU_USD", 25), []),
+    t<src.Obs[]>("EUR-candles", () => src.oandaCandles("EUR_USD", 25), []),
+    t<src.Obs[]>("JPY-candles", () => src.oandaCandles("USD_JPY", 25), []),
   ]);
 
   // ---- derived inputs ----
