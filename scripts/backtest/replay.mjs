@@ -1,0 +1,294 @@
+/**
+ * Point-in-time replay engine.
+ *
+ * For each month-end t (1999-01 → 2026-06) it reconstructs every input
+ * `assess()` derives — using ONLY data published by t — and feeds them
+ * through the PRODUCTION factor math (src/lib/framework/math.mjs, the same
+ * module the app and selftest import). Nothing is reimplemented.
+ *
+ * No-lookahead rules:
+ *  - Revisable macro series (PAYEMS, UNRATE, CPI, GDP, FGRECPT) come from
+ *    ALFRED vintages dated t. A month whose vintage predates ALFRED
+ *    coverage marks that leg unavailable — never backfilled from later data.
+ *  - Market series (yields, FX, oil, gold, spreads) are unrevised → truncate ≤ t.
+ *  - Publication lags: FiscalData avg_interest_rates −20d; MTS −45d;
+ *    OECD JGB monthly −45d; annual FYOINT/FYFR usable from Nov 1 after FY end.
+ *  - Payroll revisions signal = (value as known at t) − (first print), where
+ *    the first print of month m is read from the vintage at end of m+1.
+ *
+ * Legs whose data source doesn't exist yet at t are EXCLUDED from the
+ * composite heat (not defaulted) and listed in `problems` — mirroring
+ * production's graceful-degradation contract.
+ */
+
+import { writeFile } from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+import {
+  smallCyclePhase, monetisationValve, rVsG, goldDecomposition, demandLeg,
+  deferredAsset, interestSqueeze, revenueBeta, japanLeg, bigCycleStage,
+  evaluateTriggers, pctChange, sahmGap, STATUS,
+} from "../../src/lib/framework/math.mjs";
+import {
+  fredLatest, alfredVintages, fiscalAvgRateAll, mtsAll, tdAuctionsYear, yahooDailyMax,
+} from "./fetch.mjs";
+
+const HERE = path.dirname(fileURLToPath(import.meta.url));
+
+/* ---------------- time helpers ---------------- */
+const START = "1999-01", END = "2026-06";
+export function monthGrid(start = START, end = END) {
+  const out = [];
+  let [y, m] = start.split("-").map(Number);
+  const [ey, em] = end.split("-").map(Number);
+  while (y < ey || (y === ey && m <= em)) {
+    out.push(`${y}-${String(m).padStart(2, "0")}`);
+    m++; if (m > 12) { m = 1; y++; }
+  }
+  return out;
+}
+const monthEnd = ym => {
+  const [y, m] = ym.split("-").map(Number);
+  return `${y}-${String(m).padStart(2, "0")}-${String(new Date(y, m, 0).getDate()).padStart(2, "0")}`;
+};
+const nextMonth = ym => {
+  let [y, m] = ym.split("-").map(Number);
+  m++; if (m > 12) { m = 1; y++; }
+  return `${y}-${String(m).padStart(2, "0")}`;
+};
+const shiftDays = (iso, days) => {
+  const d = new Date(iso + "T00:00:00Z");
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+};
+
+/* ---------------- series helpers (mirror assess.ts) ---------------- */
+const last = a => a[a.length - 1];
+const ago = (a, n) => a[a.length - 1 - n];
+const avg = a => a.reduce((s, x) => s + x, 0) / a.length;
+const round2 = x => Math.round(x * 100) / 100;
+const asOf = (obs, t) => obs.filter(o => o.date <= t);
+const yoy = (obs, n) => obs.length > n ? pctChange(last(obs).value, ago(obs, n).value) : null;
+
+/* ---------------- main ---------------- */
+export async function replay() {
+  const months = monthGrid();
+  const vintDates = months.map(monthEnd);
+
+  console.log("fetching unrevised series…");
+  const [dgs10, dgs30, dfii10, dcoil, dexuseu, dexjpus, walcl, respp, jgb, dfedtar, dfedtaru, baa10y] =
+    await Promise.all([
+      fredLatest("DGS10"), fredLatest("DGS30"), fredLatest("DFII10"),
+      fredLatest("DCOILBRENTEU"), fredLatest("DEXUSEU"), fredLatest("DEXJPUS"),
+      fredLatest("WALCL"), fredLatest("RESPPLLOPNWW"), fredLatest("IRLTLT01JPM156N"),
+      fredLatest("DFEDTAR"), fredLatest("DFEDTARU"),
+      fredLatest("BAA10Y").catch(() => []), // report overlay only, not a factor
+    ]);
+  const funds = [...dfedtar, ...dfedtaru]; // contiguous splice: TAR ends 2008-12-15, TARU starts 12-16
+  const [fyoint, fyfr] = await Promise.all([fredLatest("FYOINT"), fredLatest("FYFR")]);
+
+  console.log("fetching FiscalData + auctions + gold…");
+  const [avgRate, mts, gold] = await Promise.all([fiscalAvgRateAll(), mtsAll(), yahooDailyMax("GC=F")]);
+  const auctionYears = [];
+  for (let y = 2003; y <= 2026; y++) auctionYears.push(tdAuctionsYear(y));
+  const auctionsAll = (await Promise.all(auctionYears)).flat().sort((a, b) => a.date.localeCompare(b.date));
+
+  console.log("fetching ALFRED vintages (batched)…");
+  const [vPay, vUn, vCpiH, vCpiC, vGdp, vRcpt] = await Promise.all([
+    alfredVintages("PAYEMS", vintDates), alfredVintages("UNRATE", vintDates),
+    alfredVintages("CPIAUCSL", vintDates), alfredVintages("CPILFESL", vintDates),
+    alfredVintages("GDP", vintDates), alfredVintages("FGRECPT", vintDates),
+  ]);
+
+  const rows = [];
+  for (const ym of months) {
+    const t = monthEnd(ym);
+    const problems = [];
+    const excluded = new Set();
+
+    /* ---- small cycle ---- */
+    const payems = vPay[t] ?? [];
+    const unrate = vUn[t] ?? [];
+    let sc = null, nfp3mma = null, revisionsSum2m = 0, gap = 0;
+    if (payems.length >= 4 && unrate.length >= 12) {
+      const nfpChanges = payems.slice(1).map((o, i) => o.value - payems[i].value);
+      nfp3mma = avg(nfpChanges.slice(-3));
+      // revisions of the two months before the latest print, as known at t
+      for (let k = 2; k <= 3; k++) {
+        const obs = ago(payems, k - 1);          // k=2 → previous month, k=3 → two back
+        const firstVint = vPay[monthEnd(nextMonth(obs.date.slice(0, 7)))];
+        const first = firstVint?.find(o => o.date === obs.date);
+        if (first) revisionsSum2m += obs.value - first.value;
+      }
+      const un3 = avg(unrate.slice(-3).map(o => o.value));
+      const unMin12 = Math.min(...unrate.slice(-12).map(o => o.value));
+      gap = sahmGap(un3, unMin12);
+      const fundsT = asOf(funds, t);
+      const fundsDelta6m = fundsT.length ? last(fundsT).value - fundsT[Math.max(0, fundsT.length - 126)].value : 0;
+      sc = smallCyclePhase({ nfp3mma, revisionsSum2m, sahmGap: gap, fundsDelta6m });
+    } else { excluded.add("SC"); problems.push("SC: no ALFRED vintage yet"); }
+
+    /* ---- valve (S8) ---- */
+    const cpiH = vCpiH[t] ?? [], cpiC = vCpiC[t] ?? [];
+    const brentT = asOf(dcoil, t);
+    const headlineYoY = cpiH.length > 12 ? round2(yoy(cpiH, 12)) : null;
+    const coreYoY = cpiC.length > 12 ? round2(yoy(cpiC, 12)) : null;
+    const brent = brentT.length ? last(brentT).value : null;
+    let valve = null;
+    if (headlineYoY != null && coreYoY != null && brent != null)
+      valve = monetisationValve({ coreYoY, headlineYoY, brent });
+    else { excluded.add("S8"); problems.push("S8: CPI vintage or Brent missing"); }
+
+    /* ---- r vs g (S7) ---- */
+    const rAvgT = avgRate.filter(o => o.date <= shiftDays(t, -20));
+    const gdp = vGdp[t] ?? [];
+    const rAvg = rAvgT.length ? last(rAvgT).value : null;
+    const dgs10T = asOf(dgs10, t);
+    const rMarg = dgs10T.length ? last(dgs10T).value : null;
+    const gNominal = gdp.length > 4 ? round2(yoy(gdp, 4)) : null;
+    const contractionFlag = sc != null && (sc.phase === "contraction" || sc.phase === "late-stall-breaking-down");
+    let rvg = null;
+    if (rAvg != null && rMarg != null && gNominal != null)
+      rvg = rVsG({ rAvg, rMarg, gNominal, rolloverShare12m: 0.30, contractionFlag });
+    else { excluded.add("S7"); problems.push(`S7: missing ${rAvg == null ? "rAvg(FiscalData starts 2001) " : ""}${gNominal == null ? "GDP vintage" : ""}`.trim()); }
+
+    /* ---- gold decomposition (SoV) ---- */
+    const gcT = asOf(gold, t), eurT = asOf(dexuseu, t), jpyT = asOf(dexjpus, t), realT = asOf(dfii10, t);
+    let goldF = null;
+    const w = Math.min(20, gcT.length - 1, eurT.length - 1, jpyT.length - 1);
+    if (w >= 20) {
+      const dXau = pctChange(last(gcT).value, ago(gcT, w).value) ?? 0;
+      const dXauEur = pctChange(last(gcT).value / last(eurT).value, ago(gcT, w).value / ago(eurT, w).value) ?? 0;
+      const dXauJpy = pctChange(last(gcT).value * last(jpyT).value, ago(gcT, w).value * ago(jpyT, w).value) ?? 0;
+      const dRealBp = realT.length > w ? (last(realT).value - ago(realT, w).value) * 100 : 0;
+      if (realT.length <= w) problems.push("SoV: no TIPS yield yet (DFII10 starts 2003) — divergence check off");
+      goldF = goldDecomposition({ dXauUsdPct: dXau, dXauEurPct: dXauEur, dXauJpyPct: dXauJpy, dRealYieldBp: dRealBp });
+    } else { excluded.add("SoV"); problems.push("SoV: gold history starts 2000-09"); }
+
+    /* ---- demand leg (S5) ---- */
+    const aucWindow = auctionsAll.filter(a => a.date <= t && a.date > shiftDays(t, -380));
+    const tensAvailable = aucWindow.some(a => a.term === "10-Year");
+    let demand = null;
+    if (tensAvailable) {
+      const desc = [...aucWindow].sort((a, b) => b.date.localeCompare(a.date));
+      demand = demandLeg({ auctions: desc.map(a => ({ term: a.term, btc: a.btc, dealerPct: a.dealerPct })) });
+    } else { excluded.add("S5"); problems.push("S5: no 10Y auction records in window (TD data usable from 2003)"); }
+
+    /* ---- deferred asset ---- */
+    const resppT = asOf(respp, t);
+    let deferred = null;
+    if (resppT.length >= 14) {
+      deferred = deferredAsset({
+        levelBn: last(resppT).value / 1000,
+        deltaBn13w: (last(resppT).value - ago(resppT, 13).value) / 1000,
+      });
+    } else { excluded.add("deferred"); problems.push("deferred: RESPPLLOPNWW starts 2002-12"); }
+
+    /* ---- interest squeeze (S3) ---- */
+    const mtsT = mts.filter(r => r.date <= shiftDays(t, -45));
+    const mtsMonths = new Set(mtsT.filter(r => r.kind === "Net Interest").map(r => r.date));
+    let squeeze = null, squeezeBasis = null, ttmInterestBn = null, ttmReceiptsBn = null;
+    if (mtsMonths.size >= 12) {
+      const sum12 = kind => mtsT.filter(r => r.kind === kind).sort((a, b) => b.date.localeCompare(a.date))
+        .slice(0, 12).reduce((s, r) => s + r.value, 0) / 1e9;
+      ttmInterestBn = sum12("Net Interest"); ttmReceiptsBn = sum12("Total Receipts");
+      squeeze = interestSqueeze({ ttmInterestBn, ttmReceiptsBn });
+      squeezeBasis = "MTS monthly";
+    } else {
+      // annual MTS-basis fallback: FY figures usable from Nov 1 after the Sep 30 FY end
+      const cutoff = shiftDays(t, -32);
+      const oi = fyoint.filter(o => o.date <= cutoff), fr = fyfr.filter(o => o.date <= cutoff);
+      if (oi.length && fr.length && last(oi).date === last(fr).date) {
+        ttmInterestBn = last(oi).value / 1000; ttmReceiptsBn = last(fr).value / 1000; // $mn → $bn
+        squeeze = interestSqueeze({ ttmInterestBn, ttmReceiptsBn });
+        squeezeBasis = `FY${last(oi).date.slice(0, 4)} annual`;
+      } else { excluded.add("S3"); problems.push("S3: no fiscal-year data yet"); }
+    }
+
+    /* ---- revenue beta (TAX) ---- */
+    let revBeta = null;
+    const rcpt = vRcpt[t] ?? [];
+    if (mtsMonths.size >= 13) {
+      const rec = mtsT.filter(r => r.kind === "Total Receipts").sort((a, b) => b.date.localeCompare(a.date));
+      const receiptsYoY = pctChange(rec[0].value, rec[12].value) ?? 0;
+      revBeta = gNominal != null ? revenueBeta({ receiptsYoYPct: receiptsYoY, nominalGdpYoYPct: gNominal }) : null;
+    } else if (rcpt.length > 4 && gNominal != null) {
+      revBeta = revenueBeta({ receiptsYoYPct: yoy(rcpt, 4) ?? 0, nominalGdpYoYPct: gNominal });
+    }
+    if (!revBeta) { excluded.add("TAX"); problems.push("TAX: no receipts data"); }
+
+    /* ---- Japan leg ---- */
+    const jgbT = jgb.filter(o => o.date <= shiftDays(t, -45));
+    const jpyDaily = asOf(dexjpus, t).slice(-25);
+    let japan = null;
+    if (jgbT.length >= 4 && jpyDaily.length >= 2) {
+      japan = japanLeg({
+        jgb10Delta3mBp: (last(jgbT).value - ago(jgbT, 3).value) * 100,
+        usdJpyDelta3mPct: pctChange(last(jpyDaily).value, jpyDaily[0].value) ?? 0,
+        japanHoldingsDelta2mBn: 0, // manual input in production; no PIT source
+      });
+    } else { excluded.add("JP"); problems.push("JP: JGB series unavailable"); }
+
+    /* ---- stage + triggers ---- */
+    const walclT = asOf(walcl, t);
+    const fedAssetsUp3w = walclT.length >= 4 && [1, 2, 3].every(i => ago(walclT, i - 1).value > ago(walclT, i).value);
+    const stage = valve ? bigCycleStage({ fedAssetsUp3w, coreYoY, headlineYoY, valveScore: valve.score }) : null;
+
+    const fundsT200 = asOf(funds, t).slice(-200);
+    const dgs30T = asOf(dgs30, t);
+    let easedAndLongEndSold = false;
+    for (let i = 1; i < fundsT200.length; i++) {
+      if (fundsT200[i].value < fundsT200[i - 1].value) {
+        const j = dgs30T.findIndex(o => o.date === fundsT200[i].date);
+        if (j > 0 && (dgs30T[j].value - dgs30T[j - 1].value) * 100 >= 8) { easedAndLongEndSold = true; break; }
+      }
+    }
+
+    let triggers = [];
+    if (rvg && squeeze && goldF && japan && demand) {
+      triggers = evaluateTriggers({
+        rvg, rAvg, gNominal, contractionFlag, fedAssetsUp3w, headlineYoY: headlineYoY ?? 0,
+        squeeze, gold: goldF, japan, demand, easedAndLongEndSold, billsShareUp3m: null,
+      });
+    } else if (rvg && squeeze) {
+      // partial evaluation with only the legs that exist (mirror production tolerance)
+      triggers = evaluateTriggers({
+        rvg, rAvg, gNominal, contractionFlag, fedAssetsUp3w, headlineYoY: headlineYoY ?? 0,
+        squeeze,
+        gold: goldF ?? { divergence: false },
+        japan: japan ?? { hits: 0 },
+        demand: demand ?? { status: STATUS.WATCH, lastBtc: null, lastDealerPct: null },
+        easedAndLongEndSold, billsShareUp3m: null,
+      });
+    }
+
+    /* ---- composite heat ---- */
+    const legs = { SC: sc, S8: valve, S7: rvg, SoV: goldF, S5: demand, deferred, S3: squeeze, TAX: revBeta, JP: japan };
+    const pts = { [STATUS.OK]: 0, [STATUS.WATCH]: 0, [STATUS.ELEVATED]: 1, [STATUS.CRITICAL]: 2 };
+    const availableLegs = Object.entries(legs).filter(([, v]) => v != null);
+    const statusSum = availableLegs.reduce((s, [, v]) => s + (pts[v.status] ?? 0), 0);
+    const factorHeat = availableLegs.length ? (100 * statusSum) / (2 * availableLegs.length) : null;
+    const triggerHeat = triggers.reduce((s, tr) => s + 5 * (4 - tr.tier), 0);
+    const heat = factorHeat == null ? null : round2(factorHeat + triggerHeat);
+
+    rows.push({
+      t: ym, date: t, problems, legsAvailable: availableLegs.map(([k]) => k),
+      inputs: {
+        nfp3mma: nfp3mma == null ? null : Math.round(nfp3mma), revisionsSum2m, sahmGap: gap,
+        headlineYoY, coreYoY, brent: brent == null ? null : round2(brent),
+        rAvg, rMarg, gNominal, ttmInterestBn: ttmInterestBn == null ? null : Math.round(ttmInterestBn),
+        ttmReceiptsBn: ttmReceiptsBn == null ? null : Math.round(ttmReceiptsBn), squeezeBasis,
+        fedAssetsUp3w, easedAndLongEndSold,
+        baa10y: (() => { const b = asOf(baa10y, t); return b.length ? last(b).value : null; })(),
+      },
+      factors: Object.fromEntries(Object.entries(legs).map(([k, v]) => [k, v])),
+      stage: stage?.stage ?? null,
+      triggers, factorHeat: factorHeat == null ? null : round2(factorHeat), heat,
+    });
+  }
+
+  const outPath = path.join(HERE, "results.json");
+  await writeFile(outPath, JSON.stringify(rows, null, 1));
+  console.log(`replayed ${rows.length} months → ${outPath}`);
+  return rows;
+}

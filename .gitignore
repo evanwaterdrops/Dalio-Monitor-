@@ -10,6 +10,9 @@
 # production
 /build
 
+# backtest data cache (reproducible via npm run backtest)
+/scripts/backtest/.cache/
+
 # misc
 .DS_Store
 *.pem
