@@ -81,16 +81,28 @@ export async function debtToPenny(): Promise<Obs[]> {
   return (d.data as any[]).map(r => ({ date: r.record_date, value: Number(r.tot_pub_debt_out_amt) })).reverse();
 }
 
-/** MTS table 9: monthly receipts + net-interest outlays. */
+/**
+ * MTS table 9: monthly receipts + net-interest outlays.
+ * The dataset's taxonomy changed: "Total Receipts" is now a generic "Total"
+ * row per section (src_line_nbr 12 = total receipts, 33 = total outlays),
+ * and the amount lives in current_month_rcpt_outly_amt. Kind names are kept
+ * as "Total Receipts"/"Net Interest" for everything downstream.
+ */
 export async function mtsInterestAndReceipts() {
-  const u = `${FISCAL}/v1/accounting/mts/mts_table_9?filter=classification_desc:in:(Net%20Interest,Total%20Receipts)&sort=-record_date&page[size]=60`;
+  const u = `${FISCAL}/v1/accounting/mts/mts_table_9?filter=classification_desc:in:(Net%20Interest,Total)&sort=-record_date&page[size]=96`;
   const d = await j(u);
-  const rows = (d.data as any[]).map(r => ({
-    date: r.record_date,
-    kind: r.classification_desc as string,
-    value: Number(r.current_month_gross_rcpt_amt ?? r.current_month_gross_outly_amt ?? r.current_month_net_rcpt_amt ?? r.current_month_net_outly_amt ?? NaN),
-  }));
-  return rows.filter(r => Number.isFinite(r.value));
+  const rows = (d.data as any[]).map(r => {
+    const kind =
+      r.classification_desc === "Net Interest" ? "Net Interest"
+      : r.classification_desc === "Total" && String(r.src_line_nbr) === "12" ? "Total Receipts"
+      : null;
+    return {
+      date: r.record_date as string,
+      kind,
+      value: Number(r.current_month_rcpt_outly_amt ?? r.current_month_gross_rcpt_amt ?? r.current_month_net_outly_amt ?? NaN),
+    };
+  });
+  return rows.filter((r): r is { date: string; kind: string; value: number } => r.kind != null && Number.isFinite(r.value));
 }
 
 /* ---------------- TreasuryDirect auctions (keyless) ---------------- */

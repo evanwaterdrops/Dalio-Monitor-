@@ -90,6 +90,8 @@ export async function assess() {
   const jpyDelta3m = jpyHist.length ? pctChange(last(jpyHist).value, jpyHist[0].value) ?? 0 : 0;
   const japanHoldingsDelta = (await getManual("japan_tic_delta_2m_bn"))?.value ?? 0; // until TIC series id pinned
 
+  if (!mts.length) problems.push("mts: fetch succeeded but no usable rows (schema drift?)");
+
   // ---- priors & print history (pure slices of the pulls above — no extra API calls) ----
   const mLabel = (d: string) => `${MONTHS[Number(d.slice(5, 7)) - 1]}-${d.slice(2, 4)}`;
   const dLabel = (d: string) => d.slice(5);
