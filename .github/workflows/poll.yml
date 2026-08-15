@@ -1,0 +1,14 @@
+# Optional cadence booster: Vercel Hobby crons are daily-only, so this hits
+# the refresh endpoint hourly during US release windows (12:00-22:00 UTC).
+name: poll
+on:
+  schedule:
+    - cron: "35 12-22 * * 1-5"
+  workflow_dispatch:
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          curl -fsS -H "x-cron-secret: ${{ secrets.CRON_SECRET }}" \
+            "${{ secrets.APP_URL }}/api/cron/refresh"
