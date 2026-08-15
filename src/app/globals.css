@@ -84,11 +84,22 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); f
 .afp-label { font-family: var(--mono); font-size: 9px; color: var(--text-faint); letter-spacing: 0.1em; margin-bottom: 4px; }
 .afp-value { font-family: var(--mono); font-size: 16px; letter-spacing: -0.01em; }
 .afp-delta { font-family: var(--mono); font-size: 13px; font-weight: 600; }
-.threshold-row { display: flex; align-items: center; gap: 8px; font-family: var(--mono); font-size: 10px; margin-bottom: 12px; }
 .threshold-tag { color: var(--text-ghost); letter-spacing: 0.12em; }
-.threshold-sep { color: var(--border-dim); }
 .threshold-label { color: var(--text-faint); }
-.threshold-dot { width: 7px; height: 7px; border-radius: 50%; display: inline-block; flex-shrink: 0; }
+.print-chart { margin-bottom: 12px; }
+.print-chart svg { display: block; width: 100%; height: auto; }
+.gauge-row { margin-bottom: 12px; }
+.gauge-head { display: flex; align-items: baseline; gap: 8px; font-family: var(--mono); font-size: 10px; margin-bottom: 5px; }
+.gauge-track { height: 5px; background: var(--border-dim); border-radius: 3px; overflow: hidden; }
+.gauge-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+.gauge-meta { display: flex; justify-content: space-between; font-family: var(--mono); font-size: 9px; color: var(--text-faint); margin-top: 4px; letter-spacing: 0.06em; }
+.mom-delta { font-family: var(--mono); font-size: 10px; color: var(--text-muted); margin-top: 4px; }
+.also-feeds { margin-top: 10px; display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 9px; }
+.also-feeds-label { color: var(--text-ghost); letter-spacing: 0.1em; }
+.also-feeds-link { color: var(--blue); cursor: pointer; letter-spacing: 0.08em; font-weight: 600; }
+.also-feeds-link:hover { text-decoration: underline; }
+.source-link { text-decoration: none; }
+.source-link:hover { color: var(--text-dim); text-decoration: underline; }
 .contrib-block { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--divider); }
 .contrib-label { font-family: var(--mono); font-size: 9px; color: var(--text-ghost); letter-spacing: 0.1em; margin-bottom: 5px; }
 .contrib-text { margin: 0; font-size: 11.5px; color: var(--text-muted); line-height: 1.65; }

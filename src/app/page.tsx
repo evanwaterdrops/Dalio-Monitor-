@@ -12,10 +12,54 @@ type SourceType = "live" | "manual" | "derived" | "stale";
 interface SubInput {
   key: string; label: string; value: string; unit?: string;
   source: SourceType; sourceName: string; contribution: string; trendNote?: string;
+  sourceUrl?: string;
   latestActual?: string; latestForecast?: string; latestPrior?: string;
   beatMiss?: string; beatMissDir?: "beat" | "miss" | "inline";
+  momDelta?: string; momDir?: "up" | "down" | "flat";
+  prints?: { period: string; value: number }[];
+  printUnit?: string;
+  printThreshold?: number;
   threshold?: { value: number; label: string; direction: "above" | "below"; current?: number | null };
+  alsoFeeds?: string[];
 }
+
+/** Static street consensus for the AFP strips — update by hand as prints roll. */
+const CONSENSUS = {
+  coreYoY: { display: "3.0%", value: 3.0, lowerIsBetter: true },
+  headlineYoY: { display: "2.9%", value: 2.9, lowerIsBetter: true },
+  nfp3mma: { display: "80k", value: 80, lowerIsBetter: false },
+  brent: { display: "$82", value: 82, lowerIsBetter: true },
+};
+
+const sign = (n: number, unit = "", digits = 2) => `${n >= 0 ? "+" : "−"}${Math.abs(n).toFixed(digits)}${unit}`;
+
+function afp(actual: any, c: { display: string; value: number; lowerIsBetter: boolean }, unit = "", digits = 2) {
+  if (actual == null || !Number.isFinite(actual)) return {};
+  const d = actual - c.value;
+  const dir: "beat" | "miss" | "inline" =
+    Math.abs(d) < 1e-9 ? "inline" : (c.lowerIsBetter ? d < 0 : d > 0) ? "beat" : "miss";
+  return { latestForecast: c.display, beatMiss: sign(d, unit, digits), beatMissDir: dir };
+}
+
+function mom(cur: any, prior: any, unit = "", digits = 2) {
+  if (cur == null || prior == null || !Number.isFinite(cur) || !Number.isFinite(prior)) return {};
+  const d = cur - prior;
+  return { momDelta: sign(d, unit, digits), momDir: (d > 0 ? "up" : d < 0 ? "down" : "flat") as "up" | "down" | "flat" };
+}
+
+const SRC = {
+  PAYEMS: "https://fred.stlouisfed.org/series/PAYEMS",
+  UNRATE: "https://fred.stlouisfed.org/series/UNRATE",
+  CPILFESL: "https://fred.stlouisfed.org/series/CPILFESL",
+  CPIAUCSL: "https://fred.stlouisfed.org/series/CPIAUCSL",
+  DGS10: "https://fred.stlouisfed.org/series/DGS10",
+  GDP: "https://fred.stlouisfed.org/series/GDP",
+  DFII10: "https://fred.stlouisfed.org/series/DFII10",
+  FDHBFIN: "https://fred.stlouisfed.org/series/FDHBFIN",
+  AVG_RATES: "https://fiscaldata.treasury.gov/datasets/average-interest-rates-treasury-securities/",
+  MTS: "https://fiscaldata.treasury.gov/datasets/monthly-treasury-statement/",
+  AUCTIONS: "https://www.treasurydirect.gov/auctions/auction-query/",
+};
 interface FactorRow {
   key: string; name: string; station: string; status: Status;
   headline: string; logic: string; subInputs: SubInput[];
@@ -74,11 +118,18 @@ export default async function Page() {
       headline: `Phase: ${f.SC?.phase ?? "—"} — payrolls 3mma ${fmt(i.nfp3mma, "k")}, two-month revisions ${fmt(i.revisionsSum2m, "k")}`,
       logic: "Phase classifier over payroll momentum, revision direction, and the Sahm gap. Sahm gap ≥ 0.5pp = contraction; weak 3mma with negative revisions = late-stall breaking downward. A contraction sets the flag that converts the S7 r>g crossing from projection to event.",
       subInputs: [
-        { key: "nfp3mma", label: "Nonfarm payrolls, 3-month average", value: fmt(i.nfp3mma), unit: "k/month", source: "live", sourceName: "FRED PAYEMS (vintage)",
+        { key: "nfp3mma", label: "Nonfarm payrolls, 3-month average", value: fmt(i.nfp3mma), unit: "k/month", source: "live", sourceName: "FRED PAYEMS (vintage)", sourceUrl: SRC.PAYEMS,
+          latestActual: fmt(i.nfp3mma, "k"), latestPrior: i.nfp3mmaPrior != null ? `${i.nfp3mmaPrior}k` : "—",
+          ...afp(i.nfp3mma, CONSENSUS.nfp3mma, "k", 0), ...mom(i.nfp3mma, i.nfp3mmaPrior, "k", 0),
+          prints: i.nfp3mmaHistory ?? [], printUnit: "k", printThreshold: 0,
+          alsoFeeds: ["S7", "TAX"],
           contribution: "The momentum term. Sub-50k signals stall; negative signals contraction and trips the recession flag consumed by the r-vs-g hinge." },
-        { key: "revisions", label: "Payroll revisions, last 2 months", value: fmt(i.revisionsSum2m), unit: "k cumulative", source: "live", sourceName: "ALFRED vintages",
+        { key: "revisions", label: "Payroll revisions, last 2 months", value: fmt(i.revisionsSum2m), unit: "k cumulative", source: "live", sourceName: "ALFRED vintages", sourceUrl: SRC.PAYEMS,
+          latestActual: fmt(i.revisionsSum2m, "k"), latestPrior: i.revisionsSum2mPrior != null ? `${i.revisionsSum2mPrior}k` : "—",
+          ...mom(i.revisionsSum2m, i.revisionsSum2mPrior, "k", 0),
+          prints: i.revisionsHistory ?? [], printUnit: "k", printThreshold: -75,
           contribution: "Revision direction is the tell on turning points — persistent downward revisions mean the real-time prints overstate the cycle." },
-        { key: "sahm", label: "Sahm gap (U3 3mma vs 12m low)", value: fmt(i.sahmGap), unit: "pp", source: "derived", sourceName: "FRED UNRATE",
+        { key: "sahm", label: "Sahm gap (U3 3mma vs 12m low)", value: fmt(i.sahmGap), unit: "pp", source: "derived", sourceName: "FRED UNRATE", sourceUrl: SRC.UNRATE,
           threshold: { value: 0.5, label: "≥ 0.5pp = contraction (Sahm rule)", direction: "above", current: i.sahmGap },
           contribution: "≥0.5pp is the historical recession threshold. Read with participation — a shrinking labour force flatters the unemployment level.",
           trendNote: "Jul-26 UNRATE fell to 4.1% only because the labour force shrank — never read the level alone." },
@@ -89,13 +140,22 @@ export default async function Page() {
       headline: `Valve ${f.S8?.label ?? "—"} — score ${fmt(f.S8?.score)}, wedge ${fmt(f.S8?.wedge, "pp")}`,
       logic: "Valve score = 1 − (core − 2%) / 2%, then gated: headline−core wedge ≥ 0.6pp with Brent ≥ $85 caps it at 0.55 (energy-shock gate); headline ≥ 3% caps at 0.7; core ≥ 3% caps at 0.25 (blocked). The block on monetisation is the war, not a wage-price spiral.",
       subInputs: [
-        { key: "core", label: "Core CPI, y/y", value: fmt(i.coreYoY), unit: "%", source: "live", sourceName: "FRED CPILFESL",
+        { key: "core", label: "Core CPI, y/y", value: fmt(i.coreYoY), unit: "%", source: "live", sourceName: "FRED CPILFESL", sourceUrl: SRC.CPILFESL,
+          latestActual: fmt(i.coreYoY, "%"), latestPrior: i.coreYoYPrior != null ? `${i.coreYoYPrior}%` : "—",
+          ...afp(i.coreYoY, CONSENSUS.coreYoY, "pp"), ...mom(i.coreYoY, i.coreYoYPrior, "pp"),
+          prints: i.coreYoYHistory ?? [], printUnit: "%", printThreshold: 2.0,
           threshold: { value: 3.0, label: "≥ 3.0% = valve blocked (score capped 0.25)", direction: "above", current: i.coreYoY },
           contribution: "The underlying-inflation term of the valve score. Core near 2% means the Fed CAN monetise the moment the energy gate clears." },
-        { key: "headline", label: "Headline CPI, y/y", value: fmt(i.headlineYoY), unit: "%", source: "live", sourceName: "FRED CPIAUCSL",
+        { key: "headline", label: "Headline CPI, y/y", value: fmt(i.headlineYoY), unit: "%", source: "live", sourceName: "FRED CPIAUCSL", sourceUrl: SRC.CPIAUCSL,
+          latestActual: fmt(i.headlineYoY, "%"), latestPrior: i.headlineYoYPrior != null ? `${i.headlineYoYPrior}%` : "—",
+          ...afp(i.headlineYoY, CONSENSUS.headlineYoY, "pp"), ...mom(i.headlineYoY, i.headlineYoYPrior, "pp"),
+          prints: i.headlineYoYHistory ?? [], printUnit: "%", printThreshold: 3.0,
           threshold: { value: 3.0, label: "≥ 3.0% partially gates the valve", direction: "above", current: i.headlineYoY },
           contribution: "Headline ≥ 3% partially gates the valve; the headline−core wedge measures how much of the problem is energy." },
         { key: "brent", label: "Brent crude, spot", value: fmt(i.brent), unit: "USD/bbl", source: "live", sourceName: "OANDA BCO_USD",
+          latestActual: `$${fmt(i.brent)}`, latestPrior: i.brentPrior != null ? `$${i.brentPrior}` : "—",
+          ...afp(i.brent, CONSENSUS.brent, "", 1), ...mom(i.brent, i.brentPrior, "", 1),
+          prints: i.brentHistory ?? [], printUnit: "", printThreshold: 80,
           threshold: { value: 85, label: "≥ $85 with wedge ≥ 0.6pp = energy gate", direction: "above", current: i.brent },
           contribution: "The live energy gate. Brent < $80 with headline < 3% reopens the valve within a quarter.",
           trendNote: "Hormuz reopening → Brent < 80 → headline collapses toward core." },
@@ -106,12 +166,17 @@ export default async function Page() {
       headline: `Gap g−rAvg ${fmt(f.S7?.gap, "pp")} · drift ${fmt(f.S7?.driftPerYear, "pp/yr")} · ~${fmt(f.S7?.monthsToCross, "m")} to cross · recession-crossed: ${String(f.S7?.stressedCrossed ?? "—")}`,
       logic: "Gap = nominal g − average interest rate on marketable debt. Drift = (10Y − rAvg) × 12-month rollover share, i.e. every roll drags the average toward the marginal rate. A payroll contraction knocks ~3pp off nominal g — with that haircut applied, the crossing is a recession EVENT, not a calendar projection.",
       subInputs: [
-        { key: "ravg", label: "Average interest rate, total marketable", value: fmt(i.rAvg), unit: "%", source: "live", sourceName: "FiscalData avg_interest_rates",
+        { key: "ravg", label: "Average interest rate, total marketable", value: fmt(i.rAvg), unit: "%", source: "live", sourceName: "FiscalData avg_interest_rates", sourceUrl: SRC.AVG_RATES,
+          latestActual: fmt(i.rAvg, "%"), latestPrior: i.rAvgPrior != null ? `${i.rAvgPrior}%` : "—",
+          ...mom(i.rAvg, i.rAvgPrior, "pp"),
+          prints: i.rAvgHistory ?? [], printUnit: "%",
           ...(Number.isFinite(i.gNominal) ? { threshold: { value: i.gNominal, label: `≥ nominal g (${i.gNominal}%) = r>g crossed`, direction: "above" as const, current: i.rAvg } } : {}),
-          contribution: "The r side of the hinge. Rises mechanically as maturing stock rolls at marginal cost." },
-        { key: "rmarg", label: "Marginal cost of debt (10Y)", value: fmt(i.rMarg), unit: "%", source: "live", sourceName: "FRED DGS10",
+          contribution: "The r side of the hinge. Rises mechanically as maturing stock rolls at marginal cost.",
+          ...(f.S7?.gapPrior != null && f.S7?.gap != null ? { trendNote: `Gap g−rAvg moved ${sign(f.S7.gap - f.S7.gapPrior, "pp")} m/m (${f.S7.gapPrior}pp → ${f.S7.gap}pp).` } : {}) },
+        { key: "rmarg", label: "Marginal cost of debt (10Y)", value: fmt(i.rMarg), unit: "%", source: "live", sourceName: "FRED DGS10", sourceUrl: SRC.DGS10,
           contribution: "Sets the drift speed: the wider 10Y sits above rAvg, the faster the average ratchets up." },
-        { key: "g", label: "Nominal GDP growth, y/y", value: fmt(i.gNominal), unit: "%", source: "live", sourceName: "FRED GDP",
+        { key: "g", label: "Nominal GDP growth, y/y", value: fmt(i.gNominal), unit: "%", source: "live", sourceName: "FRED GDP", sourceUrl: SRC.GDP,
+          alsoFeeds: ["TAX"],
           contribution: "The g side. Caution: ~74% of Q1-26 growth was AI capex — capex-flow g, not higher potential g.",
           trendNote: "Stressed test applies a −3pp recession haircut to g before comparing to rAvg." },
         { key: "rollover", label: "Rollover share, ≤12 months", value: fmt(i.rolloverShare != null ? Math.round(i.rolloverShare * 100) : null), unit: "% of stock", source: "manual", sourceName: "manual_inputs (MSPD-derived)",
@@ -123,13 +188,16 @@ export default async function Page() {
       headline: `Last 10Y auction: bid-to-cover ${fmt(f.S5?.lastBtc)} · dealer takedown ${fmt(f.S5?.lastDealerPct, "%")}`,
       logic: "Recent 10Y auctions scored on bid-to-cover and primary-dealer takedown. Weak BTC and heavy dealer share together = critical (dealers as buyers of last resort); either alone = elevated. Two weak 10Y auctions in a row fires the Tier-3 plumbing trigger.",
       subInputs: [
-        { key: "btc", label: "10Y bid-to-cover", value: fmt(f.S5?.lastBtc), unit: "ratio", source: "live", sourceName: "TreasuryDirect auctions",
+        { key: "btc", label: "10Y bid-to-cover", value: fmt(f.S5?.lastBtc), unit: "ratio", source: "live", sourceName: "TreasuryDirect auctions", sourceUrl: SRC.AUCTIONS,
+          latestActual: fmt(f.S5?.lastBtc, "×"), latestPrior: f.S5?.btcPrior != null ? `${f.S5.btcPrior}×` : "—",
+          ...mom(f.S5?.lastBtc, f.S5?.btcPrior, "", 2),
+          prints: f.S5?.btcHistory ?? [], printUnit: "×", printThreshold: 2.4,
           threshold: { value: 2.4, label: "< 2.4 on two straight 10Ys = weak demand", direction: "below", current: f.S5?.lastBtc },
           contribution: "Direct read on demand at the clearing price. Aug-26 10Y cleared 4.683% — highest since the GFC." },
-        { key: "dealer", label: "Primary-dealer takedown", value: fmt(f.S5?.lastDealerPct), unit: "%", source: "live", sourceName: "TreasuryDirect auctions",
+        { key: "dealer", label: "Primary-dealer takedown", value: fmt(f.S5?.lastDealerPct), unit: "%", source: "live", sourceName: "TreasuryDirect auctions", sourceUrl: SRC.AUCTIONS,
           threshold: { value: 18, label: "> 18% on two straight = dealers warehousing", direction: "above", current: f.S5?.lastDealerPct },
           contribution: "Heavy dealer share means end-investors stepped back and the street warehoused the supply." },
-        { key: "foreign", label: "Foreign holdings", value: fmt(i.foreignHoldingsBn != null ? Math.round(i.foreignHoldingsBn) : null), unit: "USD bn", source: "live", sourceName: "FRED FDHBFIN",
+        { key: "foreign", label: "Foreign holdings", value: fmt(i.foreignHoldingsBn != null ? Math.round(i.foreignHoldingsBn) : null), unit: "USD bn", source: "live", sourceName: "FRED FDHBFIN", sourceUrl: SRC.FDHBFIN,
           contribution: "The stock-side check. Share fell to 31% only because debt grew faster — the level rose $8.9→9.5trn. Rate constraint, not a buyers' strike." },
       ],
     },
@@ -138,11 +206,15 @@ export default async function Page() {
       headline: `Interest consumes ${f.S3?.ratio != null ? (f.S3.ratio * 100).toFixed(1) : "—"}% of receipts (TTM $${fmt(i.ttmInterestBn)}bn / $${fmt(i.ttmReceiptsBn)}bn)`,
       logic: "TTM net interest ÷ TTM total receipts from the Monthly Treasury Statement. ≥17% = elevated; ≥20% = critical — the 20–25% band is the historic loss-of-discretion zone where interest starts crowding out policy choices (Tier-2 trigger).",
       subInputs: [
-        { key: "interest", label: "Net interest, trailing 12 months", value: fmt(i.ttmInterestBn), unit: "USD bn", source: "live", sourceName: "FiscalData MTS table 9",
+        { key: "interest", label: "Net interest, trailing 12 months", value: fmt(i.ttmInterestBn), unit: "USD bn", source: "live", sourceName: "FiscalData MTS table 9", sourceUrl: SRC.MTS,
           contribution: "The compounding leg made literal: interest paid on debt that was itself borrowed." },
-        { key: "receipts", label: "Total receipts, trailing 12 months", value: fmt(i.ttmReceiptsBn), unit: "USD bn", source: "live", sourceName: "FiscalData MTS table 9",
+        { key: "receipts", label: "Total receipts, trailing 12 months", value: fmt(i.ttmReceiptsBn), unit: "USD bn", source: "live", sourceName: "FiscalData MTS table 9", sourceUrl: SRC.MTS,
           contribution: "The denominator — the state's actual income against which the interest bill compounds." },
         { key: "ratio", label: "Interest / receipts", value: f.S3?.ratio != null ? (f.S3.ratio * 100).toFixed(1) : "—", unit: "%", source: "derived", sourceName: "computed",
+          latestActual: f.S3?.ratio != null ? `${(f.S3.ratio * 100).toFixed(1)}%` : "—",
+          latestPrior: f.S3?.ratioPrior != null ? `${(f.S3.ratioPrior * 100).toFixed(1)}%` : "—",
+          ...mom(f.S3?.ratio != null ? f.S3.ratio * 100 : null, f.S3?.ratioPrior != null ? f.S3.ratioPrior * 100 : null, "pp", 1),
+          prints: f.S3?.ratioHistory ?? [], printUnit: "%", printThreshold: 20,
           threshold: { value: 20, label: "≥ 20% = CRITICAL (loss-of-discretion zone)", direction: "above", current: f.S3?.ratio != null ? f.S3.ratio * 100 : null },
           contribution: "The squeeze itself. Crossing 20% historically marks the point where fiscal discretion is lost." },
       ],
@@ -152,10 +224,11 @@ export default async function Page() {
       headline: `Revenue beta ${fmt(f.TAX?.beta)} vs nominal growth ${fmt(i.gNominal, "%")}`,
       logic: "Beta = receipts y/y ÷ nominal GDP y/y. Beta < 0.8 = elevated: the GDP being printed is not taxing like normal GDP. AI-capex-led growth (and deficit-financed war supplementals) inflates g without a proportional revenue follow-through.",
       subInputs: [
-        { key: "beta", label: "Revenue beta (receipts y/y ÷ GDP y/y)", value: fmt(f.TAX?.beta), unit: "ratio", source: "derived", sourceName: "FiscalData MTS + FRED GDP",
+        { key: "beta", label: "Revenue beta (receipts y/y ÷ GDP y/y)", value: fmt(f.TAX?.beta), unit: "ratio", source: "derived", sourceName: "FiscalData MTS + FRED GDP", sourceUrl: SRC.MTS,
           threshold: { value: 0.8, label: "< 0.8 = growth not taxing like GDP", direction: "below", current: f.TAX?.beta },
           contribution: "Below 0.8, every point of headline growth delivers less than a point of revenue — the deficit path is worse than g suggests." },
-        { key: "g", label: "Nominal GDP growth, y/y", value: fmt(i.gNominal), unit: "%", source: "live", sourceName: "FRED GDP",
+        { key: "g", label: "Nominal GDP growth, y/y", value: fmt(i.gNominal), unit: "%", source: "live", sourceName: "FRED GDP", sourceUrl: SRC.GDP,
+          alsoFeeds: ["S7"],
           contribution: "The comparator. Capex-flow GDP (AI data-centre build-out) doesn't tax like payroll GDP.",
           trendNote: "Iran-war supplementals ($87.6bn FY26) land in outlays, deficit-financed." },
       ],
@@ -166,10 +239,14 @@ export default async function Page() {
       logic: "Gold return over ~20 sessions decomposed into USD, EUR, JPY numeraires. Up >2% in all three = credit-flight (exit from sovereign credit generally, not a dollar trade). Divergence flag: gold rising WITH real yields rising = gold bought as an alternative to the sovereign, not as a rate hedge (Tier-3).",
       subInputs: [
         { key: "gold", label: "Gold spot", value: fmt(i.goldSpot), unit: "USD/oz", source: "live", sourceName: "OANDA XAU_USD",
+          latestActual: `$${fmt(i.goldSpot)}`, latestPrior: i.goldSpotPrior != null ? `$${i.goldSpotPrior}` : "—",
+          ...mom(i.goldSpot, i.goldSpotPrior, "", 0),
+          prints: i.goldSpotHistory ?? [], printUnit: "",
           contribution: "The flight asset. Record highs despite high real yields is the anomaly the decomposition explains." },
         { key: "mode", label: "Decomposition mode", value: String(f.SoV?.mode ?? "—"), source: "derived", sourceName: "XAU vs EUR/JPY numeraires",
+          alsoFeeds: ["JP"],
           contribution: "Distinguishes a weak-dollar trade from a general exit: rising in every currency means the seller is sovereign credit itself." },
-        { key: "diverge", label: "Real-yield divergence", value: f.SoV?.divergence ? "YES" : "no", source: "derived", sourceName: "FRED DFII10",
+        { key: "diverge", label: "Real-yield divergence", value: f.SoV?.divergence ? "YES" : "no", source: "derived", sourceName: "FRED DFII10", sourceUrl: SRC.DFII10,
           contribution: "Gold up while 10Y real yields rise breaks the rate-hedge model — the store-of-value bid is about credit, not rates." },
       ],
     },
@@ -180,6 +257,7 @@ export default async function Page() {
       subInputs: [
         { key: "hits", label: "Conditions met", value: `${f.JP?.hits ?? 0}/3`, source: "derived", sourceName: "FRED JGB 10Y + OANDA USD_JPY + TIC",
           threshold: { value: 3, label: "3/3 = CRITICAL repatriation", direction: "above", current: f.JP?.hits ?? 0 },
+          alsoFeeds: ["SoV", "S5"],
           contribution: "Each leg alone is noise; all three together are repatriation — the marginal foreign bid for Treasuries turning into supply." },
         { key: "tic", label: "Japan TIC holdings, 2m change", value: "—", unit: "USD bn", source: "manual", sourceName: "manual_inputs (TIC series id pending)",
           contribution: "The confirming leg: an ABSOLUTE decline (~$1.2trn stock) two months running, not a share-of-debt artefact. FRED TIC country series to be pinned; manual override until then." },

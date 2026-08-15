@@ -43,11 +43,12 @@ export async function assess() {
     t("FDHBFIN", () => src.fred("FDHBFIN", { limit: 8 }), []),
   ]);
 
-  const [spot, xauHist, eurHist, jpyHist] = await Promise.all([
+  const [spot, xauHist, eurHist, jpyHist, bcoHist] = await Promise.all([
     t("oanda-spot", () => src.oandaPrices(["XAU_USD", "EUR_USD", "USD_JPY", "BCO_USD"]), {} as Record<string, number>),
     t<src.Obs[]>("XAU-candles", () => src.oandaCandles("XAU_USD", 25), []),
     t<src.Obs[]>("EUR-candles", () => src.oandaCandles("EUR_USD", 25), []),
     t<src.Obs[]>("JPY-candles", () => src.oandaCandles("USD_JPY", 25), []),
+    t<src.Obs[]>("BCO-candles", () => src.oandaCandles("BCO_USD", 10), []),
   ]);
 
   // ---- derived inputs ----
@@ -89,6 +90,41 @@ export async function assess() {
   const jpyDelta3m = jpyHist.length ? pctChange(last(jpyHist).value, jpyHist[0].value) ?? 0 : 0;
   const japanHoldingsDelta = (await getManual("japan_tic_delta_2m_bn"))?.value ?? 0; // until TIC series id pinned
 
+  // ---- priors & print history (pure slices of the pulls above — no extra API calls) ----
+  const mLabel = (d: string) => `${MONTHS[Number(d.slice(5, 7)) - 1]}-${d.slice(2, 4)}`;
+  const dLabel = (d: string) => d.slice(5);
+  const hist = (obs: { date: string; value: number }[], n: number, label: (d: string) => string, r = round2) =>
+    obs.slice(-n).map(o => ({ period: label(o.date), value: r(o.value) }));
+  const priorOf = (obs: { date: string; value: number }[], r = round2) =>
+    obs.length >= 2 ? r(ago(obs, 1).value) : null;
+
+  const nfp3mmaSeries = nfpChanges
+    .map((_, k) => (k >= 2 ? { date: payems[k + 1].date, value: avg(nfpChanges.slice(k - 2, k + 1)) } : null))
+    .filter((o): o is { date: string; value: number } => o != null);
+  const yoySeries = (obs: src.Obs[]) =>
+    obs.length > 12
+      ? obs.slice(12).map((o, k) => ({ date: o.date, value: round2(pctChange(o.value, obs[k].value) ?? NaN) }))
+      : [];
+  const coreSeries = yoySeries(cpiC);
+  const headSeries = yoySeries(cpiH);
+
+  const mtsKind = (kind: string) => mts.filter(r => r.kind === kind); // sorted desc by date
+  const ttmRatioAt = (off: number) => {
+    const int = mtsKind("Net Interest").slice(off, off + 12);
+    const rec = mtsKind("Total Receipts").slice(off, off + 12);
+    if (int.length < 12 || rec.length < 12) return null;
+    const paid = int.reduce((s, r) => s + r.value, 0), got = rec.reduce((s, r) => s + r.value, 0);
+    return got === 0 ? null : { date: rec[0].date, value: Math.round((paid / got) * 1000) / 10 }; // %
+  };
+  const ratioSeries = [...Array(8)]
+    .map((_, off) => ttmRatioAt(off))
+    .filter((o): o is { date: string; value: number } => o != null)
+    .reverse();
+
+  const tenYs = auctions.filter(a => a.term === "10-Year" && a.btc != null);
+  const rAvgPrior = priorOf(avgRate);
+  const gapPrior = rAvgPrior != null && Number.isFinite(gNominal) ? round2(gNominal - rAvgPrior) : null;
+
   // ---- factor computations (math.mjs = tested single source of truth) ----
   const sc = smallCyclePhase({ nfp3mma, revisionsSum2m, sahmGap: gap, fundsDelta6m });
   const valve = monetisationValve({ coreYoY, headlineYoY, brent });
@@ -120,8 +156,33 @@ export async function assess() {
       debtLatest: debt.length ? last(debt).value : null,
       hyOas: hyOas.length ? last(hyOas).value : null,
       foreignHoldingsBn: foreignQ.length ? last(foreignQ).value : null,
+      // priors + print history for the AFP strips and mini charts
+      nfp3mmaPrior: priorOf(nfp3mmaSeries, Math.round),
+      nfp3mmaHistory: hist(nfp3mmaSeries, 8, mLabel, Math.round),
+      revisionsSum2mPrior: payRev.length >= 4 ? payRev.slice(-4, -2).reduce((s, r) => s + r.revision, 0) : null,
+      revisionsHistory: payRev.map(r => ({ period: mLabel(r.date), value: r.revision })),
+      coreYoYPrior: priorOf(coreSeries),
+      coreYoYHistory: hist(coreSeries, 8, mLabel),
+      headlineYoYPrior: priorOf(headSeries),
+      headlineYoYHistory: hist(headSeries, 8, mLabel),
+      brentPrior: priorOf(bcoHist),
+      brentHistory: hist(bcoHist, 8, dLabel),
+      goldSpotPrior: priorOf(xauHist),
+      goldSpotHistory: hist(xauHist, 8, dLabel, (x) => Math.round(x)),
+      rAvgPrior,
+      rAvgHistory: hist(avgRate, 8, mLabel),
     },
-    factors: { SC: sc, S8: valve, S7: rvg, SoV: gold, S5: demand, deferred, S3: squeeze, TAX: revBeta, JP: japan },
+    factors: {
+      SC: sc, S8: valve,
+      S7: { ...rvg, gapPrior },
+      SoV: gold,
+      S5: { ...demand, btcPrior: tenYs.length >= 2 ? tenYs[1].btc : null,
+            btcHistory: tenYs.slice(0, 8).reverse().map(a => ({ period: mLabel(a.date), value: a.btc as number })) },
+      deferred,
+      S3: { ...squeeze, ratioPrior: (() => { const p = ttmRatioAt(1); return p ? p.value / 100 : null; })(),
+            ratioHistory: ratioSeries.map(o => ({ period: mLabel(o.date), value: o.value })) },
+      TAX: revBeta, JP: japan,
+    },
     stage,
     triggers,
   };
@@ -130,6 +191,7 @@ export async function assess() {
 /* ---- helpers ---- */
 const avg = (a: number[]) => a.reduce((s, x) => s + x, 0) / a.length;
 const round2 = (x: number) => Math.round(x * 100) / 100;
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
 function receiptsYoYPct(mts: { date: string; kind: string; value: number }[]) {
   const rec = mts.filter(r => r.kind === "Total Receipts");

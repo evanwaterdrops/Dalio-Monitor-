@@ -95,7 +95,7 @@ export async function mtsInterestAndReceipts() {
 
 /* ---------------- TreasuryDirect auctions (keyless) ---------------- */
 export async function recentAuctions() {
-  const d = await j("https://www.treasurydirect.gov/TA_WS/securities/auctioned?format=json&days=60&type=Note");
+  const d = await j("https://www.treasurydirect.gov/TA_WS/securities/auctioned?format=json&days=380&type=Note");
   return (d as any[])
     .map(a => {
       const comp = Number(a.competitiveAccepted || 0);
