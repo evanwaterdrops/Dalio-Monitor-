@@ -12,6 +12,9 @@ type SourceType = "live" | "manual" | "derived" | "stale";
 interface SubInput {
   key: string; label: string; value: string; unit?: string;
   source: SourceType; sourceName: string; contribution: string; trendNote?: string;
+  latestActual?: string; latestForecast?: string; latestPrior?: string;
+  beatMiss?: string; beatMissDir?: "beat" | "miss" | "inline";
+  threshold?: { value: number; label: string; direction: "above" | "below"; current?: number | null };
 }
 interface FactorRow {
   key: string; name: string; station: string; status: Status;
@@ -28,15 +31,42 @@ const STATUS_COLOR: Record<Status, string> = {
 };
 const TIER_COLOR: Record<number, string> = { 1: "var(--red)", 2: "var(--amber)", 3: "var(--blue)" };
 
+const STAGE_LABELS: Record<number, string> = {
+  1: "Early Expansion",
+  2: "Mid Expansion",
+  3: "Late Expansion / Overheating",
+  4: "Tightening / Slowdown",
+  5: "Debt Distress Emerging",
+  6: "Late Deleveraging / Monetisation",
+  7: "Resolution / Reset",
+};
+
 export default async function Page() {
-  const snap = (await latestSnapshot()) ?? (await assess());
-  const alerts = await recentAlerts(12);
+  let snap: any = null;
+  let loadError: string | null = null;
+  try {
+    snap = (await latestSnapshot()) ?? (await assess());
+  } catch (e: any) {
+    loadError = e?.message ?? "Unknown error";
+  }
+
+  if (loadError || !snap) {
+    return (
+      <div style={{ padding: "80px 24px", fontFamily: "var(--mono)", color: "var(--amber)" }}>
+        <div style={{ fontSize: 10, letterSpacing: "0.15em", marginBottom: 12 }}>ASSESS ERROR</div>
+        <div style={{ fontSize: 13 }}>{loadError ?? "No snapshot available."}</div>
+      </div>
+    );
+  }
+
+  const alerts = await recentAlerts(12).catch(() => [] as any[]);
   const f = snap.factors ?? {};
   const i = snap.inputs ?? {};
 
   const meta = (k: string) => FACTOR_META[k] ?? { name: k, station: "—" };
   const stageText: string = snap.stage?.stage ?? "—";
   const stageNum = stageText.includes("Stage 6") || stageText.includes("DELEVERAGING") ? 6 : 5;
+  const stageLabel = STAGE_LABELS[Number(stageNum)] ?? "Unknown Stage";
 
   const factorRows: FactorRow[] = [
     {
@@ -49,6 +79,7 @@ export default async function Page() {
         { key: "revisions", label: "Payroll revisions, last 2 months", value: fmt(i.revisionsSum2m), unit: "k cumulative", source: "live", sourceName: "ALFRED vintages",
           contribution: "Revision direction is the tell on turning points — persistent downward revisions mean the real-time prints overstate the cycle." },
         { key: "sahm", label: "Sahm gap (U3 3mma vs 12m low)", value: fmt(i.sahmGap), unit: "pp", source: "derived", sourceName: "FRED UNRATE",
+          threshold: { value: 0.5, label: "≥ 0.5pp = contraction (Sahm rule)", direction: "above", current: i.sahmGap },
           contribution: "≥0.5pp is the historical recession threshold. Read with participation — a shrinking labour force flatters the unemployment level.",
           trendNote: "Jul-26 UNRATE fell to 4.1% only because the labour force shrank — never read the level alone." },
       ],
@@ -59,10 +90,13 @@ export default async function Page() {
       logic: "Valve score = 1 − (core − 2%) / 2%, then gated: headline−core wedge ≥ 0.6pp with Brent ≥ $85 caps it at 0.55 (energy-shock gate); headline ≥ 3% caps at 0.7; core ≥ 3% caps at 0.25 (blocked). The block on monetisation is the war, not a wage-price spiral.",
       subInputs: [
         { key: "core", label: "Core CPI, y/y", value: fmt(i.coreYoY), unit: "%", source: "live", sourceName: "FRED CPILFESL",
+          threshold: { value: 3.0, label: "≥ 3.0% = valve blocked (score capped 0.25)", direction: "above", current: i.coreYoY },
           contribution: "The underlying-inflation term of the valve score. Core near 2% means the Fed CAN monetise the moment the energy gate clears." },
         { key: "headline", label: "Headline CPI, y/y", value: fmt(i.headlineYoY), unit: "%", source: "live", sourceName: "FRED CPIAUCSL",
+          threshold: { value: 3.0, label: "≥ 3.0% partially gates the valve", direction: "above", current: i.headlineYoY },
           contribution: "Headline ≥ 3% partially gates the valve; the headline−core wedge measures how much of the problem is energy." },
         { key: "brent", label: "Brent crude, spot", value: fmt(i.brent), unit: "USD/bbl", source: "live", sourceName: "OANDA BCO_USD",
+          threshold: { value: 85, label: "≥ $85 with wedge ≥ 0.6pp = energy gate", direction: "above", current: i.brent },
           contribution: "The live energy gate. Brent < $80 with headline < 3% reopens the valve within a quarter.",
           trendNote: "Hormuz reopening → Brent < 80 → headline collapses toward core." },
       ],
@@ -73,6 +107,7 @@ export default async function Page() {
       logic: "Gap = nominal g − average interest rate on marketable debt. Drift = (10Y − rAvg) × 12-month rollover share, i.e. every roll drags the average toward the marginal rate. A payroll contraction knocks ~3pp off nominal g — with that haircut applied, the crossing is a recession EVENT, not a calendar projection.",
       subInputs: [
         { key: "ravg", label: "Average interest rate, total marketable", value: fmt(i.rAvg), unit: "%", source: "live", sourceName: "FiscalData avg_interest_rates",
+          ...(Number.isFinite(i.gNominal) ? { threshold: { value: i.gNominal, label: `≥ nominal g (${i.gNominal}%) = r>g crossed`, direction: "above" as const, current: i.rAvg } } : {}),
           contribution: "The r side of the hinge. Rises mechanically as maturing stock rolls at marginal cost." },
         { key: "rmarg", label: "Marginal cost of debt (10Y)", value: fmt(i.rMarg), unit: "%", source: "live", sourceName: "FRED DGS10",
           contribution: "Sets the drift speed: the wider 10Y sits above rAvg, the faster the average ratchets up." },
@@ -89,8 +124,10 @@ export default async function Page() {
       logic: "Recent 10Y auctions scored on bid-to-cover and primary-dealer takedown. Weak BTC and heavy dealer share together = critical (dealers as buyers of last resort); either alone = elevated. Two weak 10Y auctions in a row fires the Tier-3 plumbing trigger.",
       subInputs: [
         { key: "btc", label: "10Y bid-to-cover", value: fmt(f.S5?.lastBtc), unit: "ratio", source: "live", sourceName: "TreasuryDirect auctions",
+          threshold: { value: 2.4, label: "< 2.4 on two straight 10Ys = weak demand", direction: "below", current: f.S5?.lastBtc },
           contribution: "Direct read on demand at the clearing price. Aug-26 10Y cleared 4.683% — highest since the GFC." },
         { key: "dealer", label: "Primary-dealer takedown", value: fmt(f.S5?.lastDealerPct), unit: "%", source: "live", sourceName: "TreasuryDirect auctions",
+          threshold: { value: 18, label: "> 18% on two straight = dealers warehousing", direction: "above", current: f.S5?.lastDealerPct },
           contribution: "Heavy dealer share means end-investors stepped back and the street warehoused the supply." },
         { key: "foreign", label: "Foreign holdings", value: fmt(i.foreignHoldingsBn != null ? Math.round(i.foreignHoldingsBn) : null), unit: "USD bn", source: "live", sourceName: "FRED FDHBFIN",
           contribution: "The stock-side check. Share fell to 31% only because debt grew faster — the level rose $8.9→9.5trn. Rate constraint, not a buyers' strike." },
@@ -106,6 +143,7 @@ export default async function Page() {
         { key: "receipts", label: "Total receipts, trailing 12 months", value: fmt(i.ttmReceiptsBn), unit: "USD bn", source: "live", sourceName: "FiscalData MTS table 9",
           contribution: "The denominator — the state's actual income against which the interest bill compounds." },
         { key: "ratio", label: "Interest / receipts", value: f.S3?.ratio != null ? (f.S3.ratio * 100).toFixed(1) : "—", unit: "%", source: "derived", sourceName: "computed",
+          threshold: { value: 20, label: "≥ 20% = CRITICAL (loss-of-discretion zone)", direction: "above", current: f.S3?.ratio != null ? f.S3.ratio * 100 : null },
           contribution: "The squeeze itself. Crossing 20% historically marks the point where fiscal discretion is lost." },
       ],
     },
@@ -115,6 +153,7 @@ export default async function Page() {
       logic: "Beta = receipts y/y ÷ nominal GDP y/y. Beta < 0.8 = elevated: the GDP being printed is not taxing like normal GDP. AI-capex-led growth (and deficit-financed war supplementals) inflates g without a proportional revenue follow-through.",
       subInputs: [
         { key: "beta", label: "Revenue beta (receipts y/y ÷ GDP y/y)", value: fmt(f.TAX?.beta), unit: "ratio", source: "derived", sourceName: "FiscalData MTS + FRED GDP",
+          threshold: { value: 0.8, label: "< 0.8 = growth not taxing like GDP", direction: "below", current: f.TAX?.beta },
           contribution: "Below 0.8, every point of headline growth delivers less than a point of revenue — the deficit path is worse than g suggests." },
         { key: "g", label: "Nominal GDP growth, y/y", value: fmt(i.gNominal), unit: "%", source: "live", sourceName: "FRED GDP",
           contribution: "The comparator. Capex-flow GDP (AI data-centre build-out) doesn't tax like payroll GDP.",
@@ -140,6 +179,7 @@ export default async function Page() {
       logic: "Three-condition counter: JGB 10Y up ≥25bp over 3m (carry gap closing) + yen strengthening + Japanese Treasury holdings falling outright for 2 consecutive months. 3/3 = critical: the largest foreign creditor is taking money home.",
       subInputs: [
         { key: "hits", label: "Conditions met", value: `${f.JP?.hits ?? 0}/3`, source: "derived", sourceName: "FRED JGB 10Y + OANDA USD_JPY + TIC",
+          threshold: { value: 3, label: "3/3 = CRITICAL repatriation", direction: "above", current: f.JP?.hits ?? 0 },
           contribution: "Each leg alone is noise; all three together are repatriation — the marginal foreign bid for Treasuries turning into supply." },
         { key: "tic", label: "Japan TIC holdings, 2m change", value: "—", unit: "USD bn", source: "manual", sourceName: "manual_inputs (TIC series id pending)",
           contribution: "The confirming leg: an ABSOLUTE decline (~$1.2trn stock) two months running, not a share-of-debt artefact. FRED TIC country series to be pinned; manual override until then." },
@@ -169,6 +209,17 @@ export default async function Page() {
         </div>
       </div>
 
+      {snap.problems?.length > 0 && (
+        <div className="problems-banner">
+          <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--amber)", letterSpacing: "0.12em" }}>
+            ⚠ {snap.problems.length} SOURCE PROBLEM{snap.problems.length > 1 ? "S" : ""} THIS RUN —{" "}
+          </span>
+          {snap.problems.map((p: string) => (
+            <span key={p} style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--amber)", marginRight: 16 }}>{p}</span>
+          ))}
+        </div>
+      )}
+
       <div className="sv-wrap">
         <section className="hero">
           <div>
@@ -176,7 +227,11 @@ export default async function Page() {
             <div className="hero-stage">
               <span className="hero-stage-num">{stageNum}</span>
               <span className="hero-stage-denom">/ 7 STAGES</span>
-              <span className="hero-stage-label">{stageText}</span>
+              <span className="hero-stage-label">
+                {stageLabel}
+                <br />
+                <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-faint)", letterSpacing: "0.05em" }}>{stageText}</span>
+              </span>
             </div>
             <div>
               <div className="cycle-bar-labels">
@@ -220,10 +275,12 @@ export default async function Page() {
         </section>
 
         {snap.narrative && (
-          <section className="narrative-section">
-            <span className="narrative-toggle-label">WHAT CHANGED</span>
+          <details className="narrative-section" open>
+            <summary className="narrative-toggle-label" style={{ cursor: "pointer", listStyle: "none" }}>
+              WHAT CHANGED ▾
+            </summary>
             <p className="narrative-body">{snap.narrative}</p>
-          </section>
+          </details>
         )}
 
         <section className="section">
@@ -272,13 +329,6 @@ export default async function Page() {
                 </li>
               ))}
             </ul>
-          </div>
-        )}
-
-        {snap.problems?.length > 0 && (
-          <div className="problems-section" style={{ marginTop: 24 }}>
-            <div className="problems-title">SOURCE PROBLEMS THIS RUN</div>
-            {snap.problems.map((p: string) => <div className="problem-item" key={p}>{p}</div>)}
           </div>
         )}
 

@@ -1,12 +1,24 @@
 "use client";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 type Status = "critical" | "elevated" | "watch" | "ok";
 type SourceType = "live" | "manual" | "derived" | "stale";
 
+interface Threshold {
+  value: number;
+  label: string;
+  direction: "above" | "below";
+  current?: number | null;
+}
 interface SubInput {
   key: string; label: string; value: string; unit?: string;
   source: SourceType; sourceName: string; contribution: string; trendNote?: string;
+  latestActual?: string;
+  latestForecast?: string;
+  latestPrior?: string;
+  beatMiss?: string;
+  beatMissDir?: "beat" | "miss" | "inline";
+  threshold?: Threshold;
 }
 interface FactorData {
   key: string; name: string; station: string; status: Status;
@@ -41,9 +53,65 @@ function sourceLabel(t: SourceType) {
 function StatusChip({ status }: { status: Status }) {
   const c = statusColor(status);
   return (
-    <span className="status-chip" style={{ color: c, borderColor: c, background: `color-mix(in srgb, ${c} 8%, transparent)` }}>
+    <span
+      className={`status-chip${status === "critical" ? " critical-pulse" : ""}`}
+      style={{ color: c, borderColor: c, background: `color-mix(in srgb, ${c} 8%, transparent)` }}
+    >
       {statusLabel(status)}
     </span>
+  );
+}
+
+function deltaColor(dir?: "beat" | "miss" | "inline") {
+  if (dir === "beat") return "var(--green)";
+  if (dir === "miss") return "var(--red)";
+  return "var(--text-muted)";
+}
+
+function AfpStrip({ sub }: { sub: SubInput }) {
+  return (
+    <div className="afp-strip">
+      <div className="afp-cell">
+        <div className="afp-label">ACTUAL</div>
+        <div className="afp-value">{sub.latestActual ?? "—"}</div>
+      </div>
+      <div className="afp-cell">
+        <div className="afp-label">FORECAST</div>
+        <div className="afp-value">{sub.latestForecast ?? "—"}</div>
+      </div>
+      <div className="afp-cell">
+        <div className="afp-label">PRIOR</div>
+        <div className="afp-value">{sub.latestPrior ?? "—"}</div>
+      </div>
+      <div className="afp-cell">
+        <div className="afp-label">VS FCST</div>
+        <div className="afp-delta" style={{ color: deltaColor(sub.beatMissDir) }}>
+          {sub.beatMiss ?? "—"}
+          {sub.beatMissDir && sub.beatMissDir !== "inline" ? ` ${sub.beatMissDir.toUpperCase()}` : ""}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function thresholdDotColor(t: Threshold) {
+  const cur = t.current;
+  if (cur == null || !Number.isFinite(cur)) return "var(--text-ghost)";
+  const breached = t.direction === "above" ? cur >= t.value : cur <= t.value;
+  if (breached) return "var(--red)";
+  const near = Math.abs(cur - t.value) <= Math.abs(t.value) * 0.1;
+  return near ? "var(--amber)" : "var(--green)";
+}
+
+function ThresholdRow({ threshold }: { threshold: Threshold }) {
+  return (
+    <div className="threshold-row">
+      <span className="threshold-tag">THRESHOLD</span>
+      <span className="threshold-sep">──</span>
+      <span className="threshold-label">{threshold.label}</span>
+      <span className="threshold-sep">──</span>
+      <span className="threshold-dot" style={{ background: thresholdDotColor(threshold) }} />
+    </div>
   );
 }
 
@@ -66,6 +134,8 @@ function SubInputCard({ sub, borderColor }: { sub: SubInput; borderColor: string
           {sub.unit && <div className="sub-unit">{sub.unit}</div>}
         </div>
       </div>
+      {sub.latestActual != null && <AfpStrip sub={sub} />}
+      {sub.threshold && <ThresholdRow threshold={sub.threshold} />}
       <div className="contrib-block">
         <div className="contrib-label">HOW THIS FEEDS THE FACTOR</div>
         <p className="contrib-text">{sub.contribution}</p>
@@ -75,8 +145,11 @@ function SubInputCard({ sub, borderColor }: { sub: SubInput; borderColor: string
   );
 }
 
-function FactorRow({ factor }: { factor: FactorData }) {
+function FactorRow({ factor, bulk }: { factor: FactorData; bulk: { mode: boolean; seq: number } }) {
   const [expanded, setExpanded] = useState(false);
+  useEffect(() => {
+    if (bulk.seq > 0) setExpanded(bulk.mode);
+  }, [bulk]);
   const color = statusColor(factor.status);
   return (
     <div className="factor-row">
@@ -115,9 +188,17 @@ function FactorRow({ factor }: { factor: FactorData }) {
 }
 
 export default function FactorBoard({ factors }: { factors: FactorData[] }) {
+  const [bulk, setBulk] = useState<{ mode: boolean; seq: number }>({ mode: false, seq: 0 });
   return (
-    <div className="factor-board">
-      {factors.map(f => <FactorRow key={f.key} factor={f} />)}
+    <div>
+      <div className="board-controls">
+        <span className="board-control" onClick={() => setBulk(b => ({ mode: true, seq: b.seq + 1 }))}>EXPAND ALL</span>
+        <span className="board-control-sep">·</span>
+        <span className="board-control" onClick={() => setBulk(b => ({ mode: false, seq: b.seq + 1 }))}>COLLAPSE ALL</span>
+      </div>
+      <div className="factor-board">
+        {factors.map(f => <FactorRow key={f.key} factor={f} bulk={bulk} />)}
+      </div>
     </div>
   );
 }
