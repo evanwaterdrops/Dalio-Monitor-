@@ -156,8 +156,9 @@ export async function tdAuctionsYear(year) {
 export async function yahooDailyMax(symbol) {
   // range=max silently downgrades to monthly bars; explicit epoch bounds keep interval=1d honest.
   return cached(`yahoo_${symbol.replace(/[^A-Za-z0-9]/g, "_")}`, async () => {
+    // period1 must be a NEGATIVE epoch to reach pre-1970 history (^GSPC goes to 1927).
     const d = JSON.parse(await get(
-      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?period1=0&period2=9999999999&interval=1d`));
+      `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?period1=-1577923200&period2=9999999999&interval=1d`));
     const r = d.chart?.result?.[0];
     const ts = r?.timestamp ?? [];
     const cl = r?.indicators?.quote?.[0]?.close ?? [];

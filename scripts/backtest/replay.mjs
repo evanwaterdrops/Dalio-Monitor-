@@ -37,7 +37,9 @@ import {
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 
 /* ---------------- time helpers ---------------- */
-const START = "1999-01", END = "2026-06";
+// 1960-06: earliest month with both PAYEMS and UNRATE ALFRED vintages —
+// probed empirically (PAYEMS vintages ≤1955, UNRATE ~1960).
+const START = "1960-06", END = "2026-06";
 export function monthGrid(start = START, end = END) {
   const out = [];
   let [y, m] = start.split("-").map(Number);
@@ -70,6 +72,21 @@ const avg = a => a.reduce((s, x) => s + x, 0) / a.length;
 const round2 = x => Math.round(x * 100) / 100;
 const asOf = (obs, t) => obs.filter(o => o.date <= t);
 const yoy = (obs, n) => obs.length > n ? pctChange(last(obs).value, ago(obs, n).value) : null;
+/** last value at or before `date` (series asc). */
+const valueAt = (obs, date) => {
+  let lo = 0, hi = obs.length - 1, ans = null;
+  while (lo <= hi) { const m = (lo + hi) >> 1; if (obs[m].date <= date) { ans = obs[m]; lo = m + 1; } else hi = m - 1; }
+  return ans;
+};
+/** y/y regardless of cadence: compares last obs to the obs ~12 months earlier by date. */
+const yoyByDate = (obs) => {
+  if (obs.length < 2) return null;
+  const lastO = last(obs);
+  const target = `${Number(lastO.date.slice(0, 4)) - 1}${lastO.date.slice(4)}`;
+  const prior = valueAt(obs, target);
+  return prior && prior.date > `${Number(lastO.date.slice(0, 4)) - 2}${lastO.date.slice(4)}`
+    ? pctChange(lastO.value, prior.value) : null;
+};
 
 /* ---------------- main ---------------- */
 export async function replay() {
@@ -87,8 +104,24 @@ export async function replay() {
       fredLatest("ICSA").catch(() => []),   // weekly claims (near-unrevised) → SC confirmation
       fredLatest("BAMLH0A0HYM2").catch(() => []), // PC leg; keyless download is license-capped to ~2023+
     ]);
-  const funds = [...dfedtar, ...dfedtaru]; // contiguous splice: TAR ends 2008-12-15, TARU starts 12-16
-  const [fyoint, fyfr] = await Promise.all([fredLatest("FYOINT"), fredLatest("FYFR")]);
+  const [fedfunds, wti, ltgovt, cpiNsa, coreNsa] = await Promise.all([
+    fredLatest("FEDFUNDS"),   // effective funds, monthly 1954→ (pre-DFEDTAR policy-path proxy)
+    fredLatest("WTISPLC"),    // WTI monthly 1946→ (oil-momentum energy gate pre-Brent)
+    fredLatest("LTGOVTBD"),   // long govt bond yield 1925–2000 (rMarg pre-DGS10)
+    fredLatest("CPIAUCNS"),   // NSA CPI 1913→ — NEVER revised ⇒ point-in-time by construction
+    fredLatest("CPILFENS"),   // NSA core CPI 1957→ — same property
+  ]);
+  // Policy-rate splice, date-disjoint: FEDFUNDS monthly → DFEDTAR daily → DFEDTARU daily.
+  const funds = [
+    ...fedfunds.filter(o => o.date < dfedtar[0].date),
+    ...dfedtar, ...dfedtaru,
+  ];
+  const [fyoint, fyfr, fygfd, gdpa, debtGdpQ] = await Promise.all([
+    fredLatest("FYOINT"), fredLatest("FYFR"), fredLatest("FYGFD"),
+    fredLatest("GDPA"), fredLatest("GFDEGDQ188S"),
+  ]);
+  // long-rate splice for rMarg / S6 proxy before DGS10 (1962): LTGOVTBD 1925–2000
+  const nominal10 = [...ltgovt.filter(o => o.date < dgs10[0].date), ...dgs10];
 
   console.log("fetching FiscalData + auctions + gold…");
   const [avgRate, mts, gold] = await Promise.all([fiscalAvgRateAll(), mtsAll(), yahooDailyMax("GC=F")]);
@@ -97,10 +130,16 @@ export async function replay() {
   const auctionsAll = (await Promise.all(auctionYears)).flat().sort((a, b) => a.date.localeCompare(b.date));
 
   console.log("fetching ALFRED vintages (batched)…");
-  const [vPay, vUn, vCpiH, vCpiC, vGdp, vRcpt] = await Promise.all([
+  // Restrict each series' vintage requests to its ALFRED coverage era (probed):
+  // CPI vintages ~1974→ (NSA fallback before), GDP 1992→ (GNP vintages before),
+  // FGRECPT ~1990s→ (TAX leg excluded before), GNP needed only pre-1997.
+  const [vPay, vUn, vCpiH, vCpiC, vGdp, vGnp, vRcpt] = await Promise.all([
     alfredVintages("PAYEMS", vintDates), alfredVintages("UNRATE", vintDates),
-    alfredVintages("CPIAUCSL", vintDates), alfredVintages("CPILFESL", vintDates),
-    alfredVintages("GDP", vintDates), alfredVintages("FGRECPT", vintDates),
+    alfredVintages("CPIAUCSL", vintDates.filter(d => d >= "1974-01-01")),
+    alfredVintages("CPILFESL", vintDates.filter(d => d >= "1974-01-01")),
+    alfredVintages("GDP", vintDates.filter(d => d >= "1992-01-01")),
+    alfredVintages("GNP", vintDates.filter(d => d < "1997-01-01")),
+    alfredVintages("FGRECPT", vintDates.filter(d => d >= "1985-01-01")),
   ]);
 
   const rows = [];
@@ -131,8 +170,9 @@ export async function replay() {
       const un3 = avg(unrate.slice(-3).map(o => o.value));
       const unMin12 = Math.min(...unrate.slice(-12).map(o => o.value));
       gap = sahmGap(un3, unMin12);
-      const fundsT = asOf(funds, t);
-      const fundsDelta6m = fundsT.length ? last(fundsT).value - fundsT[Math.max(0, fundsT.length - 126)].value : 0;
+      // date-based Δ6m so the monthly-FEDFUNDS era and the daily-target era read the same
+      const fNow = valueAt(funds, t), fThen = valueAt(funds, shiftDays(t, -183));
+      const fundsDelta6m = fNow && fThen ? fNow.value - fThen.value : 0;
       const claimsT = asOf(icsa, t);
       if (claimsT.length >= 57) {
         const avg4 = end => claimsT.slice(end - 4, end).reduce((s, o) => s + o.value, 0) / 4;
@@ -143,28 +183,57 @@ export async function replay() {
     } else { excluded.add("SC"); problems.push("SC: no ALFRED vintage yet"); }
 
     /* ---- valve (S8) ---- */
-    const cpiH = vCpiH[t] ?? [], cpiC = vCpiC[t] ?? [];
+    // CPI: SA vintages where ALFRED has them (~1974→); before that the NSA
+    // series — which is never revised, so truncation IS point-in-time.
+    const cpiCut = shiftDays(t, -28); // month-m CPI publishes mid-m+1
+    const cpiH = (vCpiH[t]?.length ?? 0) > 13 ? vCpiH[t] : asOf(cpiNsa, cpiCut);
+    const cpiC = (vCpiC[t]?.length ?? 0) > 13 ? vCpiC[t] : asOf(coreNsa, cpiCut);
+    if ((vCpiH[t]?.length ?? 0) <= 13 && cpiH.length) problems.push("S8: NSA CPI basis (pre-vintage era, unrevised ⇒ still PIT)");
     const brentT = asOf(dcoil, t);
     const headlineYoY = cpiH.length > 12 ? round2(yoy(cpiH, 12)) : null;
     const coreYoY = cpiC.length > 12 ? round2(yoy(cpiC, 12)) : null;
     const brent = brentT.length ? last(brentT).value : null;
+    const oilT = asOf(brentT.length ? dcoil : wti, cpiCut);
+    const oilYoYPct = oilT.length > 12 ? round2(yoyByDate(oilT) ?? NaN) : null;
     let valve = null;
-    if (headlineYoY != null && coreYoY != null && brent != null)
-      valve = monetisationValve({ coreYoY, headlineYoY, brent });
-    else { excluded.add("S8"); problems.push("S8: CPI vintage or Brent missing"); }
+    if (headlineYoY != null && coreYoY != null)
+      valve = monetisationValve({ coreYoY, headlineYoY, brent: brent ?? NaN, oilYoYPct });
+    else { excluded.add("S8"); problems.push("S8: CPI unavailable"); }
 
     /* ---- r vs g (S7) ---- */
+    const fyCut = shiftDays(t, -32); // FY figures usable from ~Nov 1 after the Sep 30 FY end
     const rAvgT = avgRate.filter(o => o.date <= shiftDays(t, -20));
-    const gdp = vGdp[t] ?? [];
-    const rAvg = rAvgT.length ? last(rAvgT).value : null;
+    let rAvg = rAvgT.length ? last(rAvgT).value : null;
+    let rAvgBasis = rAvg != null ? "fiscaldata" : null;
+    if (rAvg == null) {
+      // pre-2001: effective rate = FY interest outlays / avg gross federal debt
+      const oi = fyoint.filter(o => o.date <= fyCut), gd = fygfd.filter(o => o.date <= fyCut);
+      if (oi.length && gd.length >= 2 && last(oi).date === last(gd).date) {
+        rAvg = round2((last(oi).value / ((last(gd).value + ago(gd, 1).value) / 2)) * 100);
+        rAvgBasis = "effective-annual (FYOINT/FYGFD)";
+      }
+    }
+    const gdp = (vGdp[t]?.length ?? 0) > 4 ? vGdp[t] : (vGnp[t] ?? []);
+    const gBasis = (vGdp[t]?.length ?? 0) > 4 ? "GDP" : "GNP";
     const dgs10T = asOf(dgs10, t);
-    const rMarg = dgs10T.length ? last(dgs10T).value : null;
-    const gNominal = gdp.length > 4 ? round2(yoy(gdp, 4)) : null;
+    const rMarg = dgs10T.length ? last(dgs10T).value
+      : (() => { const l = asOf(ltgovt, shiftDays(t, -15)); return l.length ? last(l).value : null; })();
+    const gNominal = gdp.length > 4 ? round2(yoyByDate(gdp) ?? NaN) : null;
     const contractionFlag = sc != null && (sc.phase === "contraction" || sc.phase === "late-stall-breaking-down");
+    // Debt stock for the Station-7 large-stock condition: quarterly series
+    // (1966→, ~1q publication lag) with annual FYGFD/GDPA before that.
+    // Final data — debt/GDP is essentially unrevised at this granularity.
+    const dgq = debtGdpQ.filter(o => o.date <= shiftDays(t, -90));
+    let debtToGdpPct = dgq.length ? last(dgq).value : null;
+    if (debtToGdpPct == null) {
+      const gd = fygfd.filter(o => o.date <= fyCut), gp = gdpa.filter(o => o.date.slice(0, 4) <= fyCut.slice(0, 4));
+      if (gd.length && gp.length) debtToGdpPct = round2((last(gd).value / 1000 / last(gp).value) * 100);
+    }
     let rvg = null;
-    if (rAvg != null && rMarg != null && gNominal != null)
-      rvg = rVsG({ rAvg, rMarg, gNominal, rolloverShare12m: 0.30, contractionFlag });
-    else { excluded.add("S7"); problems.push(`S7: missing ${rAvg == null ? "rAvg(FiscalData starts 2001) " : ""}${gNominal == null ? "GDP vintage" : ""}`.trim()); }
+    if (rAvg != null && rMarg != null && gNominal != null && Number.isFinite(gNominal))
+      rvg = rVsG({ rAvg, rMarg, gNominal, rolloverShare12m: 0.30, contractionFlag, debtToGdpPct });
+    else { excluded.add("S7"); problems.push(`S7: missing ${rAvg == null ? "rAvg " : ""}${gNominal == null || !Number.isFinite(gNominal) ? `${gBasis} vintage` : ""}`.trim()); }
+    if (rvg && rAvgBasis !== "fiscaldata") problems.push(`S7: rAvg on ${rAvgBasis} basis`);
 
     /* ---- gold decomposition (SoV) ---- */
     const gcT = asOf(gold, t), eurT = asOf(dexuseu, t), jpyT = asOf(dexjpus, t), realT = asOf(dfii10, t);
@@ -247,7 +316,20 @@ export async function replay() {
     let s6 = null;
     if (realT.length > 250) {
       s6 = priceOfMoney({ realYieldDelta12mBp: (last(realT).value - ago(realT, 250).value) * 100 });
-    } else { excluded.add("S6"); problems.push("S6: no 12m real-yield history (DFII10 starts 2003)"); }
+    } else {
+      // pre-TIPS proxy: Δ12m(nominal 10Y) − Δ12m(headline y/y), both in bp —
+      // catches the Volcker real-rate shock the same way DFII10 catches 2022.
+      // CPI terms come from the NSA series (never revised ⇒ PIT, full history —
+      // the 1974–94 ALFRED vintages carry only ~18 months of observations).
+      const nsaT = asOf(cpiNsa, cpiCut);
+      const nNow = valueAt(nominal10, t), nThen = valueAt(nominal10, shiftDays(t, -365));
+      const hNow = nsaT.length > 12 ? yoy(nsaT, 12) : null;
+      const hThen = nsaT.length > 24 ? pctChange(ago(nsaT, 12).value, ago(nsaT, 24).value) : null;
+      if (nNow && nThen && hNow != null && hThen != null) {
+        s6 = priceOfMoney({ realYieldDelta12mBp: (nNow.value - nThen.value) * 100 - (hNow - hThen) * 100 });
+        problems.push("S6: real-yield proxy basis (nominal − CPI y/y) pre-TIPS");
+      } else { excluded.add("S6"); problems.push("S6: no 12m yield history"); }
+    }
 
     /* ---- private credit (PC) ---- */
     const hyT = asOf(hyOasAll, t);
@@ -292,9 +374,20 @@ export async function replay() {
       });
     }
 
-    /* ---- composite heat ---- */
+    /* ---- heat: composite + the cycle/sovereign split ----
+     * Deep-history lesson: the sovereign legs ran genuinely hot through the
+     * 1985–95 bull (S3 squeeze 18–21%, valve blocked by inflation) — sovereign
+     * stress does NOT map to equity drawdowns in low-debt eras. So the panel
+     * carries three readings: cycle heat (the market-facing legs), sovereign
+     * heat (the debt-structure legs), and the composite (with T1 floor). */
     const legs = { SC: sc, S8: valve, S6: s6, PC: pcF, S7: rvg, SoV: goldF, S5: demand, deferred, S3: squeeze, TAX: revBeta, JP: japan };
     const pts = { [STATUS.OK]: 0, [STATUS.WATCH]: 0, [STATUS.ELEVATED]: 1, [STATUS.CRITICAL]: 2 };
+    const subHeat = keys => {
+      const avail = keys.map(k => legs[k]).filter(v => v != null);
+      return avail.length ? round2((100 * avail.reduce((s, v) => s + (pts[v.status] ?? 0), 0)) / (2 * avail.length)) : null;
+    };
+    const heatCycle = subHeat(["SC", "S6", "PC", "SoV", "S5"]);
+    const heatSov = subHeat(["S8", "S7", "S3", "TAX", "JP", "deferred"]);
     const availableLegs = Object.entries(legs).filter(([, v]) => v != null);
     const statusSum = availableLegs.reduce((s, [, v]) => s + (pts[v.status] ?? 0), 0);
     const factorHeat = availableLegs.length ? (100 * statusSum) / (2 * availableLegs.length) : null;
@@ -316,7 +409,7 @@ export async function replay() {
       },
       factors: Object.fromEntries(Object.entries(legs).map(([k, v]) => [k, v])),
       stage: stage?.stage ?? null,
-      triggers, factorHeat: factorHeat == null ? null : round2(factorHeat), heat,
+      triggers, factorHeat: factorHeat == null ? null : round2(factorHeat), heat, heatCycle, heatSov,
     });
   }
 

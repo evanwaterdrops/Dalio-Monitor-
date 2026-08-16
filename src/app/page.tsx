@@ -2,6 +2,10 @@ import { assess } from "@/lib/framework/assess";
 import { latestSnapshot, recentAlerts } from "@/lib/db";
 import { FACTOR_META } from "@/lib/config/series";
 import FactorBoard from "./components/FactorBoard";
+import Tabs from "./components/Tabs";
+import HeatTimeline from "./components/charts/HeatTimeline";
+import CenturyPanel from "./components/charts/CenturyPanel";
+import CycleTimeline from "./components/charts/CycleTimeline";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -159,6 +163,16 @@ export default async function Page() {
           threshold: { value: 85, label: "≥ $85 with wedge ≥ 0.6pp = energy gate", direction: "above", current: i.brent },
           contribution: "The live energy gate. Brent < $80 with headline < 3% reopens the valve within a quarter.",
           trendNote: "Hormuz reopening → Brent < 80 → headline collapses toward core." },
+      ],
+    },
+    {
+      key: "S6", ...meta("S6"), status: st(f.S6?.status),
+      headline: `Real-yield impulse ${fmt(f.S6?.realYieldDelta12mBp, "bp")} over 12 months`,
+      logic: "12-month change in the 10Y real yield (TIPS). +75bp = watch, +150bp = elevated, +250bp = critical. Added after the backtest showed the 2022 −25% bear was a duration shock no other leg measured — the price of money repricing faster than the economy can absorb.",
+      subInputs: [
+        { key: "impulse", label: "10Y real yield, 12m change", value: fmt(f.S6?.realYieldDelta12mBp), unit: "bp", source: "live", sourceName: "FRED DFII10", sourceUrl: SRC.DFII10,
+          threshold: { value: 250, label: "≥ +250bp/12m = CRITICAL duration shock", direction: "above", current: f.S6?.realYieldDelta12mBp },
+          contribution: "The tightening impulse itself. 2022's +250bp surge is the calibration point; the Volcker era reads critical on the same math." },
       ],
     },
     {

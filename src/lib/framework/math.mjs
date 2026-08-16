@@ -89,11 +89,15 @@ export function privateCredit({ hyOasBp, hyOasDelta3mBp }) {
  * valve is effectively open and the Top→Deleveraging transition becomes
  * available within a quarter.
  * ------------------------------------------------------------------ */
-export function monetisationValve({ coreYoY, headlineYoY, brent }) {
+export function monetisationValve({ coreYoY, headlineYoY, brent, oilYoYPct = null }) {
   const wedge = headlineYoY - coreYoY;
   let score = clamp01(1 - (coreYoY - 2.0) / 2.0); // core 2% → 1.0 open; core 4% → 0
   let label = "open";
-  if (wedge >= 0.6 && brent >= 85) {
+  // Energy gate: the $85 Brent level is 2020s-calibrated; for deep history a
+  // nominal level is meaningless (oil at $12 was the 1974 shock), so oil
+  // MOMENTUM (y/y ≥ +40%) is an equivalent gate the backtest can supply.
+  const energyShock = (Number.isFinite(brent) && brent >= 85) || (oilYoYPct != null && oilYoYPct >= 40);
+  if (wedge >= 0.6 && energyShock) {
     score = Math.min(score, 0.55);
     label = "gated-by-energy-shock";
   } else if (headlineYoY >= 3.0) {
@@ -119,15 +123,21 @@ export function monetisationValve({ coreYoY, headlineYoY, brent }) {
  * calendar projection, it is a RECESSION EVENT — a payroll contraction
  * that knocks ~3pp off nominal growth crosses immediately.
  * ------------------------------------------------------------------ */
-export function rVsG({ rAvg, rMarg, gNominal, rolloverShare12m, contractionFlag }) {
+export function rVsG({ rAvg, rMarg, gNominal, rolloverShare12m, contractionFlag, debtToGdpPct = null }) {
   const gap = gNominal - rAvg;
   const driftPerYear = Math.max(0, (rMarg - rAvg) * rolloverShare12m);
   const monthsToCross = gap <= 0 ? 0 : driftPerYear <= 0 ? Infinity : (12 * gap) / driftPerYear;
   const gStressed = gNominal - 3.0; // recession haircut per Aug-2026 analysis
   const stressedCrossed = rAvg >= gStressed;
   const crossedNow = gap <= 0;
+  // Deep-backtest lesson: r > g was the NORM from Volcker to the late 90s —
+  // with debt/GDP at 30–60% the compounding it drives is absorbable, and the
+  // hinge is not a crisis signal. Station 7's criticality is conditional on a
+  // large stock (Dalio's own framing): below ~90% debt/GDP a structural
+  // crossing reads ELEVATED, not CRITICAL. null (unknown) = treat as large.
+  const stockMatters = debtToGdpPct == null || debtToGdpPct >= 90;
   const status = crossedNow
-    ? STATUS.CRITICAL
+    ? (stockMatters ? STATUS.CRITICAL : STATUS.ELEVATED)
     : contractionFlag && stressedCrossed
     ? STATUS.CRITICAL
     : monthsToCross < 24
@@ -139,6 +149,7 @@ export function rVsG({ rAvg, rMarg, gNominal, rolloverShare12m, contractionFlag 
     monthsToCross: Number.isFinite(monthsToCross) ? Math.round(monthsToCross) : null,
     stressedCrossed,
     crossedNow,
+    stockMatters,
     status,
   };
 }
@@ -247,7 +258,8 @@ export function evaluateTriggers(s) {
   const out = [];
   const add = (tier, key, cond, detail) => cond && out.push({ tier, key, detail });
 
-  add(1, "r_avg_crosses_g", s.rvg.crossedNow, `rAvg ${s.rAvg} ≥ g ${s.gNominal}`);
+  add(1, "r_avg_crosses_g", s.rvg.crossedNow && s.rvg.stockMatters !== false,
+      `rAvg ${s.rAvg} ≥ g ${s.gNominal}`);
   add(1, "r_crosses_g_recession_event", s.contractionFlag && s.rvg.stressedCrossed,
       `payroll contraction + stressed g ${round2(s.gNominal - 3)} < rAvg ${s.rAvg}`);
   add(1, "monetisation_while_hot", s.fedAssetsUp3w && s.headlineYoY > 3,

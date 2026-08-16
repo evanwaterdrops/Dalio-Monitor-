@@ -1,7 +1,9 @@
-/** Entry point: fetch → replay → score → BACKTEST.md. */
+/** Entry point: fetch → replay → score → BACKTEST.md (+ century panel + UI data). */
 import { replay } from "./replay.mjs";
 import { score } from "./score.mjs";
+import { century } from "./century.mjs";
 
+await century();
 const rows = await replay();
 const s = await score(rows);
 console.log("\nlead times (first touch; sustained):");

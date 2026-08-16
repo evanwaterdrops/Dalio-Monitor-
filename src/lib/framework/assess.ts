@@ -22,7 +22,7 @@ export async function assess() {
 
   // ---- pulls (tolerant: one dead source must not kill the run) ----
   const [payems, payRev, unrate, cpiH, cpiC, dgs10, dgs30, funds, walcl, defAsset,
-         realY, hyOas, gdp, avgRate, debt, mts, auctions, jgb, foreignQ] = await Promise.all([
+         realY, hyOas, gdp, debtGdpQ, avgRate, debt, mts, auctions, jgb, foreignQ] = await Promise.all([
     t("PAYEMS", () => src.fred("PAYEMS", { limit: 30 }), []),
     t("PAYEMS-rev", () => src.fredRevisions("PAYEMS", 4), []),
     t("UNRATE", () => src.fred("UNRATE", { limit: 30 }), []),
@@ -36,6 +36,7 @@ export async function assess() {
     t("DFII10", () => src.fred("DFII10", { limit: 300 }), []),   // 300 ≈ 12m of trading days for the S6 impulse
     t("HY-OAS", () => src.fred("BAMLH0A0HYM2", { limit: 90 }), []), // 90 ≈ 3m for the PC momentum
     t("GDP", () => src.fred("GDP", { limit: 10 }), []),
+    t("GFDEGDQ188S", () => src.fred("GFDEGDQ188S", { limit: 4 }), []),
     t("avg_interest_rate", src.avgInterestRate, []),
     t("debt_to_penny", src.debtToPenny, []),
     t("mts", src.mtsInterestAndReceipts, []),
@@ -140,7 +141,8 @@ export async function assess() {
   });
   const valve = monetisationValve({ coreYoY, headlineYoY, brent });
   const contractionFlag = sc.phase === "contraction" || sc.phase === "late-stall-breaking-down";
-  const rvg = rVsG({ rAvg, rMarg, gNominal, rolloverShare12m: rolloverShare, contractionFlag });
+  const debtToGdpPct = debtGdpQ.length ? last(debtGdpQ).value : null;
+  const rvg = rVsG({ rAvg, rMarg, gNominal, rolloverShare12m: rolloverShare, contractionFlag, debtToGdpPct });
   const gold = goldDecomposition({ dXauUsdPct: dXau, dXauEurPct: dXauEur, dXauJpyPct: dXauJpy, dRealYieldBp: dRealBp });
   const demand = demandLeg({ auctions: auctions.map(a => ({ term: a.term, btc: a.btc!, dealerPct: a.dealerPct })) });
   const deferred = deferredAsset({ levelBn: defLevelBn, deltaBn13w: defDelta13w });

@@ -13,7 +13,7 @@
  *  - heat-quintile vs forward-drawdown table + correlation
  */
 
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { fredLatest, yahooDailyMax } from "./fetch.mjs";
@@ -41,6 +41,8 @@ export async function score(rows) {
   const recessionStarts = findRecessionStarts(usrec, rows[0].t, rows[rows.length - 1].t);
   const episodes = [
     ...recessionStarts.map(s => ({ name: `NBER recession start ${s}`, anchor: s })),
+    { name: "1973 bear-market top 1973-01 (−48%)", anchor: "1973-01" },
+    { name: "Black Monday 1987-08 top (−34%, no recession)", anchor: "1987-08" },
     { name: "Dot-com equity peak 2000-03 (−49% over 2y)", anchor: "2000-03" },
     { name: "GFC equity peak 2007-10 (−57%)", anchor: "2007-10" },
     { name: "Lehman failure 2008-09", anchor: "2008-09" },
@@ -49,12 +51,12 @@ export async function score(rows) {
     { name: "2022 bear-market top 2022-01 (−25%)", anchor: "2022-01" },
   ].sort((a, b) => a.anchor.localeCompare(b.anchor));
 
-  const heats = rows.filter(r => r.heat != null).map(r => r.heat).sort((a, b) => a - b);
+  const heats = rows.filter(r => r.heatCycle != null).map(r => r.heatCycle).sort((a, b) => a - b);
   const p75 = heats[Math.floor(heats.length * 0.75)];
   const signals = {
     "SC ≥ elevated": r => r.factors.SC && (r.factors.SC.status === "elevated" || r.factors.SC.status === "critical"),
     "SC critical": r => r.factors.SC?.status === "critical",
-    [`Heat ≥ p75 (${round1(p75)})`]: r => r.heat != null && r.heat >= p75,
+    [`Cycle heat ≥ p75 (${round1(p75)})`]: r => r.heatCycle != null && r.heatCycle >= p75,
     "Any T1 trigger": r => r.triggers.some(t => t.tier === 1),
   };
   const leadRows = episodes.map(e => ({
@@ -72,14 +74,15 @@ export async function score(rows) {
     .sort((a, b) => a.key.localeCompare(b.key));
 
   /* ---- quintiles ---- */
-  const scored = rows.filter(r => r.heat != null && r.fwd12 != null);
+  const scored = rows.filter(r => r.heatCycle != null && r.fwd12 != null);
   if (scored.length < 25) throw new Error(`only ${scored.length} scored months — data problem upstream`);
-  const sorted = [...scored].sort((a, b) => a.heat - b.heat);
+  const modern = scored.filter(r => r.t >= "1999-01");
+  const sorted = [...modern].sort((a, b) => a.heatCycle - b.heatCycle);
   const quintiles = [0, 1, 2, 3, 4].map(q => {
     const seg = sorted.slice(Math.floor(q * sorted.length / 5), Math.floor((q + 1) * sorted.length / 5));
     return {
       q: q + 1,
-      heatRange: `${round1(seg[0].heat)}–${round1(seg[seg.length - 1].heat)}`,
+      heatRange: `${round1(seg[0].heatCycle)}–${round1(seg[seg.length - 1].heatCycle)}`,
       n: seg.length,
       avgFwd6: round1(avg(seg.map(r => r.fwd6))),
       avgFwd12: round1(avg(seg.map(r => r.fwd12))),
@@ -87,7 +90,26 @@ export async function score(rows) {
       pctRecession12m: round1(100 * seg.filter(r => r.inRecession || recessionWithin(recMonths, r.t, 12)).length / seg.length),
     };
   });
-  const corr = pearson(scored.map(r => r.heat), scored.map(r => r.fwd12));
+  const corr = pearson(modern.map(r => r.heatCycle), modern.map(r => r.fwd12));
+  const corrComposite = pearson(rows.filter(r => r.heat != null && r.fwd12 != null).map(r => r.heat), rows.filter(r => r.heat != null && r.fwd12 != null).map(r => r.fwd12));
+
+  /* ---- era skill table: real-time data quality changed the game over 66y ---- */
+  const eras = [
+    { name: "1960–1984 (slow vintages, chronic chop)", from: "1960-06", to: "1984-12" },
+    { name: "1985–1998 (great moderation)", from: "1985-01", to: "1998-12" },
+    { name: "1999–2026 (modern real-time data)", from: "1999-01", to: "2026-06" },
+  ].map(e => {
+    const seg = scored.filter(r => r.t >= e.from && r.t <= e.to);
+    const crit = seg.filter(r => r.factors.SC?.status === "critical");
+    const ok = seg.filter(r => r.factors.SC?.status === "ok");
+    return {
+      ...e, n: seg.length,
+      corr: pearson(seg.map(r => r.heatCycle), seg.map(r => r.fwd12)),
+      avgFwd12: round1(avg(seg.map(r => r.fwd12))),
+      critAvg: round1(avg(crit.map(r => r.fwd12))), critN: crit.length,
+      okAvg: round1(avg(ok.map(r => r.fwd12))),
+    };
+  });
 
   /* ---- SC critical classification ---- */
   const scCrit = rows.filter(r => r.factors.SC?.status === "critical");
@@ -120,11 +142,26 @@ export async function score(rows) {
     rec: r.inRecession ? "REC" : "",
   }));
 
-  const report = renderReport({ rows, leadRows, signalNames: Object.keys(signals), triggerIndex, quintiles, corr, scStats, scClasses, falseAlarms, caseStudy, p75 });
+  const report = renderReport({ rows, corrComposite, eras, leadRows, signalNames: Object.keys(signals), triggerIndex, quintiles, corr, scStats, scClasses, falseAlarms, caseStudy, p75 });
   await writeFile(path.join(ROOT, "BACKTEST.md"), report);
   await writeFile(path.join(HERE, "results.json"), JSON.stringify(rows, null, 1));
-  console.log(`scored ${scored.length} months → BACKTEST.md`);
-  return { leadRows, quintiles, corr, scStats, falseAlarms, p75 };
+
+  // compact monthly panel for the app's Big Cycle tab (static import)
+  const sCode = { ok: 0, watch: 1, elevated: 2, critical: 3 };
+  const panel = rows.map(r => ({
+    t: r.t, h: r.heat, hc: r.heatCycle, hs: r.heatSov, f: r.fwd12,
+    s: r.factors.SC ? sCode[r.factors.SC.status] : null,
+    ph: r.factors.SC?.phase ?? null,
+    tr: r.triggers.length ? Math.min(...r.triggers.map(x => x.tier)) : 0,
+    trig: r.triggers.map(x => `T${x.tier} ${x.key}`),
+    rec: r.inRecession ? 1 : 0,
+    sahm: r.inputs.sahmGap, nfp: r.inputs.nfp3mma, claims: r.inputs.claimsYoYPct,
+  }));
+  await mkdir(path.join(ROOT, "src", "data"), { recursive: true });
+  await writeFile(path.join(ROOT, "src", "data", "backtest-panel.json"), JSON.stringify(panel));
+
+  console.log(`scored ${scored.length} months → BACKTEST.md + src/data/backtest-panel.json`);
+  return { leadRows, quintiles, corr, corrComposite, eras, scStats, falseAlarms, p75 };
 }
 
 /* ---------------- helpers ---------------- */
@@ -208,7 +245,7 @@ function leadTimes(rows, anchorYm, pred) {
 }
 
 /* ---------------- report ---------------- */
-function renderReport({ rows, leadRows, signalNames, triggerIndex, quintiles, corr, scStats, scClasses, falseAlarms, caseStudy, p75 }) {
+function renderReport({ rows, corrComposite, eras, leadRows, signalNames, triggerIndex, quintiles, corr, scStats, scClasses, falseAlarms, caseStudy, p75 }) {
   const md = [];
   const line = s => md.push(s);
   line(`# Sovereign Vitals — Point-in-Time Backtest`);
@@ -312,13 +349,28 @@ function renderReport({ rows, leadRows, signalNames, triggerIndex, quintiles, co
   line(`|---|---|`);
   for (const t of triggerIndex) line(`| \`${t.key}\` | ${t.episodes.join(", ")} |`);
   line(``);
-  line(`## Composite heat vs forward S&P 500 drawdown`);
+  line(`## Cycle heat vs forward S&P 500 drawdown`);
   line(``);
-  line(`Heat = factor statuses (elevated 1, critical 2, normalised by legs available, ×100) + 5×(4−tier)`);
-  line(`per fired trigger. Pearson correlation heat vs forward-12m max drawdown: **${corr}**`);
-  line(`(negative = higher heat → deeper subsequent drawdown).`);
+  line(`Heat splits in two (a deep-history lesson): **cycle heat** (SC, S6, PC, SoV, S5 — the`);
+  line(`market-facing legs) and **sovereign heat** (S8, S7, S3, TAX, JP, deferred — the debt-structure`);
+  line(`legs). The sovereign legs ran genuinely hot through 1985–95 (interest/receipts 18–21%, valve`);
+  line(`blocked by inflation) while equities boomed — sovereign stress only maps onto markets when the`);
+  line(`debt stock is large. The composite (all legs + T1 floor) correlates ${corrComposite} with forward`);
+  line(`drawdowns over the full 66-year panel for exactly that reason.`);
   line(``);
-  line(`| Heat quintile | Range | Avg fwd-6m maxDD | Avg fwd-12m maxDD | Worst fwd-12m | % in/near recession |`);
+  line(`Skill is also **era-dependent, honestly reported**: pre-1985 vintages were slow (payroll breaks`);
+  line(`often only visible in real time once the recession had begun, with the drawdown already partly`);
+  line(`behind) and drawdowns were chronic. The modern era is where real-time data can lead:`);
+  line(``);
+  line(`| Era | n | corr(cycle heat, fwd-12m DD) | Avg fwd-12m DD | SC-critical avg | SC-ok avg |`);
+  line(`|---|---|---|---|---|---|`);
+  for (const e of eras)
+    line(`| ${e.name} | ${e.n} | ${e.corr} | ${pct(e.avgFwd12)} | ${pct(e.critAvg)} (n=${e.critN}) | ${pct(e.okAvg)} |`);
+  line(``);
+  line(`Pearson correlation, cycle heat vs forward-12m max drawdown, modern era: **${corr}**`);
+  line(`(negative = higher heat → deeper subsequent drawdown). Quintiles below are modern-era.`);
+  line(``);
+  line(`| Cycle-heat quintile | Range | Avg fwd-6m maxDD | Avg fwd-12m maxDD | Worst fwd-12m | % in/near recession |`);
   line(`|---|---|---|---|---|---|`);
   for (const q of quintiles)
     line(`| Q${q.q} | ${q.heatRange} | ${pct(q.avgFwd6)} | ${pct(q.avgFwd12)} | ${pct(q.worstFwd12)} | ${pct(q.pctRecession12m)} |`);

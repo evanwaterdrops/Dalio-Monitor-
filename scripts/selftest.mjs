@@ -97,6 +97,16 @@ eq("S6 +30bp = ok", priceOfMoney({ realYieldDelta12mBp: 30 }).status, "ok");
 eq("PC 520bp and widening = critical", privateCredit({ hyOasBp: 520, hyOasDelta3mBp: 90 }).status, "critical");
 eq("PC 300bp +80bp/3m = elevated", privateCredit({ hyOasBp: 300, hyOasDelta3mBp: 80 }).status, "elevated");
 eq("PC calm = ok", privateCredit({ hyOasBp: 280, hyOasDelta3mBp: 5 }).status, "ok");
+// Station-7 large-stock condition: r>g at 55% debt/GDP (the 1990s norm) is elevated, not critical, and no T1
+const rvgSmallStock = rVsG({ rAvg: 6.5, rMarg: 6.0, gNominal: 5.5, rolloverShare12m: 0.30, contractionFlag: false, debtToGdpPct: 55 });
+eq("r>g at small debt stock = elevated", rvgSmallStock.status, "elevated");
+truthy("no structural T1 at small stock", !evaluateTriggers({
+  rvg: rvgSmallStock, rAvg: 6.5, gNominal: 5.5, contractionFlag: false, fedAssetsUp3w: false, headlineYoY: 3,
+  squeeze: { ratio: 0.15 }, gold: { divergence: false }, japan: { hits: 0 },
+  demand: { status: "ok", lastBtc: null, lastDealerPct: null }, easedAndLongEndSold: false, billsShareUp3m: null,
+}).some(t => t.key === "r_avg_crosses_g"));
+// same crossing at 122% (today) stays critical + T1
+eq("r>g at large stock = critical", rVsG({ rAvg: 6.5, rMarg: 6.0, gNominal: 5.5, rolloverShare12m: 0.30, contractionFlag: false, debtToGdpPct: 122 }).status, "critical");
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);
