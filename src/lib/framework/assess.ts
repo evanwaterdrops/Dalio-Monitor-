@@ -1,6 +1,7 @@
 import {
   smallCyclePhase, monetisationValve, rVsG, goldDecomposition, demandLeg,
   deferredAsset, interestSqueeze, revenueBeta, japanLeg, bigCycleStage,
+  priceOfMoney, privateCredit,
   evaluateTriggers, pctChange, sahmGap,
   // @ts-ignore — plain JS module, single source of truth with selftest
 } from "./math.mjs";
@@ -32,8 +33,8 @@ export async function assess() {
     t("DFEDTARU", () => src.fred("DFEDTARU", { limit: 200 }), []),
     t("WALCL", () => src.fred("WALCL", { limit: 8 }), []),
     t("RESPPLLOPNWW", () => src.fred("RESPPLLOPNWW", { limit: 16 }), []),
-    t("DFII10", () => src.fred("DFII10", { limit: 30 }), []),
-    t("HY-OAS", () => src.fred("BAMLH0A0HYM2", { limit: 30 }), []),
+    t("DFII10", () => src.fred("DFII10", { limit: 300 }), []),   // 300 ≈ 12m of trading days for the S6 impulse
+    t("HY-OAS", () => src.fred("BAMLH0A0HYM2", { limit: 90 }), []), // 90 ≈ 3m for the PC momentum
     t("GDP", () => src.fred("GDP", { limit: 10 }), []),
     t("avg_interest_rate", src.avgInterestRate, []),
     t("debt_to_penny", src.debtToPenny, []),
@@ -42,6 +43,7 @@ export async function assess() {
     t("JGB10", () => src.fred("IRLTLT01JPM156N", { limit: 8 }), []),
     t("FDHBFIN", () => src.fred("FDHBFIN", { limit: 8 }), []),
   ]);
+  const claimsYoYPct = await t<number | null>("ICSA", src.claimsYoY, null);
 
   const [spot, xauHist, eurHist, jpyHist, bcoHist] = await Promise.all([
     t("oanda-spot", () => src.oandaPrices(["XAU_USD", "EUR_USD", "USD_JPY", "BCO_USD"]), {} as Record<string, number>),
@@ -128,7 +130,14 @@ export async function assess() {
   const gapPrior = rAvgPrior != null && Number.isFinite(gNominal) ? round2(gNominal - rAvgPrior) : null;
 
   // ---- factor computations (math.mjs = tested single source of truth) ----
-  const sc = smallCyclePhase({ nfp3mma, revisionsSum2m, sahmGap: gap, fundsDelta6m });
+  const sc = smallCyclePhase({ nfp3mma, revisionsSum2m, sahmGap: gap, fundsDelta6m, claimsYoYPct });
+  const s6 = priceOfMoney({
+    realYieldDelta12mBp: realY.length > 250 ? (last(realY).value - ago(realY, 250).value) * 100 : NaN,
+  });
+  const pc = privateCredit({
+    hyOasBp: hyOas.length ? last(hyOas).value * 100 : NaN,
+    hyOasDelta3mBp: hyOas.length > 63 ? (last(hyOas).value - ago(hyOas, 63).value) * 100 : NaN,
+  });
   const valve = monetisationValve({ coreYoY, headlineYoY, brent });
   const contractionFlag = sc.phase === "contraction" || sc.phase === "late-stall-breaking-down";
   const rvg = rVsG({ rAvg, rMarg, gNominal, rolloverShare12m: rolloverShare, contractionFlag });
@@ -151,7 +160,7 @@ export async function assess() {
     asOf: new Date().toISOString(),
     problems,
     inputs: {
-      nfp3mma: Math.round(nfp3mma), revisionsSum2m, sahmGap: gap, headlineYoY, coreYoY,
+      nfp3mma: Math.round(nfp3mma), revisionsSum2m, sahmGap: gap, claimsYoYPct, headlineYoY, coreYoY,
       brent: round2(brent), rAvg, rMarg, gNominal, rolloverShare,
       ttmInterestBn: Math.round(ttmInterestBn), ttmReceiptsBn: Math.round(ttmReceiptsBn),
       goldSpot: round2(spot["XAU_USD"] ?? NaN), defLevelBn: round2(defLevelBn),
@@ -175,7 +184,7 @@ export async function assess() {
       rAvgHistory: hist(avgRate, 8, mLabel),
     },
     factors: {
-      SC: sc, S8: valve,
+      SC: sc, S8: valve, S6: s6, PC: pc,
       S7: { ...rvg, gapPrior },
       SoV: gold,
       S5: { ...demand, btcPrior: tenYs.length >= 2 ? tenYs[1].btc : null,

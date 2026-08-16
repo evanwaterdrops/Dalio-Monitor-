@@ -6,6 +6,7 @@
 import {
   smallCyclePhase, monetisationValve, rVsG, goldDecomposition,
   demandLeg, deferredAsset, interestSqueeze, bigCycleStage, evaluateTriggers,
+  priceOfMoney, privateCredit,
 } from "../src/lib/framework/math.mjs";
 
 let pass = 0, fail = 0;
@@ -76,6 +77,26 @@ truthy("T1 recession-event trigger fires", trig.some(t => t.key === "r_crosses_g
 truthy("T3 gold divergence fires", trig.some(t => t.key === "gold_real_yield_divergence"));
 truthy("T3 auction plumbing fires", trig.some(t => t.key === "auction_plumbing"));
 truthy("T1 monetisation does NOT fire yet (the unprinted marker)", !trig.some(t => t.key === "monetisation_while_hot"));
+
+// --- backtest-derived patches (2024/2003/2022 lessons) ---
+// Jul-2024 real-time state: Sahm hits 0.5 with payrolls +177k → supply-side event, NOT contraction
+const sc2024 = smallCyclePhase({ nfp3mma: 177, revisionsSum2m: -183, sahmGap: 0.5, fundsDelta6m: 0, claimsYoYPct: 8 });
+eq("2024 Sahm crossing with strong payrolls = supply-side, elevated", [sc2024.phase, sc2024.status], ["supply-side-unemployment-rise", "elevated"]);
+// Mar-2008: Sahm 0.5 with payrolls −15k → confirmed contraction
+eq("2008 Sahm crossing with weak payrolls = contraction", smallCyclePhase({ nfp3mma: -15, revisionsSum2m: -463, sahmGap: 0.5, fundsDelta6m: -1 }).phase, "contraction");
+// Claims surge confirms contraction even with middling payrolls
+eq("claims surge confirms contraction", smallCyclePhase({ nfp3mma: 120, revisionsSum2m: 0, sahmGap: 0.55, fundsDelta6m: 0, claimsYoYPct: 40 }).phase, "contraction");
+// 2003 jobless recovery: payrolls negative but claims improving → elevated, not critical
+const sc2003 = smallCyclePhase({ nfp3mma: -60, revisionsSum2m: -20, sahmGap: 0.3, fundsDelta6m: -0.5, claimsYoYPct: -12 });
+eq("jobless recovery (claims improving) downgraded", [sc2003.phase, sc2003.status], ["jobless-recovery-stall", "elevated"]);
+// No claims data → prior behavior preserved (Aug-2026 conclusion intact above)
+// S6 price of money: the 2022 duration shock
+eq("S6 +260bp real-yield impulse = critical", priceOfMoney({ realYieldDelta12mBp: 260 }).status, "critical");
+eq("S6 +30bp = ok", priceOfMoney({ realYieldDelta12mBp: 30 }).status, "ok");
+// PC private credit: level + momentum
+eq("PC 520bp and widening = critical", privateCredit({ hyOasBp: 520, hyOasDelta3mBp: 90 }).status, "critical");
+eq("PC 300bp +80bp/3m = elevated", privateCredit({ hyOasBp: 300, hyOasDelta3mBp: 80 }).status, "elevated");
+eq("PC calm = ok", privateCredit({ hyOasBp: 280, hyOasDelta3mBp: 5 }).status, "ok");
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

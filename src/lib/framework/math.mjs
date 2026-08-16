@@ -18,15 +18,66 @@ export const STATUS = { OK: "ok", WATCH: "watch", ELEVATED: "elevated", CRITICAL
  * shrinking labour force is NOT improvement, so we never use UNRATE
  * level alone.
  * ------------------------------------------------------------------ */
-export function smallCyclePhase({ nfp3mma, revisionsSum2m, sahmGap, fundsDelta6m }) {
-  if (sahmGap >= 0.5) return { phase: "contraction", status: STATUS.CRITICAL };
-  if (nfp3mma <= 0 || (nfp3mma < 50 && revisionsSum2m <= -75))
+export function smallCyclePhase({ nfp3mma, revisionsSum2m, sahmGap, fundsDelta6m, claimsYoYPct = null }) {
+  // 2024 lesson (backtest): a Sahm crossing with strong payrolls is a labor-
+  // SUPPLY event (entrant surge lifting U3), not a demand contraction — it
+  // false-alarmed Jul/Sep/Oct-2024 and chained into the T1 recession-event
+  // trigger. Contraction now requires demand confirmation: weak payrolls or
+  // claims surging. claimsYoYPct (initial claims 4wk avg, y/y) is optional —
+  // when null, behavior degrades to the nfp gate alone.
+  const claimsSurging = claimsYoYPct != null && claimsYoYPct > 20;
+  const claimsImproving = claimsYoYPct != null && claimsYoYPct < -5; // clearly improving — a ±couple-% wiggle is noise
+  if (sahmGap >= 0.5) {
+    if (nfp3mma < 50 || claimsSurging) return { phase: "contraction", status: STATUS.CRITICAL };
+    return { phase: "supply-side-unemployment-rise", status: STATUS.ELEVATED };
+  }
+  if (nfp3mma <= 0 || (nfp3mma < 50 && revisionsSum2m <= -75)) {
+    // 2003 lesson: payrolls stalling while claims improve is a jobless
+    // recovery, not a cycle break — markets recovered through every month
+    // of the 2003 "critical" run.
+    if (claimsImproving) return { phase: "jobless-recovery-stall", status: STATUS.ELEVATED };
     return { phase: "late-stall-breaking-down", status: STATUS.CRITICAL };
+  }
   if (nfp3mma < 100 && revisionsSum2m < 0)
     return { phase: "late-expansion-stalling", status: STATUS.ELEVATED };
   if (fundsDelta6m < 0 && nfp3mma >= 100)
     return { phase: "easing-into-expansion", status: STATUS.OK };
   return { phase: "mid-expansion", status: STATUS.OK };
+}
+
+/* ------------------------------------------------------------------ *
+ * Price of money (Station 6) — previously display-only, now real math.
+ * 2022 lesson (backtest): the −25% bear was a duration shock — a +250bp
+ * 12-month surge in the 10Y real yield — that no other leg measures.
+ * Impulse thresholds: +75bp/12m watch, +150 elevated, +250 critical.
+ * ------------------------------------------------------------------ */
+export function priceOfMoney({ realYieldDelta12mBp }) {
+  const d = realYieldDelta12mBp;
+  const status =
+    !Number.isFinite(d) ? STATUS.OK
+    : d >= 250 ? STATUS.CRITICAL
+    : d >= 150 ? STATUS.ELEVATED
+    : d >= 75 ? STATUS.WATCH
+    : STATUS.OK;
+  return { realYieldDelta12mBp: Number.isFinite(d) ? Math.round(d) : null, status };
+}
+
+/* ------------------------------------------------------------------ *
+ * Private credit (PC leg) — previously display-only, now real math.
+ * HY OAS level + 3m momentum. Level ≥500bp AND widening = the complex
+ * repricing (critical); ≥400bp level or +75bp/3m widening = elevated;
+ * +40bp/3m = watch. Dot-com/2015/2018 lesson: spread momentum is the
+ * only in-framework read on private-credit stress.
+ * ------------------------------------------------------------------ */
+export function privateCredit({ hyOasBp, hyOasDelta3mBp }) {
+  if (!Number.isFinite(hyOasBp)) return { hyOasBp: null, hyOasDelta3mBp: null, status: STATUS.OK };
+  const widening = Number.isFinite(hyOasDelta3mBp) && hyOasDelta3mBp > 0;
+  const status =
+    hyOasBp >= 500 && widening ? STATUS.CRITICAL
+    : hyOasBp >= 400 || (Number.isFinite(hyOasDelta3mBp) && hyOasDelta3mBp >= 75) ? STATUS.ELEVATED
+    : Number.isFinite(hyOasDelta3mBp) && hyOasDelta3mBp >= 40 ? STATUS.WATCH
+    : STATUS.OK;
+  return { hyOasBp: Math.round(hyOasBp), hyOasDelta3mBp: Number.isFinite(hyOasDelta3mBp) ? Math.round(hyOasDelta3mBp) : null, status };
 }
 
 /* ------------------------------------------------------------------ *

@@ -27,6 +27,7 @@ import { fileURLToPath } from "node:url";
 import {
   smallCyclePhase, monetisationValve, rVsG, goldDecomposition, demandLeg,
   deferredAsset, interestSqueeze, revenueBeta, japanLeg, bigCycleStage,
+  priceOfMoney, privateCredit,
   evaluateTriggers, pctChange, sahmGap, STATUS,
 } from "../../src/lib/framework/math.mjs";
 import {
@@ -76,13 +77,15 @@ export async function replay() {
   const vintDates = months.map(monthEnd);
 
   console.log("fetching unrevised series…");
-  const [dgs10, dgs30, dfii10, dcoil, dexuseu, dexjpus, walcl, respp, jgb, dfedtar, dfedtaru, baa10y] =
+  const [dgs10, dgs30, dfii10, dcoil, dexuseu, dexjpus, walcl, respp, jgb, dfedtar, dfedtaru, baa10y, icsa, hyOasAll] =
     await Promise.all([
       fredLatest("DGS10"), fredLatest("DGS30"), fredLatest("DFII10"),
       fredLatest("DCOILBRENTEU"), fredLatest("DEXUSEU"), fredLatest("DEXJPUS"),
       fredLatest("WALCL"), fredLatest("RESPPLLOPNWW"), fredLatest("IRLTLT01JPM156N"),
       fredLatest("DFEDTAR"), fredLatest("DFEDTARU"),
       fredLatest("BAA10Y").catch(() => []), // report overlay only, not a factor
+      fredLatest("ICSA").catch(() => []),   // weekly claims (near-unrevised) → SC confirmation
+      fredLatest("BAMLH0A0HYM2").catch(() => []), // PC leg; keyless download is license-capped to ~2023+
     ]);
   const funds = [...dfedtar, ...dfedtaru]; // contiguous splice: TAR ends 2008-12-15, TARU starts 12-16
   const [fyoint, fyfr] = await Promise.all([fredLatest("FYOINT"), fredLatest("FYFR")]);
@@ -110,22 +113,33 @@ export async function replay() {
     const payems = vPay[t] ?? [];
     const unrate = vUn[t] ?? [];
     let sc = null, nfp3mma = null, revisionsSum2m = 0, gap = 0;
+    let claimsYoYPct = null;
     if (payems.length >= 4 && unrate.length >= 12) {
       const nfpChanges = payems.slice(1).map((o, i) => o.value - payems[i].value);
       nfp3mma = avg(nfpChanges.slice(-3));
-      // revisions of the two months before the latest print, as known at t
-      for (let k = 2; k <= 3; k++) {
-        const obs = ago(payems, k - 1);          // k=2 → previous month, k=3 → two back
+      // Winsorized revisions, as known at t: per-month revision (value-at-t
+      // minus first print) clamped to ±150k. Genuine print markdowns run
+      // tens of k; annual benchmarks are ±300–900k level artifacts — the
+      // clamp bounds their influence while keeping their sign. Mirrors
+      // fredRevisions() in clients.ts.
+      for (let k = 1; k <= 2 && k < payems.length; k++) {
+        const obs = ago(payems, k);
         const firstVint = vPay[monthEnd(nextMonth(obs.date.slice(0, 7)))];
         const first = firstVint?.find(o => o.date === obs.date);
-        if (first) revisionsSum2m += obs.value - first.value;
+        if (first) revisionsSum2m += Math.max(-150, Math.min(150, obs.value - first.value));
       }
       const un3 = avg(unrate.slice(-3).map(o => o.value));
       const unMin12 = Math.min(...unrate.slice(-12).map(o => o.value));
       gap = sahmGap(un3, unMin12);
       const fundsT = asOf(funds, t);
       const fundsDelta6m = fundsT.length ? last(fundsT).value - fundsT[Math.max(0, fundsT.length - 126)].value : 0;
-      sc = smallCyclePhase({ nfp3mma, revisionsSum2m, sahmGap: gap, fundsDelta6m });
+      const claimsT = asOf(icsa, t);
+      if (claimsT.length >= 57) {
+        const avg4 = end => claimsT.slice(end - 4, end).reduce((s, o) => s + o.value, 0) / 4;
+        const yAgo = avg4(claimsT.length - 52);
+        claimsYoYPct = yAgo === 0 ? null : round2(((avg4(claimsT.length) - yAgo) / yAgo) * 100);
+      }
+      sc = smallCyclePhase({ nfp3mma, revisionsSum2m, sahmGap: gap, fundsDelta6m, claimsYoYPct });
     } else { excluded.add("SC"); problems.push("SC: no ALFRED vintage yet"); }
 
     /* ---- valve (S8) ---- */
@@ -229,6 +243,22 @@ export async function replay() {
       });
     } else { excluded.add("JP"); problems.push("JP: JGB series unavailable"); }
 
+    /* ---- price of money (S6) ---- */
+    let s6 = null;
+    if (realT.length > 250) {
+      s6 = priceOfMoney({ realYieldDelta12mBp: (last(realT).value - ago(realT, 250).value) * 100 });
+    } else { excluded.add("S6"); problems.push("S6: no 12m real-yield history (DFII10 starts 2003)"); }
+
+    /* ---- private credit (PC) ---- */
+    const hyT = asOf(hyOasAll, t);
+    let pcF = null;
+    if (hyT.length > 63) {
+      pcF = privateCredit({
+        hyOasBp: last(hyT).value * 100,
+        hyOasDelta3mBp: (last(hyT).value - ago(hyT, 63).value) * 100,
+      });
+    } else { excluded.add("PC"); problems.push("PC: HY OAS unavailable (keyless download capped ~2023+)"); }
+
     /* ---- stage + triggers ---- */
     const walclT = asOf(walcl, t);
     const fedAssetsUp3w = walclT.length >= 4 && [1, 2, 3].every(i => ago(walclT, i - 1).value > ago(walclT, i).value);
@@ -263,18 +293,21 @@ export async function replay() {
     }
 
     /* ---- composite heat ---- */
-    const legs = { SC: sc, S8: valve, S7: rvg, SoV: goldF, S5: demand, deferred, S3: squeeze, TAX: revBeta, JP: japan };
+    const legs = { SC: sc, S8: valve, S6: s6, PC: pcF, S7: rvg, SoV: goldF, S5: demand, deferred, S3: squeeze, TAX: revBeta, JP: japan };
     const pts = { [STATUS.OK]: 0, [STATUS.WATCH]: 0, [STATUS.ELEVATED]: 1, [STATUS.CRITICAL]: 2 };
     const availableLegs = Object.entries(legs).filter(([, v]) => v != null);
     const statusSum = availableLegs.reduce((s, [, v]) => s + (pts[v.status] ?? 0), 0);
     const factorHeat = availableLegs.length ? (100 * statusSum) / (2 * availableLegs.length) : null;
     const triggerHeat = triggers.reduce((s, tr) => s + 5 * (4 - tr.tier), 0);
-    const heat = factorHeat == null ? null : round2(factorHeat + triggerHeat);
+    let heat = factorHeat == null ? null : round2(factorHeat + triggerHeat);
+    // 2022 lesson: a lone Tier-1 trigger must not drown in the leg average —
+    // any T1 floors the composite at 55.
+    if (heat != null && triggers.some(tr => tr.tier === 1)) heat = Math.max(heat, 55);
 
     rows.push({
       t: ym, date: t, problems, legsAvailable: availableLegs.map(([k]) => k),
       inputs: {
-        nfp3mma: nfp3mma == null ? null : Math.round(nfp3mma), revisionsSum2m, sahmGap: gap,
+        nfp3mma: nfp3mma == null ? null : Math.round(nfp3mma), revisionsSum2m: Math.round(revisionsSum2m), sahmGap: gap, claimsYoYPct,
         headlineYoY, coreYoY, brent: brent == null ? null : round2(brent),
         rAvg, rMarg, gNominal, ttmInterestBn: ttmInterestBn == null ? null : Math.round(ttmInterestBn),
         ttmReceiptsBn: ttmReceiptsBn == null ? null : Math.round(ttmReceiptsBn), squeezeBasis,

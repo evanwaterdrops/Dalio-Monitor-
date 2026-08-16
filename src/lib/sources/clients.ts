@@ -31,6 +31,12 @@ export async function fred(seriesId: string, opts: { start?: string; limit?: num
  * observation dates, returns first-vintage vs latest-vintage values.
  * This is how the −103k May/Jun payroll revision becomes a signal
  * instead of a silent overwrite.
+ *
+ * Backtest lesson (benchmark months): annual benchmark revisions are
+ * ±300–900k level artifacts, not fresh markdowns — genuine print
+ * revisions run tens of k. `revision` is therefore winsorized to ±150k
+ * per month (bounds benchmark influence, keeps its sign); `rawRevision`
+ * keeps the unadjusted value for display.
  */
 export async function fredRevisions(seriesId: string, periods = 4) {
   const key = process.env.FRED_API_KEY!;
@@ -51,8 +57,18 @@ export async function fredRevisions(seriesId: string, periods = 4) {
   return dates.map(date => {
     const vs = byDate.get(date)!.sort((a, b) => a.realtime_start.localeCompare(b.realtime_start));
     const first = Number(vs[0].value), latest = Number(vs[vs.length - 1].value);
-    return { date, first, latest, revision: latest - first };
+    const rawRevision = latest - first;
+    return { date, first, latest, rawRevision, revision: Math.max(-150, Math.min(150, rawRevision)) };
   });
+}
+
+/** Initial claims (ICSA weekly): 4-week average now vs 52 weeks ago, y/y %. */
+export async function claimsYoY(): Promise<number | null> {
+  const obs = await fred("ICSA", { limit: 60 });
+  if (obs.length < 57) return null;
+  const avg4 = (end: number) => obs.slice(end - 4, end).reduce((s, o) => s + o.value, 0) / 4;
+  const now = avg4(obs.length), yearAgo = avg4(obs.length - 52);
+  return yearAgo === 0 ? null : Math.round(((now - yearAgo) / yearAgo) * 1000) / 10;
 }
 
 /** Discover the FRED TIC series id for a country (added to FRED Jun-2026). */
