@@ -19,7 +19,6 @@ const WINDOWS = [
   { key: "5Y", months: 60, ppm: 14 },
   { key: "10Y", months: 120, ppm: 7 },
   { key: "20Y", months: 240, ppm: 3.5 },
-  { key: "50Y", months: 600, ppm: 1.6 },
   { key: "MAX", months: Infinity, ppm: 0 }, // 0 → fit container
 ] as const;
 

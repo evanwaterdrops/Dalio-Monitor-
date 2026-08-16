@@ -306,15 +306,10 @@ export default async function Page() {
         <span className="topbar-sep">/</span>
         <span className="topbar-label">DALIO FRAMEWORK MONITOR · US</span>
         <div className="topbar-right">
-          <div className="source-legend">
-            {([["live", "var(--green)"], ["manual", "var(--amber)"], ["derived", "var(--purple)"], ["stale", "var(--red)"]] as const).map(([k, c]) => (
-              <span className="source-dot" key={k}>
-                <span className="source-dot-mark" style={{ background: c }} />
-                {k.toUpperCase()}
-              </span>
-            ))}
-          </div>
-          <span className="topbar-ts">AS OF {asOf || "—"} UTC</span>
+          <span className="topbar-ts">
+            <span style={{ display: "inline-block", width: 6, height: 6, borderRadius: "50%", background: "var(--green)", marginRight: 6, verticalAlign: "middle" }} />
+            AS OF {asOf || "—"} · LIVE
+          </span>
         </div>
       </div>
 
@@ -338,25 +333,12 @@ export default async function Page() {
             <div className="hero-stage">
               <span className="hero-stage-num">{stageNum}</span>
               <span className="hero-stage-denom">/ 7 STAGES</span>
-              <span className="hero-stage-label">
-                {stageLabel}
-                <br />
-                <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--text-faint)", letterSpacing: "0.05em" }}>{stageText}</span>
-              </span>
             </div>
-            <div>
-              <div className="cycle-bar-labels">
-                <span className="cycle-bar-label">S1 · HEALTHY MONEY</span>
-                <span className="cycle-bar-label">S7 · NORMALISATION</span>
-              </div>
-              <div className="cycle-bar-track">
-                <div className="cycle-bar-fill" style={{ width: `${(stageNum / 7) * 100}%` }} />
-              </div>
-              <div className="cycle-bar-ticks">
-                {[1, 2, 3, 4, 5, 6, 7].map(n => (
-                  <span className="cycle-bar-label" key={n} style={n === stageNum ? { color: "var(--red)", fontWeight: 700 } : undefined}>S{n}</span>
-                ))}
-              </div>
+            <div className="hero-stage-label">
+              {stageLabel} — <b>{stageText}</b>
+            </div>
+            <div className="cycle-bar-track">
+              <div className="cycle-bar-fill" style={{ width: `${(stageNum / 7) * 100}%` }} />
             </div>
           </div>
           <div className="kpi-grid">
@@ -367,14 +349,14 @@ export default async function Page() {
             </div>
             <div className="kpi-cell">
               <div className="kpi-label">INTEREST / RECEIPTS</div>
-              <div className="kpi-value" style={{ color: (f.S3?.ratio ?? 0) >= 0.2 ? "var(--red)" : "var(--amber)" }}>
+              <div className="kpi-value" style={{ color: (f.S3?.ratio ?? 0) >= 0.2 ? "var(--red)" : "var(--amber-bright)" }}>
                 {f.S3?.ratio != null ? `${(f.S3.ratio * 100).toFixed(1)}%` : "—"}
               </div>
               <div className="kpi-note">TTM · 20–25% = loss-of-discretion zone</div>
             </div>
             <div className="kpi-cell">
               <div className="kpi-label">FED DEFERRED ASSET</div>
-              <div className="kpi-value" style={{ color: (i.defLevelBn ?? 0) <= -200 ? "var(--red)" : "var(--amber)" }}>${fmt(i.defLevelBn)}bn</div>
+              <div className="kpi-value" style={{ color: (i.defLevelBn ?? 0) <= -200 ? "var(--red)" : "var(--amber-bright)" }}>${fmt(i.defLevelBn)}bn</div>
               <div className="kpi-note">Stage-5 metric · {f.deferred?.direction ?? "—"}</div>
             </div>
             <div className="kpi-cell">
@@ -397,6 +379,7 @@ export default async function Page() {
         <section className="section">
           <div className="section-header">
             <span className="section-title">TRIGGERS FIRED</span>
+            <span className="section-rule" />
             <span className="section-count" style={{ color: triggers.length ? "var(--red)" : "var(--green)" }}>
               {triggers.length ? `${triggers.length} ACTIVE` : "NONE ACTIVE"}
             </span>
@@ -427,6 +410,7 @@ export default async function Page() {
               <section className="section">
                 <div className="section-header">
                   <span className="section-title">SMALL-CYCLE FACTORS</span>
+                  <span className="section-rule" />
                   <span className="section-count" style={{ color: "var(--text-faint)" }}>{smallRows.length} FACTORS · CLICK TO EXPAND</span>
                 </div>
                 <FactorBoard factors={smallRows} />
@@ -434,6 +418,7 @@ export default async function Page() {
               <section className="section">
                 <div className="section-header">
                   <span className="section-title">THE LABOR CYCLE IN REAL TIME</span>
+                  <span className="section-rule" />
                   <span className="section-count" style={{ color: "var(--text-faint)" }}>POINT-IN-TIME VINTAGES · 1960 → NOW</span>
                 </div>
                 <CycleTimeline />
@@ -445,6 +430,7 @@ export default async function Page() {
               <section className="section">
                 <div className="section-header">
                   <span className="section-title">HEAT vs WHAT THE MARKET DID NEXT</span>
+                  <span className="section-rule" />
                   <span className="section-count" style={{ color: "var(--text-faint)" }}>BACKTEST REPLAY · SEE BACKTEST.md</span>
                 </div>
                 <HeatTimeline />
@@ -452,6 +438,7 @@ export default async function Page() {
               <section className="section">
                 <div className="section-header">
                   <span className="section-title">BIG-CYCLE FACTORS</span>
+                  <span className="section-rule" />
                   <span className="section-count" style={{ color: "var(--text-faint)" }}>{bigRows.length} FACTORS · CLICK TO EXPAND</span>
                 </div>
                 <FactorBoard factors={bigRows} />
@@ -459,6 +446,7 @@ export default async function Page() {
               <section className="section">
                 <div className="section-header">
                   <span className="section-title">CENTURY CONTEXT</span>
+                  <span className="section-rule" />
                   <span className="section-count" style={{ color: "var(--text-faint)" }}>ANNUAL · FINAL DATA</span>
                 </div>
                 <CenturyPanel />
