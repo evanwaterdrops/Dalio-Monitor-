@@ -19722,7 +19722,7 @@
    "ttmReceiptsBn": 463,
    "squeezeBasis": "FY1979 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -19761,15 +19761,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 20,
-  "heat": 30,
+  "heat": 20,
   "heatCycle": 0,
   "heatSov": 33.33,
   "fwd6": -7.5,
@@ -19811,7 +19805,7 @@
    "ttmReceiptsBn": 463,
    "squeezeBasis": "FY1979 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -19850,15 +19844,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 20,
-  "heat": 30,
+  "heat": 20,
   "heatCycle": 0,
   "heatSov": 33.33,
   "fwd6": -9,
@@ -19900,7 +19888,7 @@
    "ttmReceiptsBn": 463,
    "squeezeBasis": "FY1979 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -19939,15 +19927,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 20,
-  "heat": 30,
+  "heat": 20,
   "heatCycle": 0,
   "heatSov": 33.33,
   "fwd6": -14,
@@ -19989,7 +19971,7 @@
    "ttmReceiptsBn": 463,
    "squeezeBasis": "FY1979 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -20028,15 +20010,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 20,
-  "heat": 30,
+  "heat": 20,
   "heatCycle": 0,
   "heatSov": 33.33,
   "fwd6": -13.6,
@@ -20078,7 +20054,7 @@
    "ttmReceiptsBn": 463,
    "squeezeBasis": "FY1979 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -20117,15 +20093,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 20,
-  "heat": 30,
+  "heat": 20,
   "heatCycle": 0,
   "heatSov": 33.33,
   "fwd6": -2.2,
@@ -20167,7 +20137,7 @@
    "ttmReceiptsBn": 463,
    "squeezeBasis": "FY1979 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -20206,15 +20176,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 20,
-  "heat": 30,
+  "heat": 20,
   "heatCycle": 0,
   "heatSov": 33.33,
   "fwd6": -1.5,
@@ -20256,7 +20220,7 @@
    "ttmReceiptsBn": 463,
    "squeezeBasis": "FY1979 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -20295,15 +20259,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 40,
-  "heat": 50,
+  "heat": 40,
   "heatCycle": 50,
   "heatSov": 33.33,
   "fwd6": -0.7,
@@ -20345,7 +20303,7 @@
    "ttmReceiptsBn": 463,
    "squeezeBasis": "FY1979 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -20384,15 +20342,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 40,
-  "heat": 50,
+  "heat": 40,
   "heatCycle": 50,
   "heatSov": 33.33,
   "fwd6": 0,
@@ -20434,7 +20386,7 @@
    "ttmReceiptsBn": 463,
    "squeezeBasis": "FY1979 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -20473,15 +20425,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 50,
-  "heat": 60,
+  "heat": 50,
   "heatCycle": 50,
   "heatSov": 50,
   "fwd6": -0.8,
@@ -20523,7 +20469,7 @@
    "ttmReceiptsBn": 463,
    "squeezeBasis": "FY1979 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -20562,15 +20508,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 50,
-  "heat": 60,
+  "heat": 50,
   "heatCycle": 50,
   "heatSov": 50,
   "fwd6": 0,
@@ -20612,7 +20552,7 @@
    "ttmReceiptsBn": 463,
    "squeezeBasis": "FY1979 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -20656,15 +20596,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 5.22 < rAvg 5.31"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 70,
-  "heat": 95,
+  "heat": 85,
   "heatCycle": 75,
   "heatSov": 66.67,
   "fwd6": 0,
@@ -20706,7 +20641,7 @@
    "ttmReceiptsBn": 463,
    "squeezeBasis": "FY1979 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -20745,15 +20680,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 40,
-  "heat": 50,
+  "heat": 40,
   "heatCycle": 25,
   "heatSov": 50,
   "fwd6": -0.7,
@@ -20795,7 +20724,7 @@
    "ttmReceiptsBn": 517,
    "squeezeBasis": "FY1980 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -20834,15 +20763,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 50,
-  "heat": 60,
+  "heat": 50,
   "heatCycle": 50,
   "heatSov": 50,
   "fwd6": -9.9,
@@ -20884,7 +20807,7 @@
    "ttmReceiptsBn": 517,
    "squeezeBasis": "FY1980 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -20923,15 +20846,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 60,
-  "heat": 70,
+  "heat": 60,
   "heatCycle": 75,
   "heatSov": 50,
   "fwd6": -6.8,
@@ -20973,7 +20890,7 @@
    "ttmReceiptsBn": 517,
    "squeezeBasis": "FY1980 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -21012,15 +20929,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 60,
-  "heat": 70,
+  "heat": 60,
   "heatCycle": 75,
   "heatSov": 50,
   "fwd6": -2.3,
@@ -21062,7 +20973,7 @@
    "ttmReceiptsBn": 517,
    "squeezeBasis": "FY1980 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -21101,15 +21012,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 60,
-  "heat": 70,
+  "heat": 60,
   "heatCycle": 75,
   "heatSov": 50,
   "fwd6": -5.9,
@@ -21151,7 +21056,7 @@
    "ttmReceiptsBn": 517,
    "squeezeBasis": "FY1980 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -21190,15 +21095,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 60,
-  "heat": 70,
+  "heat": 60,
   "heatCycle": 75,
   "heatSov": 50,
   "fwd6": -17.1,
@@ -21240,7 +21139,7 @@
    "ttmReceiptsBn": 517,
    "squeezeBasis": "FY1980 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -21279,15 +21178,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 50,
-  "heat": 60,
+  "heat": 50,
   "heatCycle": 50,
   "heatSov": 50,
   "fwd6": -15.1,
@@ -21329,7 +21222,7 @@
    "ttmReceiptsBn": 517,
    "squeezeBasis": "FY1980 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -21368,15 +21261,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 40,
-  "heat": 50,
+  "heat": 40,
   "heatCycle": 50,
   "heatSov": 33.33,
   "fwd6": -14.9,
@@ -21418,7 +21305,7 @@
    "ttmReceiptsBn": 517,
    "squeezeBasis": "FY1980 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -21457,15 +21344,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 50,
-  "heat": 60,
+  "heat": 50,
   "heatCycle": 75,
   "heatSov": 33.33,
   "fwd6": -14.1,
@@ -21507,7 +21388,7 @@
    "ttmReceiptsBn": 517,
    "squeezeBasis": "FY1980 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -21546,15 +21427,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 40,
-  "heat": 50,
+  "heat": 40,
   "heatCycle": 50,
   "heatSov": 33.33,
   "fwd6": -13.9,
@@ -21596,7 +21471,7 @@
    "ttmReceiptsBn": 517,
    "squeezeBasis": "FY1980 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -21635,15 +21510,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 40,
-  "heat": 50,
+  "heat": 40,
   "heatCycle": 50,
   "heatSov": 33.33,
   "fwd6": -9.2,
@@ -21685,7 +21554,7 @@
    "ttmReceiptsBn": 517,
    "squeezeBasis": "FY1980 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -21724,15 +21593,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 40,
-  "heat": 50,
+  "heat": 40,
   "heatCycle": 50,
   "heatSov": 33.33,
   "fwd6": -7.6,
@@ -21774,7 +21637,7 @@
    "ttmReceiptsBn": 517,
    "squeezeBasis": "FY1980 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -21813,15 +21676,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 50,
-  "heat": 60,
+  "heat": 50,
   "heatCycle": 75,
   "heatSov": 33.33,
   "fwd6": -11.9,
@@ -21863,7 +21720,7 @@
    "ttmReceiptsBn": 599,
    "squeezeBasis": "FY1981 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -21902,15 +21759,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 60,
-  "heat": 70,
+  "heat": 60,
   "heatCycle": 100,
   "heatSov": 33.33,
   "fwd6": -15,
@@ -21952,7 +21803,7 @@
    "ttmReceiptsBn": 599,
    "squeezeBasis": "FY1981 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -21991,15 +21842,9 @@
    "JP": null
   },
   "stage": "TOP, LATE",
-  "triggers": [
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
-   }
-  ],
+  "triggers": [],
   "factorHeat": 60,
-  "heat": 70,
+  "heat": 60,
   "heatCycle": 100,
   "heatSov": 33.33,
   "fwd6": -12.5,
@@ -22041,7 +21886,7 @@
    "ttmReceiptsBn": 599,
    "squeezeBasis": "FY1981 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -22085,15 +21930,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 6.31 < rAvg 7.22"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 80,
-  "heat": 105,
+  "heat": 95,
   "heatCycle": 100,
   "heatSov": 66.67,
   "fwd6": -11.1,
@@ -22135,7 +21975,7 @@
    "ttmReceiptsBn": 599,
    "squeezeBasis": "FY1981 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -22179,15 +22019,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 6.69 < rAvg 7.22"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 80,
-  "heat": 105,
+  "heat": 95,
   "heatCycle": 100,
   "heatSov": 66.67,
   "fwd6": -9.5,
@@ -22229,7 +22064,7 @@
    "ttmReceiptsBn": 599,
    "squeezeBasis": "FY1981 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -22273,15 +22108,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 6.8 < rAvg 7.22"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 80,
-  "heat": 105,
+  "heat": 95,
   "heatCycle": 100,
   "heatSov": 66.67,
   "fwd6": -8.5,
@@ -22323,7 +22153,7 @@
    "ttmReceiptsBn": 599,
    "squeezeBasis": "FY1981 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -22367,15 +22197,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 1.98 < rAvg 7.22"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 70,
-  "heat": 95,
+  "heat": 85,
   "heatCycle": 100,
   "heatSov": 50,
   "fwd6": -12,
@@ -22417,7 +22242,7 @@
    "ttmReceiptsBn": 599,
    "squeezeBasis": "FY1981 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -22461,15 +22286,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 1.86 < rAvg 7.22"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 70,
-  "heat": 95,
+  "heat": 85,
   "heatCycle": 100,
   "heatSov": 50,
   "fwd6": -8.5,
@@ -22511,7 +22331,7 @@
    "ttmReceiptsBn": 599,
    "squeezeBasis": "FY1981 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -22555,15 +22375,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 2.1 < rAvg 7.22"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 70,
-  "heat": 95,
+  "heat": 85,
   "heatCycle": 100,
   "heatSov": 50,
   "fwd6": -6.6,
@@ -22605,7 +22420,7 @@
    "ttmReceiptsBn": 599,
    "squeezeBasis": "FY1981 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -22649,15 +22464,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 2.02 < rAvg 7.22"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 70,
-  "heat": 95,
+  "heat": 85,
   "heatCycle": 100,
   "heatSov": 50,
   "fwd6": -4.4,
@@ -22699,7 +22509,7 @@
    "ttmReceiptsBn": 599,
    "squeezeBasis": "FY1981 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -22743,15 +22553,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 1.8 < rAvg 7.22"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 60,
-  "heat": 85,
+  "heat": 75,
   "heatCycle": 75,
   "heatSov": 50,
   "fwd6": -1.1,
@@ -22793,7 +22598,7 @@
    "ttmReceiptsBn": 599,
    "squeezeBasis": "FY1981 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -22837,15 +22642,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 1.94 < rAvg 7.22"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 60,
-  "heat": 85,
+  "heat": 75,
   "heatCycle": 75,
   "heatSov": 50,
   "fwd6": 0,
@@ -22887,7 +22687,7 @@
    "ttmReceiptsBn": 599,
    "squeezeBasis": "FY1981 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -22931,15 +22731,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 0.71 < rAvg 7.22"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 50,
-  "heat": 75,
+  "heat": 65,
   "heatCycle": 50,
   "heatSov": 50,
   "fwd6": -0.6,
@@ -22981,7 +22776,7 @@
    "ttmReceiptsBn": 618,
    "squeezeBasis": "FY1982 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -23025,15 +22820,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 0.35 < rAvg 7.98"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 70,
-  "heat": 95,
+  "heat": 85,
   "heatCycle": 100,
   "heatSov": 50,
   "fwd6": -2.4,
@@ -23075,7 +22865,7 @@
    "ttmReceiptsBn": 618,
    "squeezeBasis": "FY1982 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -23119,15 +22909,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 0.6 < rAvg 7.98"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 50,
-  "heat": 75,
+  "heat": 65,
   "heatCycle": 50,
   "heatSov": 50,
   "fwd6": -1.6,
@@ -23169,7 +22954,7 @@
    "ttmReceiptsBn": 618,
    "squeezeBasis": "FY1982 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -23213,15 +22998,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 0.27 < rAvg 7.98"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 50,
-  "heat": 75,
+  "heat": 65,
   "heatCycle": 50,
   "heatSov": 50,
   "fwd6": -1.6,
@@ -23263,7 +23043,7 @@
    "ttmReceiptsBn": 618,
    "squeezeBasis": "FY1982 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -23307,15 +23087,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 0.27 < rAvg 7.98"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 50,
-  "heat": 75,
+  "heat": 65,
   "heatCycle": 50,
   "heatSov": 50,
   "fwd6": 0,
@@ -23357,7 +23132,7 @@
    "ttmReceiptsBn": 618,
    "squeezeBasis": "FY1982 annual",
    "fedAssetsUp3w": false,
-   "easedAndLongEndSold": true,
+   "easedAndLongEndSold": false,
    "baa10y": null
   },
   "factors": {
@@ -23401,15 +23176,10 @@
     "tier": 1,
     "key": "r_crosses_g_recession_event",
     "detail": "payroll contraction + stressed g 0.5 < rAvg 7.98"
-   },
-   {
-    "tier": 2,
-    "key": "long_end_selloff_on_easing",
-    "detail": "DGS30 +≥8bp on a cut day"
    }
   ],
   "factorHeat": 50,
-  "heat": 75,
+  "heat": 65,
   "heatCycle": 50,
   "heatSov": 50,
   "fwd6": -1.3,

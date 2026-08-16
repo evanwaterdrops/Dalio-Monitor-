@@ -347,7 +347,9 @@ export async function replay() {
     const fedAssetsUp3w = walclT.length >= 4 && [1, 2, 3].every(i => ago(walclT, i - 1).value > ago(walclT, i).value);
     const stage = valve ? bigCycleStage({ fedAssetsUp3w, coreYoY, headlineYoY, valveScore: valve.score }) : null;
 
-    const fundsT200 = asOf(funds, t).slice(-200);
+    // cut-day identification requires the explicit daily target (1982-09→);
+    // monthly effective-funds averages cannot date a policy move
+    const fundsT200 = asOf(funds, t).filter(o => o.date >= dfedtar[0].date).slice(-200);
     const dgs30T = asOf(dgs30, t);
     let easedAndLongEndSold = false;
     for (let i = 1; i < fundsT200.length; i++) {
