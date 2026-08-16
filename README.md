@@ -29,6 +29,11 @@ T3 gold/real-yield divergence, Japan absolute decline, auction plumbing.
 
 ## What's honest about this system
 
+- **Point-in-time backtest** (`npm run backtest`, zero deps, keyless): replays
+  the production factor math monthly over 1999–2026 against ALFRED data
+  vintages — first prints, real-time revisions, publication lags, no
+  hindsight. Results, lead times into the GFC and every major stress episode,
+  and the false-alarm audit live in [BACKTEST.md](BACKTEST.md).
 - **20/20 selftest** (`npm run selftest`, zero deps): the shipped math
   reproduces every conclusion of the underlying analysis from the raw
   Aug-2026 numbers, including that the monetisation trigger does *not*
