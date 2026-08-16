@@ -47,24 +47,60 @@ export async function getManual(key: string): Promise<{ value: number; enteredAt
 /**
  * Optional narrative layer: turn a snapshot diff into two paragraphs of
  * analyst prose using the user's own ANTHROPIC_API_KEY. Off unless set.
+ * Rendered by the dashboard as the "WHAT CHANGED" band above the tabs.
  */
+const NARRATIVE_SYSTEM = `You are the monitoring layer of a Dalio big-debt-cycle framework, writing the "what changed" note that sits at the top of an instrument dashboard for one reader: a quant who already knows the framework.
+
+Write exactly two paragraphs, each opening with a bold-free label:
+"Small cycle — " for the first (labour, inflation, the price of money), and
+"Top → Deleveraging boundary — " for the second (the sovereign stations: r vs g, interest/receipts, debt demand, store-of-value flight).
+
+Rules:
+- State only what moved and what it means. No preamble, no restating the framework, no advice.
+- Cite the numbers that carry the claim, and say when a factor did NOT move ("unchanged this run") rather than padding.
+- Every number you use must come from the data given to you. Never estimate or infer a figure that is not there.
+- Any trigger in the new snapshot that was not in the previous one is the lede of its paragraph.
+- Plain prose, no markdown, no bullet points, no headings. Roughly 90 words per paragraph.`;
+
 export async function narrate(snap: any, prev: any): Promise<string | null> {
-  const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return null;
-  const r = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-6",
-      max_tokens: 600,
-      messages: [{
-        role: "user",
-        content:
-`You are the monitoring layer of a Dalio big-debt-cycle framework. Previous factor states: ${JSON.stringify(prev?.factors ?? {})}. New factor states: ${JSON.stringify(snap.factors)}. New triggers: ${JSON.stringify(snap.triggers)}. In <=2 short paragraphs, state ONLY what changed and what it means for (a) small-cycle phase, (b) the Top->Deleveraging boundary. No preamble.`,
-      }],
-    }),
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return null;
+
+  const { default: Anthropic } = await import("@anthropic-ai/sdk");
+  const client = new Anthropic({ apiKey });
+
+  // Only the fields the note is allowed to talk about — keeps the model from
+  // inventing figures out of the deep history arrays the snapshot also carries.
+  const readings = (s: any) => s && {
+    asOf: s.asOf,
+    stage: s.stage,
+    factors: s.factors,
+    triggers: s.triggers,
+    inputs: Object.fromEntries(
+      Object.entries(s.inputs ?? {}).filter(([, v]) => typeof v === "number"),
+    ),
+  };
+
+  const msg = await client.beta.messages.create({
+    model: "claude-opus-5",
+    max_tokens: 2000,
+    betas: ["server-side-fallback-2026-07-01"],
+    fallbacks: "default",
+    output_config: { effort: "low" },
+    system: NARRATIVE_SYSTEM,
+    messages: [{
+      role: "user",
+      content: prev
+        ? `Previous run:\n${JSON.stringify(readings(prev))}\n\nThis run:\n${JSON.stringify(readings(snap))}\n\nWrite the note.`
+        : `First run — there is no prior snapshot to diff against, so describe where the cycle stands rather than what changed, in the same two-paragraph shape.\n\nThis run:\n${JSON.stringify(readings(snap))}`,
+    }],
   });
-  if (!r.ok) return null;
-  const d = await r.json();
-  return (d.content ?? []).filter((b: any) => b.type === "text").map((b: any) => b.text).join("\n") || null;
+
+  if (msg.stop_reason === "refusal") return null;
+  const text = msg.content
+    .filter((b: any) => b.type === "text")
+    .map((b: any) => b.text)
+    .join("\n")
+    .trim();
+  return text || null;
 }
