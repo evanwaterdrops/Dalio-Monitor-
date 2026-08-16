@@ -55,8 +55,9 @@ export default function HeatTimeline() {
   const yHeat = (v: number) => PT + (1 - v / 100) * (H1 - PT - PB);
   const yDD = (v: number) => PT + (v / -60) * (H2 - PT - PB);
 
-  const heatPts = useMemo(() => months.map((m, i) => `${xAt(i).toFixed(1)},${yHeat(m.h ?? 0).toFixed(1)}`).join(" "), [effPpm]);
-  const heatArea = useMemo(() => `M${xAt(0)},${yHeat(0)} L${heatPts.replace(/ /g, " L")} L${xAt(n - 1)},${yHeat(0)} Z`, [heatPts]);
+  const cyclePts = useMemo(() => months.map((m, i) => `${xAt(i).toFixed(1)},${yHeat(m.hc ?? 0).toFixed(1)}`).join(" "), [effPpm]);
+  const sovPts = useMemo(() => months.map((m, i) => `${xAt(i).toFixed(1)},${yHeat(m.hs ?? 0).toFixed(1)}`).join(" "), [effPpm]);
+  const heatArea = useMemo(() => `M${xAt(0)},${yHeat(0)} L${cyclePts.replace(/ /g, " L")} L${xAt(n - 1)},${yHeat(0)} Z`, [cyclePts]);
   const ddPts = useMemo(() =>
     months.map((m, i) => (m.f == null ? null : `${xAt(i).toFixed(1)},${yDD(m.f).toFixed(1)}`)).filter(Boolean).join(" "), [effPpm]);
 
@@ -76,7 +77,9 @@ export default function HeatTimeline() {
     show(e, (
       <>
         <div className="tt-head">{m.t}{m.rec ? " · NBER RECESSION" : ""}</div>
-        <div className="tt-row"><span>heat</span><b>{m.h ?? "—"}</b></div>
+        <div className="tt-row"><span>cycle heat</span><b>{m.hc ?? "—"}</b></div>
+        <div className="tt-row"><span>sovereign heat</span><b>{m.hs ?? "—"}</b></div>
+        <div className="tt-row"><span>composite</span><b>{m.h ?? "—"}</b></div>
         <div className="tt-row"><span>fwd-12m max DD</span><b>{m.f != null ? `${m.f}%` : "open"}</b></div>
         <div className="tt-row"><span>small cycle</span><b>{m.s != null ? SC_STATUS_NAME[m.s] : "n/a"}</b></div>
         {m.trig.length > 0 && <div className="tt-trigs">{m.trig.join(" · ")}</div>}
@@ -104,7 +107,7 @@ export default function HeatTimeline() {
       <div className="chart-scroller-wrap">
         <div className="chart-scroller" ref={ref} style={fit ? { overflowX: "hidden" } : undefined}>
           <div style={{ width: fit ? "100%" : width }}>
-            <div className="chart-panel-title">COMPOSITE HEAT · 0–100 · POINT-IN-TIME REPLAY {PANEL[0].t} → {PANEL[n - 1].t}</div>
+            <div className="chart-panel-title">CYCLE HEAT vs SOVEREIGN HEAT · 0–100 · POINT-IN-TIME REPLAY {PANEL[0].t} → {PANEL[n - 1].t}</div>
             <svg viewBox={`0 0 ${width} ${H1}`} width="100%" height={H1} preserveAspectRatio="none"
               onMouseMove={hover} onMouseLeave={hide} role="img" aria-label="Composite heat timeline">
               {recessionBands(months, xAt, PT, H1 - PT - PB)}
@@ -112,7 +115,8 @@ export default function HeatTimeline() {
                 <line key={g} x1={0} x2={width} y1={yHeat(g)} y2={yHeat(g)} stroke="var(--grid-line)" strokeWidth={1} />
               ))}
               <path d={heatArea} fill="var(--red)" opacity={0.08} />
-              <polyline points={heatPts} fill="none" stroke="var(--red)" strokeWidth={1.6} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
+              <polyline points={sovPts} fill="none" stroke="var(--amber)" strokeWidth={1.4} strokeLinejoin="round" vectorEffect="non-scaling-stroke" opacity={0.8} />
+              <polyline points={cyclePts} fill="none" stroke="var(--red)" strokeWidth={1.6} strokeLinejoin="round" vectorEffect="non-scaling-stroke" />
               {yearLabels.map(l => (
                 <text key={l.i} x={xAt(l.i)} y={H1 - 4} fontSize={9} fill="var(--text-faint)" textAnchor="middle" fontFamily="var(--mono)">{l.yy}</text>
               ))}
@@ -141,10 +145,11 @@ export default function HeatTimeline() {
         </div>
       </div>
       <div className="chart-legend">
-        <span><span className="chart-swatch" style={{ background: "var(--red)" }} /> HEAT</span>
+        <span><span className="chart-swatch" style={{ background: "var(--red)" }} /> CYCLE HEAT (SC·S6·PC·SoV·S5)</span>
+        <span><span className="chart-swatch" style={{ background: "var(--amber)" }} /> SOVEREIGN HEAT (S8·S7·S3·TAX·JP)</span>
         <span><span className="chart-swatch" style={{ background: "var(--blue)" }} /> FWD-12M MAX DD</span>
         <span><span className="chart-swatch chart-swatch-band" /> NBER RECESSION</span>
-        <span className="chart-legend-note">drag / scroll to pan · hover to read · click an episode to replay it month-by-month</span>
+        <span className="chart-legend-note">scroll to pan · hover to read · click an episode to replay it month-by-month</span>
       </div>
 
       {episode && <EpisodeReplay ep={EPISODES.find(e => e.key === episode)!} />}

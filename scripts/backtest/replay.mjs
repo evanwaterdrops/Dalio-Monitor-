@@ -209,7 +209,8 @@ export async function replay() {
       // pre-2001: effective rate = FY interest outlays / avg gross federal debt
       const oi = fyoint.filter(o => o.date <= fyCut), gd = fygfd.filter(o => o.date <= fyCut);
       if (oi.length && gd.length >= 2 && last(oi).date === last(gd).date) {
-        rAvg = round2((last(oi).value / ((last(gd).value + ago(gd, 1).value) / 2)) * 100);
+        // FYOINT in $mn, FYGFD in $bn (verified against raw cache)
+        rAvg = round2((last(oi).value / 1000 / ((last(gd).value + ago(gd, 1).value) / 2)) * 100);
         rAvgBasis = "effective-annual (FYOINT/FYGFD)";
       }
     }
@@ -227,7 +228,7 @@ export async function replay() {
     let debtToGdpPct = dgq.length ? last(dgq).value : null;
     if (debtToGdpPct == null) {
       const gd = fygfd.filter(o => o.date <= fyCut), gp = gdpa.filter(o => o.date.slice(0, 4) <= fyCut.slice(0, 4));
-      if (gd.length && gp.length) debtToGdpPct = round2((last(gd).value / 1000 / last(gp).value) * 100);
+      if (gd.length && gp.length) debtToGdpPct = round2((last(gd).value / last(gp).value) * 100); // both $bn
     }
     let rvg = null;
     if (rAvg != null && rMarg != null && gNominal != null && Number.isFinite(gNominal))

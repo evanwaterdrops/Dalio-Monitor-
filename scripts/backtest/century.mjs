@@ -69,7 +69,8 @@ export async function century() {
     const oint = yOint.get(y), fr = yFr.get(y), gfd = yGfd.get(y), gfdPrev = yGfd.get(y - 1);
     const gdpNow = yGdp.get(y), gdpPrev = yGdp.get(y - 1);
     const cpiNow = yCpi.get(y), cpiPrev = yCpi.get(y - 1);
-    const rEff = oint != null && gfd != null && gfdPrev != null ? round2((oint / ((gfd + gfdPrev) / 2)) * 100) : null;
+    // units: FYOINT/FYFR in $mn, FYGFD in $bn (verified against raw cache)
+    const rEff = oint != null && gfd != null && gfdPrev != null ? round2((oint / 1000 / ((gfd + gfdPrev) / 2)) * 100) : null;
     const gNom = gdpNow != null && gdpPrev != null ? round2(((gdpNow - gdpPrev) / gdpPrev) * 100) : null;
     years.push({
       y,

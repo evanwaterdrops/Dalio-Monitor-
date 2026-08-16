@@ -1,9 +1,8 @@
 "use client";
 /**
  * Small Cycle / Big Cycle tab switcher. Hash-routed (#small / #big) so a
- * view survives refresh and can be linked; server-rendered children are
- * passed in as nodes, both kept mounted (display toggle) so chart scroll
- * positions survive switching.
+ * view survives refresh and can be linked. Only the active tab renders —
+ * charts must mount visible for their pin-to-present scroll to apply.
  */
 import { useEffect, useState } from "react";
 
@@ -34,8 +33,7 @@ export default function Tabs({ small, big }: { small: React.ReactNode; big: Reac
           <span className="cycle-tab-sub">sovereign stations · century context</span>
         </button>
       </div>
-      <div style={{ display: tab === "small" ? "block" : "none" }}>{small}</div>
-      <div style={{ display: tab === "big" ? "block" : "none" }}>{big}</div>
+      {tab === "small" ? small : big}
     </div>
   );
 }

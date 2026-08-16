@@ -91,15 +91,15 @@ signal was already on at the window edge from a previous episode's tail and is N
 
 | Episode | SC ≥ elevated | SC critical | Cycle heat ≥ p75 (33.3) | Any T1 trigger |
 |---|---|---|---|---|
-| NBER recession start 1970-01 | 1969-10 (−3m) | 1969-10 (−3m) | 1969-10 (−3m) | 1969-10 (−3m) |
+| NBER recession start 1970-01 | 1969-10 (−3m) | 1969-10 (−3m) | 1969-10 (−3m) | — |
 | 1973 bear-market top 1973-01 (−48%) | — | — | — | — |
 | NBER recession start 1973-12 | — | — | — | — |
 | NBER recession start 1980-02 | — | — | — | — |
-| NBER recession start 1981-08 | 1981-06 (−2m) | carry-in only | 1980-11 (−9m) | carry-in only |
+| NBER recession start 1981-08 | 1981-06 (−2m) | carry-in only | 1980-11 (−9m) | 1980-09 (−11m) |
 | Black Monday 1987-08 top (−34%, no recession) | — | — | — | — |
 | NBER recession start 1990-08 | — | — | — | — |
 | Dot-com equity peak 2000-03 (−49% over 2y) | — | — | — | — |
-| NBER recession start 2001-04 | 2000-08 (−8m) | 2000-09 (−7m) | 2000-09 (−7m) | 2000-09 (−7m) |
+| NBER recession start 2001-04 | 2000-08 (−8m) | 2000-09 (−7m) | 2000-09 (−7m) | — |
 | GFC equity peak 2007-10 (−57%) | 2007-09 (−1m) | 2007-09 (−1m) | 2007-01 (−9m) | 2007-09 (−1m) |
 | NBER recession start 2008-01 | 2007-09 (−4m); sustained 2008-01 (−0m) | 2007-09 (−4m) | 2007-01 (−12m); sustained 2007-12 (−1m) | 2007-09 (−4m) |
 | Lehman failure 2008-09 | 2007-09 (−12m); sustained 2008-01 (−8m) | 2007-09 (−12m); sustained 2008-02 (−7m) | 2007-09 (−12m); sustained 2007-12 (−9m) | 2007-09 (−12m); sustained 2008-02 (−7m) |
@@ -114,7 +114,7 @@ signal was already on at the window edge from a previous episode's tail and is N
 |---|---|
 | `T1 monetisation_while_hot` | 2008-09→2008-10, 2011-05→2011-06, 2011-12, 2021-11, 2022-02, 2026-01 |
 | `T1 r_avg_crosses_g` | 2020-04, 2020-07→2021-03 |
-| `T1 r_crosses_g_recession_event` | 1960-09→1961-04, 1963-01→1963-03, 1967-06→1967-07, 1969-10, 1970-02, 1970-04→1971-01, 1971-05, 1971-07→1971-09, 1974-04→1975-09, 1980-05→1980-09, 1981-11→1983-03, 1990-10→1991-10, 1991-12→1992-04, 1992-09→1992-11, 2000-09, 2001-05→2002-09, 2002-12→2003-09, 2007-09, 2008-02→2010-03, 2020-04→2021-02, 2025-08→2025-10, 2026-01 |
+| `T1 r_crosses_g_recession_event` | 1960-09→1961-04, 1963-02→1963-03, 1967-07, 1970-04→1971-01, 1971-05, 1975-01→1975-09, 1980-09, 1982-01→1983-03, 1990-10→1991-10, 1991-12→1992-04, 1992-09→1992-11, 2001-05→2002-09, 2002-12→2003-09, 2007-09, 2008-02→2010-03, 2020-04→2021-02, 2025-08→2025-10, 2026-01 |
 | `T2 long_end_selloff_on_easing` | 1979-11→1983-03, 1984-11→1985-12, 1990-10→1991-06, 2001-01→2001-06, 2003-06→2003-12, 2008-01→2008-07, 2008-10→2009-03, 2024-12→2025-06 |
 | `T3 auction_plumbing` | 2009-02→2009-04, 2017-02→2017-10, 2019-05→2019-10, 2021-02→2021-04 |
 | `T3 gold_real_yield_divergence` | 2003-11, 2004-11, 2005-02, 2005-06, 2005-09, 2005-11, 2006-03→2006-04, 2006-10, 2007-01, 2007-03, 2007-12, 2008-05, 2008-09, 2009-02, 2010-02, 2010-05, 2010-11→2010-12, 2013-08, 2015-08, 2018-01, 2023-07, 2023-10, 2024-10, 2025-03→2025-05, 2025-10→2025-12 |
@@ -126,7 +126,7 @@ Heat splits in two (a deep-history lesson): **cycle heat** (SC, S6, PC, SoV, S5 
 market-facing legs) and **sovereign heat** (S8, S7, S3, TAX, JP, deferred — the debt-structure
 legs). The sovereign legs ran genuinely hot through 1985–95 (interest/receipts 18–21%, valve
 blocked by inflation) while equities boomed — sovereign stress only maps onto markets when the
-debt stock is large. The composite (all legs + T1 floor) correlates -0.06 with forward
+debt stock is large. The composite (all legs + T1 floor) correlates -0.03 with forward
 drawdowns over the full 66-year panel for exactly that reason.
 
 Skill is also **era-dependent, honestly reported**: pre-1985 vintages were slow (payroll breaks

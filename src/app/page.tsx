@@ -265,6 +265,19 @@ export default async function Page() {
       ],
     },
     {
+      key: "PC", ...meta("PC"), status: st(f.PC?.status),
+      headline: `HY OAS ${fmt(f.PC?.hyOasBp, "bp")} · 3m momentum ${fmt(f.PC?.hyOasDelta3mBp, "bp")}`,
+      logic: "HY OAS level + 3-month momentum. ≥500bp AND widening = critical (the private-credit complex repricing); ≥400bp level or +75bp/3m = elevated. The ~$800bn circular AI deals, $570bn 2026 AI debt and off-balance-sheet leases have no direct print — spread level and momentum are the free daily read on that complex.",
+      subInputs: [
+        { key: "oas", label: "HY OAS", value: fmt(f.PC?.hyOasBp), unit: "bp", source: "live", sourceName: "FRED BAMLH0A0HYM2",
+          threshold: { value: 500, label: "≥ 500bp + widening = CRITICAL", direction: "above", current: f.PC?.hyOasBp },
+          contribution: "Level: where the market prices the weakest private borrowers outright." },
+        { key: "mom", label: "HY OAS, 3m change", value: fmt(f.PC?.hyOasDelta3mBp), unit: "bp", source: "derived", sourceName: "computed",
+          threshold: { value: 75, label: "≥ +75bp/3m = ELEVATED repricing underway", direction: "above", current: f.PC?.hyOasDelta3mBp },
+          contribution: "Momentum: mid-1999, mid-2007 and late-2018 all began as spread momentum before levels looked alarming." },
+      ],
+    },
+    {
       key: "JP", ...meta("JP"), status: st(f.JP?.status),
       headline: `Repatriation hits ${f.JP?.hits ?? 0}/3 (JGB yields, yen, TIC holdings level)`,
       logic: "Three-condition counter: JGB 10Y up ≥25bp over 3m (carry gap closing) + yen strengthening + Japanese Treasury holdings falling outright for 2 consecutive months. 3/3 = critical: the largest foreign creditor is taking money home.",
@@ -278,6 +291,10 @@ export default async function Page() {
       ],
     },
   ];
+
+  const SMALL_KEYS = ["SC", "S8", "S6"];
+  const smallRows = factorRows.filter(r => SMALL_KEYS.includes(r.key));
+  const bigRows = factorRows.filter(r => !SMALL_KEYS.includes(r.key));
 
   const triggers: any[] = snap.triggers ?? [];
   const asOf = (snap.asOf ?? "").slice(0, 16).replace("T", " ");
@@ -302,14 +319,16 @@ export default async function Page() {
       </div>
 
       {snap.problems?.length > 0 && (
-        <div className="problems-banner">
-          <span style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--amber)", letterSpacing: "0.12em" }}>
-            ⚠ {snap.problems.length} SOURCE PROBLEM{snap.problems.length > 1 ? "S" : ""} THIS RUN —{" "}
-          </span>
-          {snap.problems.map((p: string) => (
-            <span key={p} style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--amber)", marginRight: 16 }}>{p}</span>
-          ))}
-        </div>
+        <details className="problems-banner">
+          <summary style={{ cursor: "pointer", listStyle: "none", fontFamily: "var(--mono)", fontSize: 10, color: "var(--amber)", letterSpacing: "0.12em" }}>
+            ⚠ {snap.problems.length} SOURCE PROBLEM{snap.problems.length > 1 ? "S" : ""} THIS RUN · TAP TO EXPAND
+          </summary>
+          <div style={{ marginTop: 6 }}>
+            {snap.problems.map((p: string) => (
+              <div key={p} style={{ fontFamily: "var(--mono)", fontSize: 10, color: "var(--amber)", overflowWrap: "anywhere" }}>{p}</div>
+            ))}
+          </div>
+        </details>
       )}
 
       <div className="sv-wrap">
@@ -402,13 +421,51 @@ export default async function Page() {
           )}
         </section>
 
-        <section className="section">
-          <div className="section-header">
-            <span className="section-title">FACTOR BOARD</span>
-            <span className="section-count" style={{ color: "var(--text-faint)" }}>{factorRows.length} FACTORS · CLICK TO EXPAND</span>
-          </div>
-          <FactorBoard factors={factorRows} />
-        </section>
+        <Tabs
+          small={
+            <>
+              <section className="section">
+                <div className="section-header">
+                  <span className="section-title">SMALL-CYCLE FACTORS</span>
+                  <span className="section-count" style={{ color: "var(--text-faint)" }}>{smallRows.length} FACTORS · CLICK TO EXPAND</span>
+                </div>
+                <FactorBoard factors={smallRows} />
+              </section>
+              <section className="section">
+                <div className="section-header">
+                  <span className="section-title">THE LABOR CYCLE IN REAL TIME</span>
+                  <span className="section-count" style={{ color: "var(--text-faint)" }}>POINT-IN-TIME VINTAGES · 1960 → NOW</span>
+                </div>
+                <CycleTimeline />
+              </section>
+            </>
+          }
+          big={
+            <>
+              <section className="section">
+                <div className="section-header">
+                  <span className="section-title">HEAT vs WHAT THE MARKET DID NEXT</span>
+                  <span className="section-count" style={{ color: "var(--text-faint)" }}>BACKTEST REPLAY · SEE BACKTEST.md</span>
+                </div>
+                <HeatTimeline />
+              </section>
+              <section className="section">
+                <div className="section-header">
+                  <span className="section-title">BIG-CYCLE FACTORS</span>
+                  <span className="section-count" style={{ color: "var(--text-faint)" }}>{bigRows.length} FACTORS · CLICK TO EXPAND</span>
+                </div>
+                <FactorBoard factors={bigRows} />
+              </section>
+              <section className="section">
+                <div className="section-header">
+                  <span className="section-title">CENTURY CONTEXT</span>
+                  <span className="section-count" style={{ color: "var(--text-faint)" }}>ANNUAL · FINAL DATA</span>
+                </div>
+                <CenturyPanel />
+              </section>
+            </>
+          }
+        />
 
         {alerts.length > 0 && (
           <div className="alert-history">

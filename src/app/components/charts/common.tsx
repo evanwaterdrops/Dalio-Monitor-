@@ -1,9 +1,9 @@
 "use client";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 /** Compact month row emitted by scripts/backtest/score.mjs → src/data/backtest-panel.json */
 export interface PanelMonth {
-  t: string; h: number | null; f: number | null;
+  t: string; h: number | null; hc: number | null; hs: number | null; f: number | null;
   s: number | null;            // SC status: 0 ok · 1 watch · 2 elevated · 3 critical
   ph: string | null;           // SC phase label
   tr: number;                  // top trigger tier fired (0 = none)
@@ -44,12 +44,25 @@ export function recessionBands(months: { rec: number }[], xAt: (i: number) => nu
   return rects;
 }
 
-/** Horizontal scroller that starts pinned to the right edge (the present). */
+/**
+ * Horizontal scroller that starts pinned to the right edge (the present).
+ * Charts mount inside a hidden tab (display:none → scrollWidth 0), so pin()
+ * also re-fires whenever the scroller actually becomes visible.
+ */
 export function useRightPinnedScroll() {
   const ref = useRef<HTMLDivElement>(null);
   const pin = useCallback(() => {
     const el = ref.current;
-    if (el) el.scrollLeft = el.scrollWidth;
+    if (el && el.scrollWidth > el.clientWidth) el.scrollLeft = el.scrollWidth;
   }, []);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el || typeof IntersectionObserver === "undefined") return;
+    const io = new IntersectionObserver(entries => {
+      if (entries.some(e => e.isIntersecting)) pin();
+    });
+    io.observe(el);
+    return () => io.disconnect();
+  }, [pin]);
   return { ref, pin };
 }
