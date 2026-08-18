@@ -8,7 +8,7 @@
     "start": "next start",
     "selftest": "node scripts/selftest.mjs",
     "backtest": "node scripts/backtest/run.mjs",
-    "test:playbook": "node scripts/playbook/test-fingerprint.mjs && node scripts/playbook/test-returns.mjs && node scripts/playbook/test-match.mjs"
+    "test:playbook": "node scripts/playbook/test-fingerprint.mjs && node scripts/playbook/test-returns.mjs && node scripts/playbook/test-match.mjs && node scripts/playbook/test-themes.mjs"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.117.1",

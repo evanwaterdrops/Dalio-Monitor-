@@ -1,0 +1,217 @@
+[
+  {
+    "id": "dark-fiber",
+    "name": "Dark Fiber — telecom overbuild (1996–2004) ↔ AI capex (2023–26)",
+    "lens": "theme",
+    "activeSince": "2023",
+    "positionLabel": "Phase 6 of 8 · phase 7 beginning in two issuers (as of Aug 2026)",
+    "historicalParallels": [
+      {
+        "name": "Telecom/dot-com bust window",
+        "returnsKey": "dotcom-2000",
+        "anchorMonth": "2000-03"
+      },
+      {
+        "name": "Telecom/dot-com bust window (early phase 4)",
+        "returnsKey": "dotcom-2000",
+        "anchorMonth": "1998-10"
+      },
+      {
+        "name": "1920s electrification"
+      },
+      {
+        "name": "1840s railway mania"
+      }
+    ],
+    "checklist": [
+      {
+        "id": "p1",
+        "label": "Exponential demand narrative",
+        "state": "matched",
+        "note": "Telecom's 'internet traffic doubles every 100 days' myth (Commerce Dept. Emerging Digital Economy, Apr-1998, from the UUNET/WorldCom origin; actual growth ~100%/yr per Coffman & Odlyzko) rhymes with today's AI compute-demand narrative driving repeated hyperscaler capex raises."
+      },
+      {
+        "id": "p2",
+        "label": "New capacity-funding entrants",
+        "state": "partial",
+        "note": "Telecom's overbuild was funded by a wave of new CLECs and fiber JVs (incumbent fibre share fell 72%→30%, 1996–99, Richmond Fed); the AI-era build is concentrated in incumbent hyperscalers plus financing vehicles (Microsoft's ~70% fund-level leverage via the AI Infrastructure Partnership with BlackRock/GIP/MGX) rather than a wave of new operating entrants."
+      },
+      {
+        "id": "p3",
+        "label": "Capex outruns internal cash flow",
+        "state": "matched",
+        "note": "Telecom comm-equipment investment grew $62bn→$135bn/yr (const-1996$, ~18%/yr, Richmond Fed); hyperscaler capex now runs ≈94% of operating cash flow 2026–27 (PIMCO/Epoch/FactSet)."
+      },
+      {
+        "id": "p4",
+        "label": "Financing shifts to debt / vendor credit",
+        "state": "matched",
+        "note": "Telecom vendor financing reached ~$25.6bn across nine vendors by end-2000 (Lucent alone ~$2.4bn, ≈30% of Lucent's $8.1bn); today incremental debt is 9%→32% of capex FY24→LTM (FactSet), hyperscaler IG issuance hit $194bn in H1-26, and Alphabet priced an $84.75bn equity program plus $20.3bn of senior notes."
+      },
+      {
+        "id": "p5",
+        "label": "Core-issuer credit reprices off IG lows",
+        "state": "matched",
+        "note": "Oracle's 5Y CDS hit a record ~203bps (2026-07-24, then ~215bps mid-Aug) — roughly 4x its <50bps pre-OpenAI-deal level — alongside an S&P downgrade to BBB−; CoreWeave's 5Y CDS sits near 855bps."
+      },
+      {
+        "id": "p6",
+        "label": "Broad HY benchmark still calm",
+        "state": "partial",
+        "note": "Form matched, degree early — HY OAS is 271bps (2026-08-12) vs a ~450bps long-run median; the widening so far is confined to buildout-adjacent names (Oracle, CoreWeave), not yet transmitted broadly the way telecom's HY spreads eventually blew out to 2,100bps by Oct-2002."
+      },
+      {
+        "id": "p7",
+        "label": "First vendor-financing impairments",
+        "state": "partial",
+        "note": "Beginning, idiosyncratic — two issuers. Telecom's bad-loan shares rocketed end-2000→end-2001 (Lucent 2.6%→60%, Nortel 25.5%→80%, Motorola 6.7%→57%, per Ricci/Newsweek 2002). Today there is no AI-vendor receivable write-down through mid-Aug-2026 (Nvidia's allowance is ~0.02% of AR), with credit stress concentrated in two issuers, Oracle and CoreWeave."
+      },
+      {
+        "id": "p8",
+        "label": "Broad default / useful-life reckoning",
+        "state": "notObserved",
+        "note": "Telecom's endgame destroyed ~$2tn of market value with telecom ≈55%/52% of defaulted dollars in 2001/02 and HY spreads at 2,100bps; the AI-era equivalent — a broad wave of useful-life write-downs and defaults — has not occurred. Burry's ~$176bn understated-depreciation claim (Oracle ~26.9%/Meta ~20.8% overstated by 2028) remains a contested claim, not a confirmed event."
+      }
+    ],
+    "tripwires": [
+      {
+        "id": "hy_transmission",
+        "label": "Broad HY transmission",
+        "threshold": "HY OAS > 450bp while AI-issuer credit widens",
+        "live": true,
+        "note": "Live-wired to FRED BAMLH0A0HYM2. Baseline: HY OAS 271bps (2026-08-12) vs ~450bps long-run median — not fired as of this ledger."
+      },
+      {
+        "id": "vendor_impairment",
+        "label": "Vendor-financing impairment",
+        "threshold": "First AI-vendor receivable write-down or impairment disclosed (telecom precedent: Lucent/Nortel/Motorola bad-loan shares surged from single digits to 60–80% within a year)",
+        "live": false,
+        "note": "Manual watch — flip in themes.json when observed. Baseline: no AI-vendor receivable write-down through mid-Aug-2026; Nvidia's allowance is ~0.02% of AR (three customers = 30/18/16% of AR)."
+      },
+      {
+        "id": "useful_life_revisions",
+        "label": "Useful-life revisions",
+        "threshold": "A hyperscaler or AI-infra vendor revises server/GPU useful-life assumptions downward (the depreciation-understatement mechanism Burry alleges: ~$176bn 2026–28, Oracle ~26.9% / Meta ~20.8% overstated by 2028)",
+        "live": false,
+        "note": "Manual watch — flip in themes.json when observed. Burry's claim is contested by CoreWeave/Nvidia, not confirmed."
+      },
+      {
+        "id": "utilisation_disclosure",
+        "label": "Utilisation disclosure",
+        "threshold": "A major AI-infra operator discloses declining data-center/GPU utilisation (telecom precedent: fibre lit share only ~3.9% through Chicago per TeleGeography, ~2.7% in-use per WSJ, by 2002)",
+        "live": false,
+        "note": "Manual watch — flip in themes.json when observed. CoreWeave's ~95% re-lease rate on off-contract H100s is cited as current counter-evidence."
+      }
+    ],
+    "figures": [
+      {
+        "text": "Nvidia's Sept-2025 $100bn letter of intent to OpenAI was never consummated; replaced Feb-2026 by a $30bn equity stake in OpenAI's $110bn round plus binding 3GW inference / 2GW training hardware commitments.",
+        "flag": "corrected"
+      },
+      {
+        "text": "Best-sourced sizing of the interlocking AI-compute web is >$750bn (Bloomberg, 2026-07-27), not the >$800bn figure in the original doc.",
+        "flag": "corrected"
+      },
+      {
+        "text": "Alphabet priced an $84.75bn equity program (common stock + mandatory convertibles + a $40bn ATM + a $10bn Berkshire placement) in June 2026, with ~$49.6bn of cash actually received in Q2; it also issued a separate $20.3bn of senior notes — not a flat '$84.75bn raised.'",
+        "flag": "corrected"
+      },
+      {
+        "text": "Alphabet's uncommenced-lease jump from $23.9bn to $42.6bn was Q2-2025 → Q3-2025, not a single quarter within 2026 as the original phrasing implied.",
+        "flag": "corrected"
+      },
+      {
+        "text": "Amazon's $53.4bn Anthropic-stake gain is real but ran through non-operating income, not operating results (operating income was $27.5bn, +43%).",
+        "flag": "corrected"
+      },
+      {
+        "text": "S&P Q2-26 EPS +50.4% headline vs +32.0% 'underlying' — FactSet's +32.0% figure is EPS growth excluding Alphabet and Amazon as companies, not an ex-one-offs adjustment; the substantive point (headline masks concentration) still holds.",
+        "flag": "corrected"
+      },
+      {
+        "text": "The 2s10s Treasury spread re-steepened to ~+48–52bps by mid-Aug-2026, not the ~+35bps figure (which traces to a single secondary commentary source).",
+        "flag": "corrected"
+      },
+      {
+        "text": "CoreWeave's rebuttal figure is a ~95% re-lease rate on off-contract H100/A100 GPUs (rebooked near the original rental rate), not '~95% resale values.'",
+        "flag": "corrected"
+      },
+      {
+        "text": "Greenwood–Shleifer–You: run-up size alone (without added attributes) already spans a 20%→80% crash-odds range (50%→150% net-of-market gains); added attributes sharpen the estimate further. Run-up size still fails to predict low average returns going forward (Fama's point); the ~6-month-later peak and ~30% further gain after high-run-up-plus-attributes episodes is confirmed.",
+        "flag": "corrected"
+      },
+      {
+        "text": "Telecom/communications was ~55% of defaulted high-yield dollars in 2001 and ~52% in 2002 (Altman, NYU Salomon Center 2002) — not the original doc's 'media+telecom 44% in 2001, 65% in 2002.'",
+        "flag": "corrected"
+      },
+      {
+        "text": "$148bn of high-yield issuance was 1998 alone, not a 1997–98 average; 1997 issuance was ~$119bn (1997–98 average ~$133bn), and the 1995–96 average was ~$50bn (Altman/NYU series).",
+        "flag": "corrected"
+      },
+      {
+        "text": "Cisco did vendor-finance in the telecom buildout (~$2.4bn committed, ≈30% of Lucent's $8.1bn; nine vendors totaled ~$25.6bn by end-2000) but carried no long-term debt — the accurate framing is 'limited vendor financing, no balance-sheet dependence,' not zero vendor-financing exposure.",
+        "flag": "corrected"
+      },
+      {
+        "text": "Media+telecom = 45% / 57% of high-yield new issuance in 1999 / 2000 — traces only to an uncited Fabricated Knowledge blog post, the apparent origin of several telecom figures in the original doc.",
+        "flag": "unverified"
+      },
+      {
+        "text": "~$800bn of telecom M&A in 1999 — plausible given known deals (Vodafone–Mannesmann ~$183bn, WorldCom–Sprint ~$129bn) but no primary source for the aggregate total was found.",
+        "flag": "unverified"
+      },
+      {
+        "text": "Fibre ~10% lit by 2004 and wholesale long-haul prices −55% y/y in 2004 — unverified as stated. (The related <5%-lit-by-2002 claim IS confirmed: TeleGeography put 3.9% lit through Chicago and WSJ reported 2.7% in-use.)",
+        "flag": "unverified"
+      },
+      {
+        "text": "Oracle 5Y CDS '~43bps mid-2025' — unverified as a precise print; use the sourced framing '<50bps pre-OpenAI-deal' instead.",
+        "flag": "unverified"
+      },
+      {
+        "text": "S&P downgraded Oracle to BBB− on 2026-07-09 (negative free cash flow of roughly −$24bn FY26; OpenAI ≈ half of Oracle's $638bn RPO); Oracle's 5Y CDS hit a record ~203bps on 2026-07-24 and ~215bps by mid-Aug-2026.",
+        "flag": "verified"
+      },
+      {
+        "text": "CoreWeave's 5Y CDS trades near 855bps — roughly a 50% cumulative 5-year default probability at 40% recovery — alongside +125bps loan spreads and tightening covenant demands.",
+        "flag": "verified"
+      },
+      {
+        "text": "Broad high-yield OAS is 271bps (2026-08-12) vs a ~450bps long-run median; investment-grade OAS is ~81bps and EFFR is 3.63%.",
+        "flag": "verified"
+      },
+      {
+        "text": "Hyperscaler capex runs ≈94% of operating cash flow in 2026–27 (PIMCO/Epoch/FactSet).",
+        "flag": "verified"
+      },
+      {
+        "text": "Incremental debt as a share of capex rose 9%→32% from FY24 to the latest twelve months (FactSet).",
+        "flag": "verified"
+      },
+      {
+        "text": "Uncommenced hyperscaler leases: Moody's estimates $662bn (113% of adjusted debt); Goldman ~$1tn; Reuters' bottom-up estimate ~$1.09tn; Oracle alone ~$260bn.",
+        "flag": "verified"
+      },
+      {
+        "text": "Alphabet's Q2-2026 free cash flow was −$5.9bn, its first negative quarter since the 2004 IPO (trailing-twelve-month FCF still +$53.3bn); buybacks have been halted (Alphabet $13.2bn→$0, Meta $0 in Q1-26).",
+        "flag": "verified"
+      },
+      {
+        "text": "Michael Burry (Nov-2025) claims ~$176bn of understated AI-infrastructure depreciation over 2026–28, with Oracle ~26.9% and Meta ~20.8% of earnings overstated by 2028 — carried here as a claim, contested by CoreWeave and Nvidia, not an established fact.",
+        "flag": "verified"
+      },
+      {
+        "text": "No AI-vendor receivable write-down had occurred through mid-Aug-2026: Nvidia's allowance for doubtful accounts is ~0.02% of AR, with three customers concentrating 30%/18%/16% of AR.",
+        "flag": "verified"
+      },
+      {
+        "text": "Cecilia Wagner Ricci's (Montclair State) telecom bad-loan shares end-2000→end-2001 — Lucent 2.6%→60%, Nortel 25.5%→80%, Motorola 6.7%→57% — match Newsweek's 'The Stupid Loan Bubble' (2002-10-27) exactly.",
+        "flag": "verified"
+      },
+      {
+        "text": "Telecom high-yield spreads moved 2,100bps (Oct-2002) → 500bps (Jul-2004) (FRBSF Economic Letter 2004-32); roughly $2tn of telecom market value was destroyed over the bust.",
+        "flag": "verified"
+      }
+    ]
+  }
+]
