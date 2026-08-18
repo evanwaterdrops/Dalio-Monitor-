@@ -173,6 +173,10 @@ export default async function Page() {
         { key: "impulse", label: "10Y real yield, 12m change", value: fmt(f.S6?.realYieldDelta12mBp), unit: "bp", source: "live", sourceName: "FRED DFII10", sourceUrl: SRC.DFII10,
           threshold: { value: 250, label: "≥ +250bp/12m = CRITICAL duration shock", direction: "above", current: f.S6?.realYieldDelta12mBp },
           contribution: "The tightening impulse itself. 2022's +250bp surge is the calibration point; the Volcker era reads critical on the same math." },
+        { key: "real10y_level", label: "10Y real yield (TIPS), level", value: fmt(i.real10y), unit: "%", source: "live", sourceName: "FRED DFII10", sourceUrl: SRC.DFII10,
+          prints: i.real10yHistory ?? [], printUnit: "%",
+          ...mom(i.real10y, i.real10yPrior, "pp"),
+          contribution: "The level the page keeps talking about — shown, not implied. Pre-2003 history uses the nominal-minus-CPI proxy basis." },
       ],
     },
     {
