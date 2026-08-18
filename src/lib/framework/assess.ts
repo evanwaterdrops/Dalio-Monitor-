@@ -52,7 +52,7 @@ export async function assess() {
     t("auctions", src.recentAuctions, []),
     t("JGB10", () => src.fred("IRLTLT01JPM156N", { limit: 8 }), []),
     t("FDHBFIN", () => src.fred("FDHBFIN", { limit: 8 }), []),
-    t("WTISPLC", () => src.fred("WTISPLC", { limit: 14 }), []),
+    t("WTISPLC", () => src.fred("WTISPLC", { limit: 13 }), []),
   ]);
   const claimsYoYPct = await t<number | null>("ICSA", src.claimsYoY, null);
 
@@ -76,7 +76,7 @@ export async function assess() {
   const headlineYoY = cpiH.length > 12 ? round2(yoy(cpiH, 12)!) : NaN;
   const coreYoY = cpiC.length > 12 ? round2(yoy(cpiC, 12)!) : NaN;
   const brent = spot["BCO_USD"] ?? NaN;
-  const oilYoYPct = wti.length > 13 ? round2(pctChange(last(wti).value, ago(wti, 13).value) ?? NaN) : null;
+  const oilYoYPct = wti.length > 12 ? round2(pctChange(last(wti).value, ago(wti, 12).value) ?? NaN) : null;
 
   const rAvg = avgRate.length ? last(avgRate).value : NaN;
   const rMarg = dgs10.length ? last(dgs10).value : NaN;
