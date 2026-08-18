@@ -1,0 +1,277 @@
+{
+ "deflation-1920": {
+  "tier": "coarse",
+  "cpiRegime": "extreme",
+  "rvgSign": null,
+  "debtGdpBucket": null,
+  "drawdownState": null,
+  "longRateDir": null,
+  "recession": true,
+  "tags": []
+ },
+ "crash-1929": {
+  "tier": "coarse",
+  "cpiRegime": "low",
+  "rvgSign": null,
+  "debtGdpBucket": null,
+  "drawdownState": true,
+  "longRateDir": "up",
+  "recession": true,
+  "tags": []
+ },
+ "tightening-1937": {
+  "tier": "coarse",
+  "cpiRegime": "moderate",
+  "rvgSign": null,
+  "debtGdpBucket": null,
+  "drawdownState": true,
+  "longRateDir": "up",
+  "recession": true,
+  "tags": []
+ },
+ "war-finance-1942": {
+  "tier": "coarse",
+  "cpiRegime": "extreme",
+  "rvgSign": "gGreater",
+  "debtGdpBucket": "<60",
+  "drawdownState": true,
+  "longRateDir": "up",
+  "recession": false,
+  "tags": []
+ },
+ "inflation-1946": {
+  "tier": "coarse",
+  "cpiRegime": "extreme",
+  "rvgSign": "rGreater",
+  "debtGdpBucket": ">90",
+  "drawdownState": true,
+  "longRateDir": "down",
+  "recession": false,
+  "tags": []
+ },
+ "oil-shock-1973": {
+  "tier": "monthly",
+  "legs": {
+   "SC": "ok",
+   "S8": "critical",
+   "S6": "ok",
+   "S7": "watch",
+   "S3": "watch"
+  },
+  "scPhaseGroup": "expansion",
+  "cpiRegime": "high",
+  "rvgSign": "gGreater",
+  "triggerKeys": [],
+  "tags": [],
+  "debtGdpBucket": "<60",
+  "longRateDir": "up"
+ },
+ "volcker-1980": {
+  "tier": "monthly",
+  "legs": {
+   "SC": "ok",
+   "S8": "critical",
+   "S6": "ok",
+   "S7": "watch",
+   "S3": "watch"
+  },
+  "scPhaseGroup": "expansion",
+  "cpiRegime": "extreme",
+  "rvgSign": "gGreater",
+  "triggerKeys": [],
+  "tags": [],
+  "debtGdpBucket": "<60",
+  "longRateDir": "up"
+ },
+ "crash-1987": {
+  "tier": "monthly",
+  "legs": {
+   "SC": "ok",
+   "S8": "critical",
+   "S6": "ok",
+   "S7": "elevated",
+   "S3": "elevated",
+   "TAX": "ok"
+  },
+  "scPhaseGroup": "expansion",
+  "cpiRegime": "high",
+  "rvgSign": "rGreater",
+  "triggerKeys": [],
+  "tags": [],
+  "debtGdpBucket": "<60",
+  "longRateDir": "up"
+ },
+ "gulf-snl-1990": {
+  "tier": "monthly",
+  "legs": {
+   "SC": "ok",
+   "S8": "critical",
+   "S6": "ok",
+   "S7": "elevated",
+   "S3": "elevated",
+   "TAX": "elevated",
+   "JP": "watch"
+  },
+  "scPhaseGroup": "recovery",
+  "cpiRegime": "high",
+  "rvgSign": "rGreater",
+  "triggerKeys": [],
+  "tags": [],
+  "debtGdpBucket": "<60",
+  "longRateDir": "up"
+ },
+ "ltcm-1998": {
+  "tier": "monthly",
+  "legs": {
+   "SC": "ok",
+   "S8": "watch",
+   "S6": "ok",
+   "S7": "elevated",
+   "S3": "watch",
+   "TAX": "ok",
+   "JP": "ok"
+  },
+  "scPhaseGroup": "expansion",
+  "cpiRegime": "low",
+  "rvgSign": "rGreater",
+  "triggerKeys": [],
+  "tags": [],
+  "debtGdpBucket": "60-90",
+  "longRateDir": "down"
+ },
+ "dotcom-2000": {
+  "tier": "monthly",
+  "legs": {
+   "SC": "ok",
+   "S8": "elevated",
+   "S6": "ok",
+   "S7": "watch",
+   "S3": "watch",
+   "TAX": "ok",
+   "JP": "watch"
+  },
+  "scPhaseGroup": "expansion",
+  "cpiRegime": "moderate",
+  "rvgSign": "gGreater",
+  "triggerKeys": [],
+  "tags": [],
+  "debtGdpBucket": "<60",
+  "longRateDir": "up"
+ },
+ "gfc-2007": {
+  "tier": "monthly",
+  "legs": {
+   "SC": "critical",
+   "S8": "watch",
+   "S6": "ok",
+   "S7": "elevated",
+   "SoV": "elevated",
+   "S5": "elevated",
+   "S3": "watch",
+   "TAX": "ok",
+   "JP": "ok",
+   "deferred": "ok"
+  },
+  "scPhaseGroup": "contraction",
+  "cpiRegime": "low",
+  "rvgSign": "rGreater",
+  "triggerKeys": [
+   "r_crosses_g_recession_event"
+  ],
+  "tags": [],
+  "debtGdpBucket": "60-90",
+  "longRateDir": "down"
+ },
+ "downgrade-2011": {
+  "tier": "monthly",
+  "legs": {
+   "SC": "elevated",
+   "S8": "elevated",
+   "S6": "ok",
+   "S7": "watch",
+   "SoV": "elevated",
+   "S5": "elevated",
+   "S3": "watch",
+   "TAX": "ok",
+   "JP": "watch",
+   "deferred": "elevated"
+  },
+  "scPhaseGroup": "stall",
+  "cpiRegime": "moderate",
+  "rvgSign": "gGreater",
+  "triggerKeys": [],
+  "tags": [],
+  "debtGdpBucket": ">90",
+  "longRateDir": "down"
+ },
+ "repo-2019": {
+  "tier": "monthly",
+  "legs": {
+   "SC": "ok",
+   "S8": "watch",
+   "S6": "ok",
+   "S7": "watch",
+   "SoV": "watch",
+   "S5": "critical",
+   "S3": "watch",
+   "TAX": "ok",
+   "JP": "ok",
+   "deferred": "ok"
+  },
+  "scPhaseGroup": "recovery",
+  "cpiRegime": "low",
+  "rvgSign": "gGreater",
+  "triggerKeys": [
+   "auction_plumbing"
+  ],
+  "tags": [],
+  "debtGdpBucket": ">90",
+  "longRateDir": "down"
+ },
+ "covid-2020": {
+  "tier": "monthly",
+  "legs": {
+   "SC": "ok",
+   "S8": "watch",
+   "S6": "ok",
+   "S7": "watch",
+   "SoV": "watch",
+   "S5": "elevated",
+   "S3": "watch",
+   "TAX": "ok",
+   "JP": "ok",
+   "deferred": "ok"
+  },
+  "scPhaseGroup": "recovery",
+  "cpiRegime": "moderate",
+  "rvgSign": "gGreater",
+  "triggerKeys": [],
+  "tags": [],
+  "debtGdpBucket": ">90",
+  "longRateDir": "down"
+ },
+ "inflation-bear-2021": {
+  "tier": "monthly",
+  "legs": {
+   "SC": "ok",
+   "S8": "critical",
+   "S6": "ok",
+   "S7": "watch",
+   "SoV": "watch",
+   "S5": "ok",
+   "S3": "watch",
+   "TAX": "ok",
+   "JP": "ok",
+   "deferred": "ok"
+  },
+  "scPhaseGroup": "expansion",
+  "cpiRegime": "high",
+  "rvgSign": "gGreater",
+  "triggerKeys": [
+   "monetisation_while_hot"
+  ],
+  "tags": [],
+  "debtGdpBucket": ">90",
+  "longRateDir": "up"
+ }
+}
