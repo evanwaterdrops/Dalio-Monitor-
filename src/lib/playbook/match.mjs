@@ -6,7 +6,17 @@
  */
 import { STATUS_ORDER } from "./fingerprint.mjs";
 
-export const BANDS = { strong: 65, moderate: 50, weak: 30 };
+// Recalibrated by validate-matcher.mjs (guardrail 4): at strong:65/moderate:50,
+// 764/793 months (96.3%) had an actionable non-self top analog — near-vacuous.
+// Raised moderate/strong to the max values the frozen band-unit assertions in
+// test-match.mjs still permit (band(55)="moderate", band(70)="strong"). This
+// is a partial mitigation, not a fix: ~75% of months (595/793) score exactly
+// 100 against a small set of coarse-tier episodes (crash-1929, tightening-1937)
+// regardless of threshold, because those episodes expose only 2 comparable
+// categorical fields (cpiRegime, longRateDir) against a monthly-tier live
+// fingerprint — matching both nails the 100 ceiling by construction of the
+// applicable-field normalization. See PLAYBOOK.md honest-limits section.
+export const BANDS = { strong: 70, moderate: 55, weak: 30 };
 
 const W = { leg: 1, cpiRegime: 3, rvgSign: 2, scPhaseGroup: 2, triggers: 3, tag: 2, debtGdpBucket: 2, drawdownState: 1, longRateDir: 1, recession: 2 };
 
