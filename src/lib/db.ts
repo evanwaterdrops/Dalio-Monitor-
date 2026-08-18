@@ -79,6 +79,7 @@ export async function narrate(snap: any, prev: any): Promise<string | null> {
     inputs: Object.fromEntries(
       Object.entries(s.inputs ?? {}).filter(([, v]) => typeof v === "number"),
     ),
+    playbookLeaderboard: s.playbook?.leaderboard?.map((r: any) => `${r.id}:${r.band}`).join(",") ?? null,
   };
 
   const msg = await client.beta.messages.create({

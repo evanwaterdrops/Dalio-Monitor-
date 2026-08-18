@@ -7,6 +7,15 @@ import {
 } from "./math.mjs";
 import * as src from "../sources/clients";
 import { getManual } from "../db";
+import { fingerprintFromFactors } from "../playbook/fingerprint.mjs";
+import { leaderboard } from "../playbook/match.mjs";
+import { evalTripwires } from "../playbook/theme-eval.mjs";
+// @ts-ignore — JSON module, resolveJsonModule
+import episodes from "../playbook/episodes.json";
+// @ts-ignore — JSON module, resolveJsonModule
+import fingerprints from "../playbook/fingerprints.json";
+// @ts-ignore — JSON module, resolveJsonModule
+import themes from "../playbook/themes.json";
 
 const last = <T,>(a: T[]) => a[a.length - 1];
 const ago = <T,>(a: T[], n: number) => a[a.length - 1 - n];
@@ -22,7 +31,7 @@ export async function assess() {
 
   // ---- pulls (tolerant: one dead source must not kill the run) ----
   const [payems, payRev, unrate, cpiH, cpiC, dgs10, dgs30, funds, walcl, defAsset,
-         realY, hyOas, gdp, debtGdpQ, avgRate, debt, mts, auctions, jgb, foreignQ] = await Promise.all([
+         realY, hyOas, gdp, debtGdpQ, avgRate, debt, mts, auctions, jgb, foreignQ, wti] = await Promise.all([
     t("PAYEMS", () => src.fred("PAYEMS", { limit: 30 }), []),
     t("PAYEMS-rev", () => src.fredRevisions("PAYEMS", 4), []),
     t("UNRATE", () => src.fred("UNRATE", { limit: 30 }), []),
@@ -43,6 +52,7 @@ export async function assess() {
     t("auctions", src.recentAuctions, []),
     t("JGB10", () => src.fred("IRLTLT01JPM156N", { limit: 8 }), []),
     t("FDHBFIN", () => src.fred("FDHBFIN", { limit: 8 }), []),
+    t("WTISPLC", () => src.fred("WTISPLC", { limit: 14 }), []),
   ]);
   const claimsYoYPct = await t<number | null>("ICSA", src.claimsYoY, null);
 
@@ -66,6 +76,7 @@ export async function assess() {
   const headlineYoY = cpiH.length > 12 ? round2(yoy(cpiH, 12)!) : NaN;
   const coreYoY = cpiC.length > 12 ? round2(yoy(cpiC, 12)!) : NaN;
   const brent = spot["BCO_USD"] ?? NaN;
+  const oilYoYPct = wti.length > 13 ? round2(pctChange(last(wti).value, ago(wti, 13).value) ?? NaN) : null;
 
   const rAvg = avgRate.length ? last(avgRate).value : NaN;
   const rMarg = dgs10.length ? last(dgs10).value : NaN;
@@ -158,6 +169,26 @@ export async function assess() {
     billsShareUp3m: null, // MSPD automation = roadmap; manual override available
   });
 
+  // ---- playbook: live fingerprint → episode leaderboard + theme tripwires ----
+  const liveFp = fingerprintFromFactors({
+    factors: { SC: sc, S8: valve, S6: s6, S7: rvg, SoV: gold, S5: demand, S3: squeeze, TAX: revBeta, JP: japan, PC: pc, deferred },
+    triggers,
+    headlineYoY,
+    debtGdpPct: debtToGdpPct,
+    oilYoYPct,
+    longRateDelta12mBp: dgs10.length > 250 ? (last(dgs10).value - ago(dgs10, 250).value) * 100 : null,
+  });
+  const playbook = {
+    leaderboard: leaderboard(liveFp, episodes as any[], fingerprints as any),
+    themes: (themes as any[]).map((th) => ({
+      id: th.id, name: th.name, positionLabel: th.positionLabel,
+      tripwires: evalTripwires(th, {
+        hyOasBp: hyOas.length ? last(hyOas).value * 100 : null,
+        hyOasDelta3mBp: pc?.hyOasDelta3mBp ?? null,
+      }),
+    })),
+  };
+
   return {
     asOf: new Date().toISOString(),
     problems,
@@ -169,6 +200,10 @@ export async function assess() {
       debtLatest: debt.length ? last(debt).value : null,
       hyOas: hyOas.length ? last(hyOas).value : null,
       foreignHoldingsBn: foreignQ.length ? last(foreignQ).value : null,
+      oilYoYPct,
+      real10y: realY.length ? last(realY).value : null,
+      real10yPrior: priorOf(realY),
+      real10yHistory: hist(realY, 8, dLabel),
       // priors + print history for the AFP strips and mini charts
       nfp3mmaPrior: priorOf(nfp3mmaSeries, Math.round),
       nfp3mmaHistory: hist(nfp3mmaSeries, 8, mLabel, Math.round),
@@ -198,6 +233,7 @@ export async function assess() {
     },
     stage,
     triggers,
+    playbook,
   };
 }
 
