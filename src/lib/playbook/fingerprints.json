@@ -62,7 +62,9 @@
   "cpiRegime": "high",
   "rvgSign": "gGreater",
   "triggerKeys": [],
-  "tags": [],
+  "tags": [
+   "energy_supply_shock"
+  ],
   "debtGdpBucket": "<60",
   "longRateDir": "up"
  },
@@ -79,7 +81,9 @@
   "cpiRegime": "extreme",
   "rvgSign": "gGreater",
   "triggerKeys": [],
-  "tags": [],
+  "tags": [
+   "energy_supply_shock"
+  ],
   "debtGdpBucket": "<60",
   "longRateDir": "up"
  },
@@ -116,7 +120,9 @@
   "cpiRegime": "high",
   "rvgSign": "rGreater",
   "triggerKeys": [],
-  "tags": [],
+  "tags": [
+   "energy_supply_shock"
+  ],
   "debtGdpBucket": "<60",
   "longRateDir": "up"
  },
@@ -154,7 +160,9 @@
   "cpiRegime": "moderate",
   "rvgSign": "gGreater",
   "triggerKeys": [],
-  "tags": [],
+  "tags": [
+   "energy_supply_shock"
+  ],
   "debtGdpBucket": "<60",
   "longRateDir": "up"
  },
@@ -178,7 +186,9 @@
   "triggerKeys": [
    "r_crosses_g_recession_event"
   ],
-  "tags": [],
+  "tags": [
+   "energy_supply_shock"
+  ],
   "debtGdpBucket": "60-90",
   "longRateDir": "down"
  },
@@ -270,7 +280,9 @@
   "triggerKeys": [
    "monetisation_while_hot"
   ],
-  "tags": [],
+  "tags": [
+   "energy_supply_shock"
+  ],
   "debtGdpBucket": ">90",
   "longRateDir": "up"
  }

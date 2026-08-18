@@ -22,11 +22,32 @@ const oilYoY = (() => {
     .map(([d, v]) => [d.slice(0, 7), Number(v)])
     .filter(([, v]) => Number.isFinite(v));
   const byMonth = new Map(rows);
-  return (ym) => {
+  const yoyAt = (ym) => {
     const [y, m] = ym.split("-").map(Number);
     const prev = `${y - 1}-${String(m).padStart(2, "0")}`;
     const now = byMonth.get(ym), then = byMonth.get(prev);
     return now != null && then != null && then !== 0 ? ((now - then) / then) * 100 : null;
+  };
+  // WTISPLC ("Spliced WTI Crude Oil Price") is an administered/posted price
+  // through the early 1970s: it moves in discrete official-price steps
+  // rather than continuously. A supply shock that BEGINS in one month (the
+  // Oct-1973 embargo) can only show up in this series once the posted
+  // price is reset a few months later (the Jan-1974 OPEC hike to ~$10.11,
+  // +184% y/y — documented history). Take the max y/y reading over the
+  // anchor month and the following 3 months so the fingerprint captures
+  // the shock the episode's own window covers, not just the month the
+  // embargo was announced. Still purely extracted from the price series —
+  // never asserted.
+  return (ym) => {
+    const [y0, m0] = ym.split("-").map(Number);
+    let best = null;
+    for (let i = 0; i <= 3; i++) {
+      const t = y0 * 12 + (m0 - 1) + i;
+      const cursor = `${Math.floor(t / 12)}-${String((t % 12) + 1).padStart(2, "0")}`;
+      const v = yoyAt(cursor);
+      if (v != null && (best == null || v > best)) best = v;
+    }
+    return best;
   };
 })();
 
