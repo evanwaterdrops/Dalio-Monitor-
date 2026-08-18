@@ -99,6 +99,10 @@ for (let i = 0; i < months.length; i++) {
   const g0 = prev ? gold.get(prev) : null, g1 = gold.get(m);
   series.gold.push(m >= GOLD_FLOAT_FROM && g0 && g1 ? (g1 / g0 - 1) * 100 : null);
   const w0 = prev ? wti.get(prev) : null, w1 = wti.get(m);
+  // WTISPLC ("Spliced WTI Crude Oil Price") is an administered/posted price
+  // through the early 1970s, not a continuous market quote — long flat
+  // stretches (e.g. 1972-07..1973-07 all $3.56) are real recorded posted
+  // prices, not missing data. Same caveat documented in extract-fingerprints.mjs.
   series.commod.push(w0 && w1 ? (w1 / w0 - 1) * 100 : null); // WTI spot as commodity proxy (labeled as such)
   const f = ff.get(m);
   series.cash.push(f?.RF ?? null);

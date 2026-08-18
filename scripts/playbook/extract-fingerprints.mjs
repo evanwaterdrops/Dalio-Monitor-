@@ -38,6 +38,8 @@ const oilYoY = (() => {
   // the shock the episode's own window covers, not just the month the
   // embargo was announced. Still purely extracted from the price series —
   // never asserted.
+  // Asymmetry vs. the live (trailing-only) reading ruled acceptable — see
+  // the tag contract comment in src/lib/playbook/fingerprint.mjs (RULING R5).
   return (ym) => {
     const [y0, m0] = ym.split("-").map(Number);
     let best = null;

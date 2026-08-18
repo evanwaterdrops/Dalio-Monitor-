@@ -41,6 +41,18 @@ function debtGdpBucket(pct) {
 
 // The only tag vocabulary. Each tag MUST be computable from a live reading
 // (spec guardrail 1) — energy_supply_shock ⇐ oil spot y/y ≥ +50%.
+//
+// Two-sided semantics: the LIVE side always feeds a trailing y/y reading
+// (as of "now", no lookahead — see assess.ts). The EXTRACTED (episode) side
+// feeds a y/y reading maximized over a forward window bounded to the
+// episode's own dateRange (see extract-fingerprints.mjs), because episode
+// tags are retrospective/episode-descriptive, not point-in-time. RULING R5:
+// this asymmetry is accepted and intentional — a symmetric trailing-max
+// fails the motivating 1973 case (WTI's posted price stayed flat through
+// the Oct-1973 anchor and only jumped in Jan-1974). It is conservative by
+// construction: tags only add match score when present on BOTH the live
+// and episode side, so the asymmetry can cause a live shock's first weeks
+// to miss a tag match, never produce a spurious one.
 function tagsFrom({ oilYoYPct }) {
   const tags = [];
   if (oilYoYPct != null && oilYoYPct >= 50) tags.push("energy_supply_shock");
