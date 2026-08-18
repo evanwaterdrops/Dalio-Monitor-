@@ -21,6 +21,9 @@
 - Tasks 1–8 commit to branch `Backtest`. Task 9 on branch `playbook-band`, Task 10 on branch `playbook-tab` (both branched from `Backtest` after Task 8). Task 11 spans both.
 - `npm run build` must pass at the end of every task.
 - Data downloads happen once in Task 3 and the CSVs are committed; build scripts must run offline from those files thereafter.
+- **No model-generated figure ships** (Bridgewater "compiler" rule): LLMs write prose only (`narrate()`); every number the UI renders traces to a pure function, a committed CSV, or a generated-and-committed JSON. If a task is tempted to have a model estimate a value, that value becomes a `null`/manual field instead.
+- **Inspection before ingestion** (their 50%→90% lesson): any externally sourced figure entering repo data — episode claims, theme figures, new series — carries a `verified | corrected | unverified` flag backed by a ledger doc under `docs/superpowers/specs/`, and `unverified` renders dimmed. No flag, no ingest.
+- **Every disagreement becomes a fixture** (their "Teach" loop): when the framework misreads a month, a fixed-point test is wrong, or Evan disagrees with a ranking, the resolution is recorded as a NAMED regression case in `REGRESSIONS.md` plus an assertion in the relevant test script — never a silent patch. Future changes must keep all named cases green (the v2.1 Sahm A/B gate is the precedent).
 
 ---
 
@@ -878,11 +881,35 @@ Expected: a table. **Judgment gate, not a green/red test:** the hit rate does no
 
 Hand-write: what the playbook is (2 paragraphs, citing the spec), the two lanes, the honest-limits section (small N, coarse tiers, no-lookahead caveats), then paste the generated `validation-stats.md` table under "## Matcher skill stats (point-in-time, 1960–2026)". State plainly where it fails (e.g. "the matcher has no view in quiet regimes — X% of months have no actionable analog; that is by design").
 
-- [ ] **Step 4: Commit**
+- [ ] **Step 4: Create `REGRESSIONS.md`** (repo root, next to BACKTEST.md)
+
+The named-regression register (global constraint: every disagreement becomes a fixture). Structure:
+
+```markdown
+# Named regressions
+
+Every case here is a disagreement or miss that was converted into a permanent
+test. A change that breaks a named case must argue against THIS file, not
+silently adjust the assertion. Convention: `[id] · where the assertion lives ·
+what happened · what must stay true`.
+
+| id | assertion lives in | case |
+|---|---|---|
+| sahm-2024-supply | scripts/selftest.mjs (v2.1 A/B, BACKTEST.md) | 2024 Sahm crossings were labor-supply events; must read supply-side elevation, never T1 chain |
+| gfc-lead-2007 | scripts/selftest.mjs (v2.1 A/B) | Small-cycle first break Sep-2007 and critical lock Feb-2008 must not degrade |
+| oil73-hard-assets | scripts/playbook/test-returns.mjs | From 1973-10: +12m real S&P deeply negative, gold strongly positive, energy beats market at 2y |
+| volcker-inversion | scripts/playbook/test-returns.mjs | From 1980-01: bonds win 5y nominal, gold loses 5y real |
+| gfc-flight | scripts/playbook/test-returns.mjs | From 2007-09: stocks < −15% and bonds positive at 12m |
+| no-self-match | scripts/playbook/validate-matcher.mjs | Validation never lets an episode predict its own months |
+```
+
+Seed it with exactly the rows above (they all exist after Tasks 3–5). New rows are added whenever a future disagreement is resolved.
+
+- [ ] **Step 5: Commit**
 
 ```bash
-git add scripts/playbook/validate-matcher.mjs scripts/playbook/validation-stats.md PLAYBOOK.md
-git commit -m "feat(playbook): point-in-time matcher validation vs baselines + PLAYBOOK.md"
+git add scripts/playbook/validate-matcher.mjs scripts/playbook/validation-stats.md PLAYBOOK.md REGRESSIONS.md
+git commit -m "feat(playbook): point-in-time matcher validation vs baselines + PLAYBOOK.md + named-regression register"
 ```
 
 ---

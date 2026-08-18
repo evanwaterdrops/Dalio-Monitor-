@@ -181,6 +181,9 @@ validation (CI-able): validate-matcher.mjs → PLAYBOOK.md skill stats
 
 ## Out of scope (YAGNI)
 
+- PAT-style ask-anything research agent over the corpus (snapshot history +
+  episodes + returns) — explicitly parked by Evan (2026-08-19) as a possible
+  next phase after the playbook ships.
 - Position sizing, portfolio construction, any "recommended allocation".
 - Auto-detected themes (theme lane is deliberately manual).
 - Non-US assets, FX, TIPS-as-asset, REITs (kitchen-sink palette rejected).
