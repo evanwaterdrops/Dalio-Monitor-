@@ -26,51 +26,51 @@
     "checklist": [
       {
         "id": "p1",
-        "label": "Exponential demand narrative",
+        "label": "The catalyst makes capex non-optional",
         "state": "matched",
-        "note": "Telecom's 'internet traffic doubles every 100 days' myth (Commerce Dept. Emerging Digital Economy, Apr-1998, from the UUNET/WorldCom origin; actual growth ~100%/yr per Coffman & Odlyzko) rhymes with today's AI compute-demand narrative driving repeated hyperscaler capex raises."
+        "note": "Entry condition is the removal of the option to abstain, not optimism. Tell: capex guidance revised upward in consecutive quarters without revised return assumptions."
       },
       {
         "id": "p2",
-        "label": "New capacity-funding entrants",
+        "label": "The demand number becomes load-bearing",
         "state": "partial",
-        "note": "Telecom's overbuild was funded by a wave of new CLECs and fiber JVs (incumbent fibre share fell 72%→30%, 1996–99, Richmond Fed); the AI-era build is concentrated in incumbent hyperscalers plus financing vehicles (Microsoft's ~70% fund-level leverage via the AI Infrastructure Partnership with BlackRock/GIP/MGX) rather than a wave of new operating entrants."
+        "note": "One unauditable extrapolation embedded simultaneously in equity model, bond covenant, capex plan. Tell: whether anyone starts disclosing utilisation (in telecom it arrived only after the defaults)."
       },
       {
         "id": "p3",
-        "label": "Capex outruns internal cash flow",
+        "label": "Self-funded expansion — the hedge phase",
         "state": "matched",
-        "note": "Telecom comm-equipment investment grew $62bn→$135bn/yr (const-1996$, ~18%/yr, Richmond Fed); hyperscaler capex now runs ≈94% of operating cash flow 2026–27 (PIMCO/Epoch/FactSet)."
+        "note": "Early capacity genuinely scarce, early returns genuinely good; manufactures the evidence for later phases."
       },
       {
         "id": "p4",
-        "label": "Financing shifts to debt / vendor credit",
+        "label": "Migration into debt — the speculative phase",
         "state": "matched",
-        "note": "Telecom vendor financing reached ~$25.6bn across nine vendors by end-2000 (Lucent alone ~$2.4bn, ≈30% of Lucent's $8.1bn); today incremental debt is 9%→32% of capex FY24→LTM (FactSet), hyperscaler IG issuance hit $194bn in H1-26, and Alphabet priced an $84.75bn equity program plus $20.3bn of senior notes."
+        "note": "Capex outruns operating cash flow; the gap is bonded (capex/OCF → 100%). Tell: equity returning to the funding mix for former net buyers of their own stock."
       },
       {
         "id": "p5",
-        "label": "Core-issuer credit reprices off IG lows",
+        "label": "Off-balance-sheet — reported numbers stop describing the economics",
         "state": "matched",
-        "note": "Oracle's 5Y CDS hit a record ~203bps (2026-07-24, then ~215bps mid-Aug) — roughly 4x its <50bps pre-OpenAI-deal level — alongside an S&P downgrade to BBB−; CoreWeave's 5Y CDS sits near 855bps."
+        "note": "Obligations move where analysts can't size them; the loss lands in unexpected places. Tell: depreciation critique — the mitigant (earnings-led market) and the risk are the same number."
       },
       {
         "id": "p6",
-        "label": "Broad HY benchmark still calm",
+        "label": "Vendor and circular finance — the Ponzi phase",
         "state": "partial",
-        "note": "Form matched, degree early — HY OAS is 271bps (2026-08-12) vs a ~450bps long-run median; the widening so far is confined to buildout-adjacent names (Oracle, CoreWeave), not yet transmitted broadly the way telecom's HY spreads eventually blew out to 2,100bps by Oct-2002."
+        "note": "Form matched, degree early. Supplier lends the customer the money to buy the supplier's product; a trap, not primarily a fraud. Tell: first material customer-receivable write-down at a vendor or GPU-collateralised lender."
       },
       {
         "id": "p7",
-        "label": "First vendor-financing impairments",
+        "label": "The credit turn — which leads the equity turn",
         "state": "partial",
-        "note": "Beginning, idiosyncratic — two issuers. Telecom's bad-loan shares rocketed end-2000→end-2001 (Lucent 2.6%→60%, Nortel 25.5%→80%, Motorola 6.7%→57%, per Ricci/Newsweek 2002). Today there is no AI-vendor receivable write-down through mid-Aug-2026 (Nvidia's allowance is ~0.02% of AR), with credit stress concentrated in two issuers, Oracle and CoreWeave."
+        "note": "Beginning, idiosyncratic — two issuers. Credit priced the telecom collapse before equity, legibly and dateably. Tell: idiosyncratic → systemic — broad HY widening while issuer CDS keeps widening."
       },
       {
         "id": "p8",
-        "label": "Broad default / useful-life reckoning",
+        "label": "Liquidation, and the second act",
         "state": "notObserved",
-        "note": "Telecom's endgame destroyed ~$2tn of market value with telecom ≈55%/52% of defaulted dollars in 2001/02 and HY spreads at 2,100bps; the AI-era equivalent — a broad wave of useful-life write-downs and defaults — has not occurred. Burry's ~$176bn understated-depreciation claim (Oracle ~26.9%/Meta ~20.8% overstated by 2028) remains a contested claim, not a confirmed event."
+        "note": "Assets clear at salvage; the surplus is real but captured by users, not financiers. Sharpest AI divergence: 2–3y GPU life means stranded compute has no second act."
       }
     ],
     "tripwires": [
