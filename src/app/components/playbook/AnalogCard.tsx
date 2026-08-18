@@ -14,9 +14,6 @@ export default function AnalogCard({ episodeId }: { episodeId: string }) {
       </div>
       <p className="analog-card-takeaway">{episode.takeaway}</p>
       <HorizonTable episodeId={episodeId} anchor={episode.anchorMonth} />
-      <p className="analog-card-disclaimer">
-        What each allocation actually returned from this point in history — precedent, not advice.
-      </p>
     </div>
   );
 }

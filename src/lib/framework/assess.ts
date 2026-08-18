@@ -37,7 +37,7 @@ export async function assess() {
     t("UNRATE", () => src.fred("UNRATE", { limit: 30 }), []),
     t("CPIAUCSL", () => src.fred("CPIAUCSL", { limit: 30 }), []),
     t("CPILFESL", () => src.fred("CPILFESL", { limit: 30 }), []),
-    t("DGS10", () => src.fred("DGS10", { limit: 30 }), []),
+    t("DGS10", () => src.fred("DGS10", { limit: 260 }), []),  // 260 ≥ 251 trading days + margin, so longRateDelta12mBp isn't always null
     t("DGS30", () => src.fred("DGS30", { limit: 30 }), []),
     t("DFEDTARU", () => src.fred("DFEDTARU", { limit: 200 }), []),
     t("WALCL", () => src.fred("WALCL", { limit: 8 }), []),

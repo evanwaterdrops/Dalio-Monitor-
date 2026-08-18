@@ -71,6 +71,9 @@ export default function HorizonTable({ episodeId, anchor }: { episodeId: string;
           ))}
         </tbody>
       </table>
+      <p className="horizon-table-disclaimer">
+        What each allocation actually returned from this point in history — precedent, not advice.
+      </p>
     </div>
   );
 }
