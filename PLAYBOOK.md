@@ -32,16 +32,25 @@ Two lanes, honestly labeled and never blended into one score:
 - **Coarse pre-1960 tier.** Pre-1960 episodes (1920–21 deflation, 1929–32 crash,
   1937 tightening, 1942–51 war finance, 1946–48 inflation) only have annual,
   bucketed fingerprints (CPI regime, r−g sign, debt/GDP bucket, drawdown state, long
-  rate direction — no legs, no triggers). Because a monthly-tier live reading is only
-  comparable to those episodes on 2 of those fields (`cpiRegime`, `longRateDir`), a
-  live month that happens to share both buckets with `tightening-1937` or
-  `crash-1929` scores a perfect 100 against them almost by construction — the
-  applicable-field normalization rewards sparse fingerprints. This floor holds
-  **regardless of the strong/moderate band thresholds** (see validation table below);
-  fixing it would mean touching per-episode fingerprints or weights, which guardrail
-  4 exists to prevent. Treat any `tightening-1937` / `crash-1929` top-analog result
-  as coarse-match noise, not high-confidence precedent — the UI's "coarse match" chip
-  is the intended mitigation, not a numeric one.
+  rate direction — no legs, no triggers). Validation originally found that a
+  monthly-tier live reading was only comparable to `tightening-1937` and `crash-1929`
+  on 2 of those fields (`cpiRegime`, `longRateDir`), so a live month sharing both
+  buckets scored a degenerate perfect 100 against them regardless of the band
+  thresholds — those two episodes alone topped ~75% of all 793 months. **Ruling R6**
+  fixed this structurally rather than by band-tuning: `leaderboard()` now requires
+  `applicable ≥ MIN_APPLICABLE` (8, `src/lib/playbook/match.mjs`) before an episode
+  may appear at all, and `validate-matcher.mjs`'s live fingerprint was enriched with
+  the same `debtGdpPct` / `longRateDelta12mBp` fields `extract-fingerprints.mjs`
+  already gives coarse episodes, so the comparison is fair rather than a blanket
+  exclusion. Net effect: `tightening-1937` and `crash-1929` (both still null on
+  `rvgSign`/`debtGdpBucket`, so still only 4 applicable-weight) no longer clear the
+  gate and have dropped out of the leaderboard entirely; `war-finance-1942` (which
+  does have `rvgSign` and `debtGdpBucket` populated, applicable = 8) now clears it
+  legitimately. `scoreFingerprints()` itself is unchanged — this is a minimum-
+  evidence floor on which episodes are allowed to compete, not a scoring change.
+  Treat any coarse-tier top-analog result as lower-confidence than a monthly-tier
+  one regardless — the UI's "coarse match" chip remains the intended qualitative
+  mitigation.
 - **Pre-1960 episodes rarely surface for the right reasons.** Because century-panel
   rows going into pre-1960 fingerprints are sparse (annual, not monthly), those
   episodes' fingerprints are themselves coarse approximations of an already-coarse
@@ -72,22 +81,24 @@ trailing-12m-winner-persists.
 
 | Metric | Value |
 |---|---|
-| Months with an actionable (strong/moderate, non-self) top analog | 751 of 793 |
-| Top-analog 12m-winner hit rate | 17.0% |
-| Baseline: always S&P | 46.6% |
-| Baseline: trailing-12m winner persists | 41.1% |
-| Top-analog usage | tightening-1937:315 · crash-1929:199 · oil-shock-1973:100 · deflation-1920:71 · crash-1987:26 · downgrade-2011:18 · gfc-2007:11 · covid-2020:6 · gulf-snl-1990:3 · ltcm-1998:2 |
+| Months with an actionable (strong/moderate, non-self) top analog | 756 of 793 |
+| Top-analog 12m-winner hit rate | 30.3% |
+| Baseline: always S&P | 47.0% |
+| Baseline: trailing-12m winner persists | 40.7% |
+| Top-analog usage | dotcom-2000:155 · covid-2020:128 · oil-shock-1973:124 · war-finance-1942:83 · ltcm-1998:78 · gfc-2007:70 · downgrade-2011:36 · crash-1987:36 · repo-2019:33 · gulf-snl-1990:8 · volcker-1980:3 · inflation-bear-2021:2 |
 
-**Where it fails, plainly:** the matcher has an actionable top analog for 94.7% of
-months (751/793) — not the near-silent, only-speaks-in-a-crisis behavior the design
-intends — because two coarse-tier episodes (`tightening-1937`, `crash-1929`) score a
-perfect 100 against most monthly-tier live readings for the structural reason
-described above, and no band threshold can exclude a perfect score. On the months it
-does speak, its top-analog 12m-winner hit rate (17.0%) is well below both the
-always-S&P baseline (46.6%) and the trailing-12m-persistence baseline (41.1%) — the
-matcher's regime-analog pick is a *worse* short-run asset-winner predictor than doing
-nothing or extrapolating the recent trend. Read this layer as "which history rhymes,"
-not as a trading signal.
+**Where it fails, plainly:** post-R6, the matcher still has an actionable top analog
+for 95.3% of months (756/793) — the MIN_APPLICABLE gate fixed *which* episodes are
+allowed to dominate (the two degenerate coarse matches are gone; usage is now spread
+across 12 genuinely-comparable episodes instead of 2 sparse ones), but it did not by
+itself make the matcher quiet in calm regimes — that is a separate, unresolved
+property of the current BANDS thresholds, not something this ruling was scoped to
+touch. On the months it does speak, its top-analog 12m-winner hit rate improved from
+17.0% (pre-R6) to 30.3% (post-R6) — a real improvement, since the leaderboard is no
+longer regularly topped by two episodes whose "match" carried almost no information —
+but it is still well below both the always-S&P baseline (47.0%) and the
+trailing-12m-persistence baseline (40.7%). Read this layer as "which history rhymes,"
+not as a trading signal; do not narrate this as "fixed."
 
 ## Band recalibration (guardrail 4 judgment gate)
 
@@ -112,3 +123,41 @@ touching per-episode fingerprints or weights, which is out of scope for this
 guardrail. No unit-test assertion boundary was broken by this change; per-field
 weights, per-episode fingerprints, and the scoring function itself were left
 untouched.
+
+## Ruling R6: minimum-comparison-mass gate
+
+The 75%-of-months degenerate-100 problem the band recalibration above could not
+touch was a structural defect in *what the leaderboard allows to compete*, not in
+where the strong/moderate lines sit — so it was fixed structurally instead of by
+further band-tuning. `src/lib/playbook/match.mjs` now exports `MIN_APPLICABLE = 8`
+and `leaderboard()` excludes any episode whose `scoreFingerprints(...).applicable`
+falls short of it, before the band filter is even applied. `scoreFingerprints()`
+itself, its weights, and every per-episode fingerprint are unchanged — this is a
+floor on how much mutually-comparable evidence a score is allowed to be computed
+from, not a re-tuning of the scoring function.
+
+`validate-matcher.mjs` was also enriched to give coarse episodes a fair shot rather
+than a blanket handicap: the live monthly fingerprint now gets `debtGdpPct` and
+`longRateDelta12mBp` joined in by year from `scripts/backtest/century-panel.json`,
+the same fields `extract-fingerprints.mjs` already supplies to episode-side coarse
+fingerprints. This is why `war-finance-1942` (which has real `rvgSign` and
+`debtGdpBucket` values, applicable = 8) now clears the gate on genuine shared
+evidence, while `tightening-1937` and `crash-1929` (both still null on those two
+fields, applicable = 4) do not — the fix discriminates between coarse episodes with
+real comparable substance and ones without, rather than penalizing "coarse" as a
+category.
+
+Before/after (both at the post-recalibration BANDS from the section above):
+
+| | Actionable months | Hit rate | Baseline (S&P) | Baseline (persistence) | Top-analog usage |
+|---|---|---|---|---|---|
+| Pre-R6 | 751/793 (94.7%) | 17.0% | 46.6% | 41.1% | dominated by `tightening-1937` (315) + `crash-1929` (199) |
+| Post-R6 | 756/793 (95.3%) | 30.3% | 47.0% | 40.7% | spread across 12 episodes, led by `dotcom-2000` (155), `covid-2020` (128), `oil-shock-1973` (124) |
+
+The actionable-month count barely moved (751→756) — R6 was never going to touch that,
+since it does not change how often *some* episode clears the gate, only which ones
+are eligible to. What changed is the composition and the hit rate: with the
+degenerate coarse matches gone, the top-analog 12m-winner hit rate nearly doubled
+(17.0% → 30.3%), though it is still below both baselines. Stated plainly, as before:
+this is an improvement, not a fix, and the matcher remains a worse short-run
+asset-winner predictor than doing nothing or extrapolating the recent trend.

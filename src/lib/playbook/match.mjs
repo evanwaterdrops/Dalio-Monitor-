@@ -73,13 +73,22 @@ export function band(score) {
   return null;
 }
 
+// R6 (controller ruling): structural minimum-comparison-mass gate. An episode
+// may only enter the leaderboard when enough fingerprint fields are mutually
+// applicable — this is NOT per-episode tuning, it's a floor on how much
+// evidence a score is allowed to be computed from. It exists because
+// validation showed sparse coarse fingerprints (2-3 shared buckets, e.g.
+// cpiRegime + longRateDir only) score degenerate 100s and dominate the
+// leaderboard regardless of BANDS. scoreFingerprints() itself stays raw.
+export const MIN_APPLICABLE = 8;
+
 export function leaderboard(live, episodes, fingerprints) {
   return episodes
     .map(ep => {
       const fp = fingerprints[ep.id];
-      const { score } = scoreFingerprints(live, fp);
-      return { id: ep.id, name: ep.name, tier: ep.tier, score, band: band(score) };
+      const { score, applicable } = scoreFingerprints(live, fp);
+      return { id: ep.id, name: ep.name, tier: ep.tier, score, applicable, band: band(score) };
     })
-    .filter(r => r.band !== null)
+    .filter(r => r.band !== null && r.applicable >= MIN_APPLICABLE)
     .sort((x, y) => y.score - x.score);
 }

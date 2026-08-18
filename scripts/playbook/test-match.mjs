@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { scoreFingerprints, band, leaderboard, BANDS } from "../../src/lib/playbook/match.mjs";
+import { scoreFingerprints, band, leaderboard, BANDS, MIN_APPLICABLE } from "../../src/lib/playbook/match.mjs";
 import episodes from "../../src/lib/playbook/episodes.json" with { type: "json" };
 import fingerprints from "../../src/lib/playbook/fingerprints.json" with { type: "json" };
 
@@ -33,4 +33,19 @@ const lb = leaderboard(fp73, episodes, fingerprints);
 assert.equal(lb[0].id, "oil-shock-1973");
 assert.ok(lb.every((r, i) => i === 0 || lb[i - 1].score >= r.score));
 assert.ok(lb.every(r => r.band !== null && r.name && r.tier));
+// R6: a sparse fingerprint pair (few applicable fields) can still score a
+// perfect 100 raw — scoreFingerprints() is unchanged — but MIN_APPLICABLE
+// must keep it off the leaderboard.
+const sparseLive = { tier: "monthly", cpiRegime: "moderate", longRateDir: "up" };
+const sparseEp = { tier: "coarse", cpiRegime: "moderate", longRateDir: "up" };
+const sparseScore = scoreFingerprints(sparseLive, sparseEp);
+assert.equal(sparseScore.score, 100, "sparse pair should still raw-score 100");
+assert.ok(sparseScore.applicable < MIN_APPLICABLE, `expected applicable < MIN_APPLICABLE(${MIN_APPLICABLE}), got ${sparseScore.applicable}`);
+const sparseLb = leaderboard(
+  sparseLive,
+  [{ id: "sparse-fake", name: "Sparse fake", tier: "coarse" }],
+  { "sparse-fake": sparseEp },
+);
+assert.equal(sparseLb.length, 0, "sparse high-score episode must be excluded from leaderboard despite a perfect raw score");
+
 console.log("match tests OK");

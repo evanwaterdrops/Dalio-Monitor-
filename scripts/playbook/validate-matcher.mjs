@@ -12,6 +12,13 @@ const episodes = J("../../src/lib/playbook/episodes.json");
 const fingerprints = J("../../src/lib/playbook/fingerprints.json");
 const returns = J("../../src/lib/playbook/returns.json");
 const monthly = J("returns-monthly.json");
+const century = J("../backtest/century-panel.json");
+
+// R6: join century-panel.json by year so the live fingerprint gets the same
+// debtGdpPct / longRateDelta12mBp fields extract-fingerprints.mjs supplies to
+// coarse episodes — a fair like-for-like comparison instead of a blanket
+// exclusion of coarse episodes from the leaderboard.
+const byYear = new Map(century.map(r => [r.y, r]));
 
 const CORE = ["spx", "gold", "bond10", "cash"];
 const mIdx = new Map(monthly.months.map((m, i) => [m, i]));
@@ -51,7 +58,11 @@ const inEpisodeYears = (epId, ymStr) => {
 let n = 0, hit = 0, baseSpx = 0, basePersist = 0;
 const perEpisode = {};
 for (const rec of results) {
-  const fp = fingerprintFromFactors({ factors: rec.factors, triggers: rec.triggers ?? [], headlineYoY: rec.inputs?.headlineYoY ?? null });
+  const y = Number(rec.t.slice(0, 4));
+  const row = byYear.get(y), prevRow = byYear.get(y - 1);
+  const debtGdpPct = row?.debtGdp ?? null;
+  const longRateDelta12mBp = row?.longRate != null && prevRow?.longRate != null ? (row.longRate - prevRow.longRate) * 100 : null;
+  const fp = fingerprintFromFactors({ factors: rec.factors, triggers: rec.triggers ?? [], headlineYoY: rec.inputs?.headlineYoY ?? null, debtGdpPct, longRateDelta12mBp });
   const lb = leaderboard(fp, episodes, fingerprints).filter(r => (r.band === "strong" || r.band === "moderate") && !inEpisodeYears(r.id, rec.t));
   if (!lb.length) continue;
   const realized = fwd12Winner(rec.t);

@@ -13,3 +13,4 @@ what happened · what must stay true`.
 | volcker-inversion | scripts/playbook/test-returns.mjs | From 1980-01: bonds win 5y nominal, gold loses 5y real |
 | gfc-flight | scripts/playbook/test-returns.mjs | From 2007-09: stocks < −15% and bonds positive at 12m |
 | no-self-match | scripts/playbook/validate-matcher.mjs | Validation never lets an episode predict its own months |
+| coarse-degeneracy | scripts/playbook/test-match.mjs | Sparse coarse fingerprints scored 100 on 2-3 shared buckets and topped 75% of months; leaderboard requires applicable ≥ MIN_APPLICABLE |
