@@ -247,3 +247,10 @@ html, body { margin: 0; padding: 0; background: var(--bg); color: var(--text); f
 .figure-item-dim { opacity: 0.55; }
 .figure-flag-tag { font-family: var(--mono); font-size: 8.5px; letter-spacing: 0.08em; color: var(--text-ghost); border: 1px solid var(--border-dim); border-radius: 2px; padding: 0 4px; flex-shrink: 0; }
 .figure-item-text { flex: 1; }
+
+/* ---------- playbook: PLAYBOOK tab layout ---------- */
+.playbook-paths-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 16px; }
+.playbook-themes-stack { display: flex; flex-direction: column; gap: 16px; }
+
+/* recharts tooltip content — same chrome as .chart-tooltip, positioned by recharts itself */
+.rc-tooltip { background: var(--surface); border: 1px solid var(--border); border-radius: 3px; padding: 8px 10px; font-family: var(--mono); font-size: 11px; line-height: 1.6; min-width: 150px; box-shadow: 0 4px 14px rgba(15, 23, 42, 0.14); }

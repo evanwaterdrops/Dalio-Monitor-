@@ -6,6 +6,7 @@ import Tabs from "./components/Tabs";
 import HeatTimeline from "./components/charts/HeatTimeline";
 import CenturyPanel from "./components/charts/CenturyPanel";
 import CycleTimeline from "./components/charts/CycleTimeline";
+import PlaybookTab from "./components/playbook/PlaybookTab";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -457,6 +458,11 @@ export default async function Page() {
               </section>
             </>
           }
+          extra={{
+            label: "PLAYBOOK",
+            sub: "analogs · theme rhymes · horizon returns",
+            content: <PlaybookTab playbook={snap.playbook} />,
+          }}
         />
 
         {alerts.length > 0 && (
