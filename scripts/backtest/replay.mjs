@@ -19,6 +19,29 @@
  * Legs whose data source doesn't exist yet at t are EXCLUDED from the
  * composite heat (not defaulted) and listed in `problems` — mirroring
  * production's graceful-degradation contract.
+ *
+ * Task 7 (Dalio realignment) additions — money/curve/equity are stored as
+ * TOP-LEVEL row fields (`row.money`, `row.curve`, `row.equity`), separate
+ * from `factors`/heat, so they never perturb the existing heat/quintile/
+ * correlation numbers already reported in BACKTEST.md:
+ *  - `money` (moneyVsCredit): credit leg is TCMDO LATEST-vintage data
+ *    (ALFRED coverage for TCMDO only starts ~2010, too shallow to vintage
+ *    the 1999–2009 window the validation gate needs) — flagged
+ *    `nonPIT: true` and excluded from heat, exactly like century.mjs.
+ *  - `curve` (curveShape): DGS3MO (front) vs DGS10 (long), 3-month date
+ *    deltas; no term-premium source is wired into this keyless backtest,
+ *    so `dTpBp3m` is always NaN — curveShape still classifies the
+ *    steepening mode from front/long deltas alone.
+ *  - `equity` (equityDrawdown): real (CPI-deflated) ^GSPC vs its trailing
+ *    3-calendar-year high — see fetch.mjs header for the source chain
+ *    (Shiller/FRED/Stooq all failed; Yahoo reused).
+ *  - `valve` (monetisationValve) now also receives `expInfl5yPct` from
+ *    T5YIE (starts 2003-01-02) — null before, so the valve reads
+ *    realized-only pre-2003 (documented in BACKTEST.md).
+ *  - BDC price/NAV, DFA wealth shares, and reservePremise are NOT
+ *    replayed — none has point-in-time history reachable keylessly; they
+ *    are slow-clock/display-only inputs by the two-clock rule (spec §2)
+ *    and stay out of this monthly panel entirely.
  */
 
 import { writeFile } from "node:fs/promises";
@@ -27,7 +50,7 @@ import { fileURLToPath } from "node:url";
 import {
   smallCyclePhase, monetisationValve, rVsG, goldDecomposition, demandLeg,
   deferredAsset, interestSqueeze, revenueBeta, japanLeg, bigCycleStage,
-  priceOfMoney, privateCredit,
+  priceOfMoney, privateCredit, moneyVsCredit, curveShape, equityDrawdown,
   evaluateTriggers, pctChange, sahmGap, STATUS,
 } from "../../src/lib/framework/math.mjs";
 import {
@@ -123,6 +146,15 @@ export async function replay() {
   // long-rate splice for rMarg / S6 proxy before DGS10 (1962): LTGOVTBD 1925–2000
   const nominal10 = [...ltgovt.filter(o => o.date < dgs10[0].date), ...dgs10];
 
+  console.log("fetching Dalio-realignment fast-layer series (money/curve/equity)…");
+  const [dgs3mo, t5yie, tcmdo, spx] = await Promise.all([
+    fredLatest("DGS3MO"), // 3m constant-maturity yield, unrevised daily (like DGS10/DGS30) → truncate ≤ t
+    fredLatest("T5YIE"),  // 5y breakeven inflation, market data, no vintages needed; starts 2003-01-02
+    fredLatest("TCMDO"),  // total credit market debt: LATEST-vintage (ALFRED coverage only ~2010+, probed
+                           // empirically — see fetch.mjs header) → flagged nonPIT below, excluded from heat
+    yahooDailyMax("^GSPC"), // real-equity replay input; see fetch.mjs header for the source-chain note
+  ]);
+
   console.log("fetching FiscalData + auctions + gold…");
   const [avgRate, mts, gold] = await Promise.all([fiscalAvgRateAll(), mtsAll(), yahooDailyMax("GC=F")]);
   const auctionYears = [];
@@ -133,14 +165,27 @@ export async function replay() {
   // Restrict each series' vintage requests to its ALFRED coverage era (probed):
   // CPI vintages ~1974→ (NSA fallback before), GDP 1992→ (GNP vintages before),
   // FGRECPT ~1990s→ (TAX leg excluded before), GNP needed only pre-1997.
-  const [vPay, vUn, vCpiH, vCpiC, vGdp, vGnp, vRcpt] = await Promise.all([
+  const [vPay, vUn, vCpiH, vCpiC, vGdp, vGnp, vRcpt, vM2] = await Promise.all([
     alfredVintages("PAYEMS", vintDates), alfredVintages("UNRATE", vintDates),
     alfredVintages("CPIAUCSL", vintDates.filter(d => d >= "1974-01-01")),
     alfredVintages("CPILFESL", vintDates.filter(d => d >= "1974-01-01")),
     alfredVintages("GDP", vintDates.filter(d => d >= "1992-01-01")),
     alfredVintages("GNP", vintDates.filter(d => d < "1997-01-01")),
     alfredVintages("FGRECPT", vintDates.filter(d => d >= "1985-01-01")),
+    // ALFRED M2SL vintage coverage probed empirically: 404s pre-1988, 200s from 1988-01 on.
+    alfredVintages("M2SL", vintDates.filter(d => d >= "1988-01-01")),
   ]);
+
+  // Real-equity series for equityDrawdown — deflate Yahoo ^GSPC (nominal,
+  // unrevised) by the never-revised NSA CPI series, using the CPI value
+  // known ~28d after each month (same publication lag used for the S8
+  // valve's cpiCut elsewhere in this file). See fetch.mjs header for why
+  // this stands in for Shiller's real total-return series.
+  const realSpx = [];
+  for (const o of spx) {
+    const cpiPt = valueAt(cpiNsa, shiftDays(o.date, -28));
+    if (cpiPt) realSpx.push({ date: o.date, value: o.value / cpiPt.value });
+  }
 
   const rows = [];
   for (const ym of months) {
@@ -195,9 +240,13 @@ export async function replay() {
     const brent = brentT.length ? last(brentT).value : null;
     const oilT = asOf(brentT.length ? dcoil : wti, cpiCut);
     const oilYoYPct = oilT.length > 12 ? round2(yoyByDate(oilT) ?? NaN) : null;
+    // T5YIE starts 2003-01-02 — expInfl5yPct is null before then, so the
+    // valve reads realized-only pre-2003 (documented in BACKTEST.md).
+    const t5yieT = asOf(t5yie, t);
+    const expInfl5yPct = t5yieT.length ? last(t5yieT).value : null;
     let valve = null;
     if (headlineYoY != null && coreYoY != null)
-      valve = monetisationValve({ coreYoY, headlineYoY, brent: brent ?? NaN, oilYoYPct });
+      valve = monetisationValve({ coreYoY, headlineYoY, brent: brent ?? NaN, oilYoYPct, expInfl5yPct });
     else { excluded.add("S8"); problems.push("S8: CPI unavailable"); }
 
     /* ---- r vs g (S7) ---- */
@@ -342,6 +391,43 @@ export async function replay() {
       });
     } else { excluded.add("PC"); problems.push("PC: HY OAS unavailable (keyless download capped ~2023+)"); }
 
+    /* ---- money vs credit (Dalio monetization signature; Task 7) ----
+     * Credit leg = TCMDO, LATEST-vintage (see header note) — flagged
+     * nonPIT and kept OUT of `legs`/heat, mirroring century.mjs. */
+    const m2T = vM2[t] ?? [];
+    const tcmdoT = asOf(tcmdo, t);
+    const m2YoYPct = m2T.length > 12 ? round2(yoy(m2T, 12)) : null;
+    const creditYoYPctRaw = tcmdoT.length > 4 ? yoyByDate(tcmdoT) : null;
+    const creditYoYPct = creditYoYPctRaw != null && Number.isFinite(creditYoYPctRaw) ? round2(creditYoYPctRaw) : null;
+    let money = null;
+    if (m2YoYPct != null && creditYoYPct != null) {
+      money = { ...moneyVsCredit({ m2YoYPct, creditYoYPct }), m2YoYPct, creditYoYPct, nonPIT: true };
+      problems.push("money: credit leg (TCMDO) is latest-vintage, non-PIT — excluded from heat, like century panel");
+    } else problems.push("money: M2SL vintage (from 1988-01) or TCMDO unavailable yet");
+
+    /* ---- curve shape (bear-steepening regime; Task 7) ---- */
+    const dgs3moT = asOf(dgs3mo, t), dgs10Tc = asOf(dgs10, t);
+    let curve = null;
+    if (dgs3moT.length && dgs10Tc.length) {
+      const fNow = last(dgs3moT), lNow = last(dgs10Tc);
+      const fThen = valueAt(dgs3mo, shiftDays(t, -91)), lThen = valueAt(dgs10, shiftDays(t, -91));
+      curve = curveShape({
+        dFrontBp3m: fThen ? (fNow.value - fThen.value) * 100 : NaN,
+        dLongBp3m: lThen ? (lNow.value - lThen.value) * 100 : NaN,
+        dTpBp3m: NaN, // no term-premium source wired into this keyless backtest; curveShape still classifies mode
+        spreadBp: (lNow.value - fNow.value) * 100,
+      });
+    } else problems.push("curve: DGS3MO starts 1981-09");
+
+    /* ---- equity drawdown (Dalio depression ruler; Task 7) ---- */
+    const realSpxT = asOf(realSpx, t);
+    let equity = null;
+    if (realSpxT.length >= 260) {
+      const win = realSpxT.filter(o => o.date >= shiftDays(t, -1095));
+      const high = Math.max(...win.map(o => o.value));
+      equity = equityDrawdown({ ddPct: pctChange(last(realSpxT).value, high) });
+    } else problems.push("equity: building real-SPX history (needs ~1y)");
+
     /* ---- stage + triggers ---- */
     const walclT = asOf(walcl, t);
     const fedAssetsUp3w = walclT.length >= 4 && [1, 2, 3].every(i => ago(walclT, i - 1).value > ago(walclT, i).value);
@@ -411,6 +497,7 @@ export async function replay() {
         baa10y: (() => { const b = asOf(baa10y, t); return b.length ? last(b).value : null; })(),
       },
       factors: Object.fromEntries(Object.entries(legs).map(([k, v]) => [k, v])),
+      money, curve, equity,
       stage: stage?.stage ?? null,
       triggers, factorHeat: factorHeat == null ? null : round2(factorHeat), heat, heatCycle, heatSov,
     });

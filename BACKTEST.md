@@ -218,6 +218,68 @@ Oct/Nov revised it away — that wobble is the true real-time experience of late
 - No transaction-cost/strategy claim is made: this validates *state assessment and lead times*,
   not a trading rule.
 
+## Threshold validation (Dalio realignment)
+
+Task 7 replays the new fast-layer triggers — `moneyVsCredit`, `curveShape`,
+`equityDrawdown` — through the same point-in-time engine and checks their
+self-calibrated thresholds against known episodes (spec §3: unproven
+self-calibrated thresholds get demoted to context). `money`/`curve`/`equity`
+are stored as top-level fields per row (not inside `factors`) and are
+**excluded from heat/quintile/correlation** above — none of those numbers moved.
+
+**On tiers, honestly:** the GFC (2008-09→2009-06) is the true credit-contraction
+case and validates moneyVsCredit at its **CRITICAL** tier. 2020 is a different
+animal — MP3-style printing running *alongside* fiscally-supported credit growth
+(M2 ~+25% y/y by end-2020, but TCMDO — all-sector, including the federal deficit
+spend — never went negative, holding ~+8% y/y throughout). Per spec §4's own
+tier definitions that is precisely the ≥5pp-gap **WATCH** signature
+("printing-into-contraction" at watch), not the credit-contraction CRITICAL
+case — demanding CRITICAL in 2020 was over-specified in the first draft of this
+gate and has been corrected below (gate a2). GFC remains the CRITICAL-tier
+anchor; 2020 is the WATCH-tier anchor. Both are real, distinguishable episodes.
+
+| Gate | Result | Months |
+|---|---|---|
+| (a1) moneyVsCredit CRITICAL ≥1 in 2008-09..2009-06 (GFC, true contraction) | PASS | 2009-02 |
+| (a2) moneyVsCredit printing-into-contraction @ watch-or-critical ≥1 in 2020-03..2020-12 (COVID, fiscally-supported credit) | PASS | 2020-05:watch, 2020-06:watch, 2020-07:watch, 2020-08:watch, 2020-09:watch, 2020-10:watch, 2020-11:watch, 2020-12:watch |
+| (a3) moneyVsCredit CRITICAL = 0 in 1999-01..2007-06 (quiet era) | PASS | none |
+| (b) equityDrawdown CRITICAL ≥1 in 2008-10..2009-03 (GFC) | PASS | 2008-10, 2008-11, 2008-12, 2009-01, 2009-02, 2009-03 |
+
+Overall: **PASS**.
+
+moneyVsCredit critical episodes (full panel): 2009-02.
+
+Quiet-era (1999-01..2007-06) watch months, descriptive only (not gated —
+(a3) only requires zero CRITICAL months in this window): **0**
+(none).
+
+equityDrawdown critical episodes (full panel): 1974-07→1975-04, 1975-07→1975-12, 2002-07→2003-05, 2008-10→2009-06.
+
+curveShape bear-steepening — **descriptive only, no pass/fail** (a new regime
+trigger with no established episode ground truth yet): 1982-06, 1983-09, 1985-04, 1987-03, 1990-01, 1990-08→1990-10, 1992-04, 1996-02→1996-04, 1996-06, 1999-03, 2001-05→2001-06, 2001-12→2002-01, 2003-07→2003-08, 2003-12, 2007-01, 2007-05→2007-06, 2008-05, 2009-04→2009-07, 2009-12, 2010-11→2011-02, 2012-03, 2013-01→2013-02, 2013-05→2013-08, 2013-12, 2015-04, 2015-06, 2019-11→2019-12, 2020-10, 2020-12, 2021-02→2021-04, 2021-10, 2023-10→2023-11, 2024-04→2024-05, 2024-10→2024-12, 2026-05
+(0 elevated month(s) [term premium also rising or unavailable], 
+60 watch month(s)).
+
+**Caveats:**
+- **money leg is non-PIT.** The credit input (`TCMDO`) has no usable ALFRED
+  vintage depth before ~2010 (probed empirically), so `money` is computed from
+  LATEST-vintage TCMDO — flagged `nonPIT: true` on the row and excluded from
+  heat, exactly like the century panel. It answers "does the signature
+  identify known episodes with today's data" not "would a live user in 2008
+  have seen it" — a different, weaker claim than every other leg in this file.
+- **Valve expectations key is realized-only pre-2003.** `T5YIE` (5y breakeven
+  inflation) starts 2003-01-02; `expInfl5yPct` is `null` before then, so
+  `monetisationValve`'s "gated-by-expectations" branch cannot fire pre-2003 —
+  the valve reads on realized CPI/oil terms alone in that era, same as before
+  this task.
+- **Equity source is Yahoo ^GSPC, not Shiller.** Shiller's `ie_data.xls` is a
+  binary OLE2/BIFF file with no keyless CSV mirror found; FRED's `SP500` only
+  covers 2016→; Stooq is confirmed bot-blocked from this environment. Real
+  terms come from deflating Yahoo's `^GSPC` (already this file's ground-truth
+  SPX source) by the never-revised NSA CPI series — price-only (ex-dividend),
+  not Shiller's dividend-inclusive real total return. See `fetch.mjs` header
+  for the full source-chain trace.
+
 ## Reproduce
 
 `npm run backtest` — keyless (FRED/ALFRED public CSV, FiscalData, TreasuryDirect, Yahoo),

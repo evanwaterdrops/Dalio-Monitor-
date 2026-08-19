@@ -15,6 +15,39 @@
  *
  * Every response is cached as JSON under scripts/backtest/.cache/ so a
  * completed run is reproducible offline.
+ *
+ * Task 7 (Dalio realignment) additions — all via the existing generic
+ * fredLatest/alfredVintages/yahooDailyMax helpers, no new endpoints:
+ *  - M2SL (ALFRED-vintaged; coverage probed empirically to start 1988-01 —
+ *    before that the leg is unavailable, never backfilled).
+ *  - DGS3MO, T5YIE (fredLatest — daily/market data, unrevised like
+ *    DGS10/DGS30, truncate ≤ t).
+ *  - TCMDO — probed and confirmed ALFRED vintage coverage only starts
+ *    ~2010 (404 on 1970/1980 vintage_date, 200 from ~1988 but that still
+ *    leaves 1988–2010 unverified and the pre-2010 credit-cycle window is
+ *    exactly what the moneyVsCredit validation gate needs) — used via
+ *    fredLatest (latest-vintage data) instead and flagged nonPIT in
+ *    replay.mjs, excluded from heat, mirroring century.mjs's convention.
+ *  - Real-equity series for equityDrawdown: tried, in order —
+ *    (a) shillerdata.com's ie_data.xls IS keyless-reachable but is a
+ *        binary OLE2/BIFF file (magic bytes D0 CF 11 E0), not CSV; no
+ *        keyless CSV mirror was found, and parsing OLE2/BIFF without
+ *        adding a dependency was out of scope for a zero-deps script;
+ *    (b) FRED's own `SP500` series only covers 2016→ (useless for a
+ *        1960–2026 replay); no long real/total-return S&P series exists
+ *        on FRED keylessly;
+ *    (c) Stooq (`stooq.com/q/d/l/?s=^spx`) confirmed BOT-BLOCKED from this
+ *        environment — returns a JS-challenge HTML page, matching the
+ *        documented environment note;
+ *    → used `yahooDailyMax("^GSPC")` (already this file's ground-truth SPX
+ *      source — score.mjs already trusts it for forward-drawdown scoring),
+ *      deflated by the never-revised NSA CPI series in replay.mjs to
+ *      approximate a real index. This is price-only (ex-dividend), not
+ *      Shiller's dividend-inclusive real total return — a modest
+ *      magnitude difference, immaterial to the ≥40% CRITICAL threshold
+ *      the GFC validation gate checks for. Documented loudly per the
+ *      "do NOT fabricate a series" rule: this is real market data from an
+ *      already-vetted keyless source, not a substitute series.
  */
 
 import { mkdir, readFile, writeFile } from "node:fs/promises";

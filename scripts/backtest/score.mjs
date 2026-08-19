@@ -142,9 +142,25 @@ export async function score(rows) {
     rec: r.inRecession ? "REC" : "",
   }));
 
-  const report = renderReport({ rows, corrComposite, eras, leadRows, signalNames: Object.keys(signals), triggerIndex, quintiles, corr, scStats, scClasses, falseAlarms, caseStudy, p75 });
+  /* ---- Task 7: threshold validation (Dalio realignment fast-layer triggers) ---- */
+  const validation = thresholdValidation(rows);
+
+  const report = renderReport({ rows, corrComposite, eras, leadRows, signalNames: Object.keys(signals), triggerIndex, quintiles, corr, scStats, scClasses, falseAlarms, caseStudy, p75, validation });
   await writeFile(path.join(ROOT, "BACKTEST.md"), report);
   await writeFile(path.join(HERE, "results.json"), JSON.stringify(rows, null, 1));
+
+  console.log("\nThreshold validation (Dalio realignment):");
+  for (const g of validation.gates) console.log(`  [${g.pass ? "PASS" : "FAIL"}] ${g.name} — ${g.detail}`);
+  if (validation.hardFail.length) {
+    const fns = new Set();
+    for (const g of validation.hardFail) {
+      if (g.name.includes("moneyVsCredit")) fns.add("moneyVsCredit");
+      if (g.name.includes("equityDrawdown")) fns.add("equityDrawdown");
+    }
+    for (const fn of fns) console.error(`DEMOTE ${fn} to context`);
+    process.exitCode = 1;
+    process.exit(1);
+  }
 
   // compact monthly panel for the app's Big Cycle tab (static import)
   const sCode = { ok: 0, watch: 1, elevated: 2, critical: 3 };
@@ -161,7 +177,59 @@ export async function score(rows) {
   await writeFile(path.join(ROOT, "src", "data", "backtest-panel.json"), JSON.stringify(panel));
 
   console.log(`scored ${scored.length} months → BACKTEST.md + src/data/backtest-panel.json`);
-  return { leadRows, quintiles, corr, corrComposite, eras, scStats, falseAlarms, p75 };
+  return { leadRows, quintiles, corr, corrComposite, eras, scStats, falseAlarms, p75, validation };
+}
+
+/**
+ * Task 7 — threshold validation for the new fast-layer triggers.
+ * Hard gates (a)/(b) prove or demote the self-calibrated moneyVsCredit and
+ * equityDrawdown thresholds (spec §3: "self-calibrated thresholds must be
+ * validated in the point-in-time backtest or demoted to context"). (c)
+ * curveShape is reported descriptively only — no pass/fail, the regime
+ * trigger is new and has no known-episode ground truth to gate on yet.
+ *
+ * Coordinator ruling (post-Task-7-first-pass): the original (a2) gate
+ * demanded moneyVsCredit CRITICAL in 2020, which over-specified the plan —
+ * 2020 was MP3-style printing alongside fiscally-supported credit growth
+ * (M2 ~+25% y/y, TCMDO ~+8% y/y, never contracting), which per spec §4's
+ * own tier definitions IS the ≥5pp-gap WATCH signature
+ * ("printing-into-contraction" at watch), not the credit-contraction
+ * CRITICAL case. (a2) now checks watch-OR-critical. GFC (true credit
+ * contraction) remains the CRITICAL-tier anchor at (a1), unchanged.
+ */
+function thresholdValidation(rows) {
+  const inRange = (t, a, b) => t >= a && t <= b;
+  const moneyCritAll = rows.filter(r => r.money?.status === "critical").map(r => r.t);
+  const equityCritAll = rows.filter(r => r.equity?.status === "critical").map(r => r.t);
+  const curveBearAll = rows.filter(r => r.curve?.mode === "bear-steepening")
+    .map(r => ({ t: r.t, status: r.curve.status }));
+  const moneyPrintingIntoContraction = rows.filter(r =>
+    r.money?.signature === "printing-into-contraction" && (r.money.status === "watch" || r.money.status === "critical"));
+
+  const gfc = moneyCritAll.filter(t => inRange(t, "2008-09", "2009-06"));
+  const covidWatchOrCrit = moneyPrintingIntoContraction.filter(r => inRange(r.t, "2020-03", "2020-12")).map(r => `${r.t}:${r.money.status}`);
+  const quiet = moneyCritAll.filter(t => inRange(t, "1999-01", "2007-06"));
+  const quietWatch = rows.filter(r => r.money?.status === "watch" && inRange(r.t, "1999-01", "2007-06")).map(r => r.t);
+  const eqGfc = equityCritAll.filter(t => inRange(t, "2008-10", "2009-03"));
+
+  const gates = [
+    { name: "(a1) moneyVsCredit CRITICAL ≥1 in 2008-09..2009-06 (GFC, true contraction)", pass: gfc.length >= 1, detail: gfc.join(", ") || "none" },
+    { name: "(a2) moneyVsCredit printing-into-contraction @ watch-or-critical ≥1 in 2020-03..2020-12 (COVID, fiscally-supported credit)", pass: covidWatchOrCrit.length >= 1, detail: covidWatchOrCrit.join(", ") || "none" },
+    { name: "(a3) moneyVsCredit CRITICAL = 0 in 1999-01..2007-06 (quiet era)", pass: quiet.length === 0, detail: quiet.join(", ") || "none" },
+    { name: "(b) equityDrawdown CRITICAL ≥1 in 2008-10..2009-03 (GFC)", pass: eqGfc.length >= 1, detail: eqGfc.join(", ") || "none" },
+  ];
+  const hardFail = gates.filter(g => !g.pass);
+
+  return {
+    gates, hardFail,
+    moneyCritEpisodes: groupConsecutive(moneyCritAll),
+    equityCritEpisodes: groupConsecutive(equityCritAll),
+    curveBearEpisodes: groupConsecutive(curveBearAll.map(x => x.t)),
+    curveBearElevatedN: curveBearAll.filter(x => x.status === "elevated").length,
+    curveBearWatchN: curveBearAll.filter(x => x.status === "watch").length,
+    quietEraWatchN: quietWatch.length, // descriptive only, not gated
+    quietEraWatchMonths: groupConsecutive(quietWatch),
+  };
 }
 
 /* ---------------- helpers ---------------- */
@@ -245,7 +313,7 @@ function leadTimes(rows, anchorYm, pred) {
 }
 
 /* ---------------- report ---------------- */
-function renderReport({ rows, corrComposite, eras, leadRows, signalNames, triggerIndex, quintiles, corr, scStats, scClasses, falseAlarms, caseStudy, p75 }) {
+function renderReport({ rows, corrComposite, eras, leadRows, signalNames, triggerIndex, quintiles, corr, scStats, scClasses, falseAlarms, caseStudy, p75, validation }) {
   const md = [];
   const line = s => md.push(s);
   line(`# Sovereign Vitals — Point-in-Time Backtest`);
@@ -411,6 +479,65 @@ function renderReport({ rows, corrComposite, eras, leadRows, signalNames, trigge
   line(`- The big-cycle stage label is 2020s-specific and excluded from heat.`);
   line(`- No transaction-cost/strategy claim is made: this validates *state assessment and lead times*,`);
   line(`  not a trading rule.`);
+  line(``);
+  line(`## Threshold validation (Dalio realignment)`);
+  line(``);
+  line(`Task 7 replays the new fast-layer triggers — \`moneyVsCredit\`, \`curveShape\`,`);
+  line(`\`equityDrawdown\` — through the same point-in-time engine and checks their`);
+  line(`self-calibrated thresholds against known episodes (spec §3: unproven`);
+  line(`self-calibrated thresholds get demoted to context). \`money\`/\`curve\`/\`equity\``);
+  line(`are stored as top-level fields per row (not inside \`factors\`) and are`);
+  line(`**excluded from heat/quintile/correlation** above — none of those numbers moved.`);
+  line(``);
+  line(`**On tiers, honestly:** the GFC (2008-09→2009-06) is the true credit-contraction`);
+  line(`case and validates moneyVsCredit at its **CRITICAL** tier. 2020 is a different`);
+  line(`animal — MP3-style printing running *alongside* fiscally-supported credit growth`);
+  line(`(M2 ~+25% y/y by end-2020, but TCMDO — all-sector, including the federal deficit`);
+  line(`spend — never went negative, holding ~+8% y/y throughout). Per spec §4's own`);
+  line(`tier definitions that is precisely the ≥5pp-gap **WATCH** signature`);
+  line(`("printing-into-contraction" at watch), not the credit-contraction CRITICAL`);
+  line(`case — demanding CRITICAL in 2020 was over-specified in the first draft of this`);
+  line(`gate and has been corrected below (gate a2). GFC remains the CRITICAL-tier`);
+  line(`anchor; 2020 is the WATCH-tier anchor. Both are real, distinguishable episodes.`);
+  line(``);
+  line(`| Gate | Result | Months |`);
+  line(`|---|---|---|`);
+  for (const g of validation.gates) line(`| ${g.name} | ${g.pass ? "PASS" : "**FAIL**"} | ${g.detail} |`);
+  line(``);
+  line(`Overall: **${validation.hardFail.length ? "FAILED — see DEMOTE output above" : "PASS"}**.`);
+  line(``);
+  line(`moneyVsCredit critical episodes (full panel): ${validation.moneyCritEpisodes.join(", ") || "none"}.`);
+  line(``);
+  line(`Quiet-era (1999-01..2007-06) watch months, descriptive only (not gated —`);
+  line(`(a3) only requires zero CRITICAL months in this window): **${validation.quietEraWatchN}**`);
+  line(`(${validation.quietEraWatchMonths.join(", ") || "none"}).`);
+  line(``);
+  line(`equityDrawdown critical episodes (full panel): ${validation.equityCritEpisodes.join(", ") || "none"}.`);
+  line(``);
+  line(`curveShape bear-steepening — **descriptive only, no pass/fail** (a new regime`);
+  line(`trigger with no established episode ground truth yet): ${validation.curveBearEpisodes.join(", ") || "none"}`);
+  line(`(${validation.curveBearElevatedN} elevated month(s) [term premium also rising or unavailable], `);
+  line(`${validation.curveBearWatchN} watch month(s)).`);
+  line(``);
+  line(`**Caveats:**`);
+  line(`- **money leg is non-PIT.** The credit input (\`TCMDO\`) has no usable ALFRED`);
+  line(`  vintage depth before ~2010 (probed empirically), so \`money\` is computed from`);
+  line(`  LATEST-vintage TCMDO — flagged \`nonPIT: true\` on the row and excluded from`);
+  line(`  heat, exactly like the century panel. It answers "does the signature`);
+  line(`  identify known episodes with today's data" not "would a live user in 2008`);
+  line(`  have seen it" — a different, weaker claim than every other leg in this file.`);
+  line(`- **Valve expectations key is realized-only pre-2003.** \`T5YIE\` (5y breakeven`);
+  line(`  inflation) starts 2003-01-02; \`expInfl5yPct\` is \`null\` before then, so`);
+  line(`  \`monetisationValve\`'s "gated-by-expectations" branch cannot fire pre-2003 —`);
+  line(`  the valve reads on realized CPI/oil terms alone in that era, same as before`);
+  line(`  this task.`);
+  line(`- **Equity source is Yahoo ^GSPC, not Shiller.** Shiller's \`ie_data.xls\` is a`);
+  line(`  binary OLE2/BIFF file with no keyless CSV mirror found; FRED's \`SP500\` only`);
+  line(`  covers 2016→; Stooq is confirmed bot-blocked from this environment. Real`);
+  line(`  terms come from deflating Yahoo's \`^GSPC\` (already this file's ground-truth`);
+  line(`  SPX source) by the never-revised NSA CPI series — price-only (ex-dividend),`);
+  line(`  not Shiller's dividend-inclusive real total return. See \`fetch.mjs\` header`);
+  line(`  for the full source-chain trace.`);
   line(``);
   line(`## Reproduce`);
   line(``);
