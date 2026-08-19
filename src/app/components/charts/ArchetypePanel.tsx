@@ -6,7 +6,8 @@
  * the position layer; both are fetched server-side in page.tsx and passed
  * in as props — this component only draws.
  */
-import { Band, PHASE_COLOR, PHASE_NAMES, phaseBandRects, useTooltip } from "./common";
+import { phaseBandRects, useTooltip } from "./common";
+import { type Band, PHASE_COLOR, PHASE_NAMES } from "./phases";
 
 interface Pt { date: string; value: number }
 

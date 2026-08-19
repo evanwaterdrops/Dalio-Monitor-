@@ -1,5 +1,8 @@
 "use client";
 import { useCallback, useEffect, useRef, useState } from "react";
+/** Dalio's seven phases (spec §1) live in ./phases — a boundary-neutral module,
+ * so the server page and these client charts can share one source of truth. */
+import { type Band, PHASE_COLOR, PHASE_NAMES } from "./phases";
 
 /** Compact month row emitted by scripts/backtest/score.mjs → src/data/backtest-panel.json */
 export interface PanelMonth {
@@ -14,20 +17,6 @@ export interface PanelMonth {
 
 export const SC_STATUS_COLOR = ["var(--green)", "var(--blue)", "var(--amber)", "var(--red)"];
 export const SC_STATUS_NAME = ["ok", "watch", "elevated", "critical"];
-
-/** Dalio's seven phases (spec §1) — display-only cartography from
- * src/data/phase-bands.json, shared by ArchetypePanel and CenturyPanel so
- * the same phase reads the same way everywhere. */
-export interface Band { from: string; to: string; phaseNum: number }
-
-export const PHASE_NAMES: Record<number, string> = {
-  1: "Early Part of the Cycle", 2: "Bubble", 3: "Top", 4: "Depression",
-  5: "Beautiful Deleveraging", 6: "Pushing on a String", 7: "Normalization",
-};
-export const PHASE_COLOR: Record<number, string> = {
-  1: "var(--green)", 2: "var(--amber-bright)", 3: "var(--red)", 4: "var(--purple)",
-  5: "var(--blue)", 6: "var(--text-dim)", 7: "color-mix(in srgb, var(--blue) 45%, var(--green) 55%)",
-};
 
 const monthStartMs = (ym: string) => { const [y, m] = ym.split("-").map(Number); return Date.UTC(y, m - 1, 1); };
 const monthEndMs = (ym: string) => { const [y, m] = ym.split("-").map(Number); return Date.UTC(y, m, 0, 23, 59, 59); };

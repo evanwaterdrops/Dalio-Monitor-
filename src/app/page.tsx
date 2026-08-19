@@ -8,7 +8,7 @@ import HeatTimeline from "./components/charts/HeatTimeline";
 import CenturyPanel from "./components/charts/CenturyPanel";
 import CycleTimeline from "./components/charts/CycleTimeline";
 import ArchetypePanel from "./components/charts/ArchetypePanel";
-import { Band, PHASE_NAMES } from "./components/charts/common";
+import { type Band, PHASE_NAMES } from "./components/charts/phases";
 import PlaybookTab from "./components/playbook/PlaybookTab";
 import phaseBandsJson from "@/data/phase-bands.json";
 

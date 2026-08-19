@@ -10,6 +10,7 @@ import {
   moneyVsCredit, curveShape, printDiscriminator, reservePremise, equityDrawdown,
   bdcStress, positionClock, yieldDollarCorr,
 } from "../src/lib/framework/math.mjs";
+import { findBoundaryViolations } from "./check-client-boundary.mjs";
 
 let pass = 0, fail = 0;
 const eq = (name, got, want) => {
@@ -192,6 +193,20 @@ truthy("position clock caps at elevated",
   const jpyHist = dates.map((date, i) => ({ date, value: 150.00 - i * 0.10 }));
   truthy("yieldDollarCorr at 39 overlapping days (below the 41 floor) → NaN",
     Number.isNaN(yieldDollarCorr(dgs10, eurHist, jpyHist)));
+})();
+
+(() => {
+  // RSC boundary: a Server Component reading a data export out of a
+  // "use client" module gets a client-reference proxy, which the flight
+  // serializer cannot resolve — a request-time 500 that `next build` and
+  // `tsc` both pass. See scripts/check-client-boundary.mjs.
+  const violations = findBoundaryViolations();
+  truthy(
+    `no server module imports non-component bindings from a "use client" module${
+      violations.length ? ` — ${violations.map(v => `${v.file} imports ${v.binding} from ${v.target}`).join("; ")}` : ""
+    }`,
+    violations.length === 0,
+  );
 })();
 
 console.log(`\n${pass} passed, ${fail} failed`);

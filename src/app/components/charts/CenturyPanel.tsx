@@ -6,7 +6,8 @@
  */
 import centuryJson from "@/data/century-panel.json";
 import phaseBandsJson from "@/data/phase-bands.json";
-import { annualPhaseMap, Band, PHASE_COLOR, useTooltip } from "./common";
+import { annualPhaseMap, useTooltip } from "./common";
+import { type Band, PHASE_COLOR } from "./phases";
 
 interface YearRow {
   y: number; debtGdp: number | null; intRcptPct: number | null; rEff: number | null;
