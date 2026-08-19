@@ -23,9 +23,16 @@ trigger crosses.
 | Japan: TIC + JGB + yen | FRED TIC (Jun-26 addition) + OANDA | JP leg | All three moving together = repatriation of the largest foreign bid ($1.2trn) |
 
 Machine-checkable triggers (`framework/math.mjs → evaluateTriggers`) implement
-the watchlist: T1 r≥g (incl. the recession-event form), T1 monetise-while-hot;
-T2 interest ≥20% of revenue, long-end selloff on a cut, bills-share migration;
-T3 gold/real-yield divergence, Japan absolute decline, auction plumbing.
+the watchlist: T1 r≥g (incl. the recession-event form), T1 monetise-while-hot
+(now gated by the bills-vs-duration print discriminator — a bills-led Fed
+balance-sheet expansion holding reserves ample reads as reserve management,
+not monetization, even with headline CPI hot);
+T2 interest ≥20% of revenue, long-end selloff on a cut, bills-share migration,
+bear-steepening regime (long end selling off, front anchored, term premium
+rising);
+T3 gold/real-yield divergence, Japan absolute decline, auction plumbing,
+BDC/HY divergence (private-credit marks stressed while public HY stays quiet),
+reserve-premise flip (persistent negative yield/dollar correlation).
 
 ## What's honest about this system
 
@@ -34,10 +41,12 @@ T3 gold/real-yield divergence, Japan absolute decline, auction plumbing.
   vintages — first prints, real-time revisions, publication lags, no
   hindsight. Results, lead times into the GFC and every major stress episode,
   and the false-alarm audit live in [BACKTEST.md](BACKTEST.md).
-- **34/34 selftest** (`npm run selftest`, zero deps): the shipped math
+- **56/56 selftest** (`npm run selftest`, zero deps): the shipped math
   reproduces every conclusion of the underlying analysis from the raw
   Aug-2026 numbers, including that the Debt Monetization trigger does *not*
-  fire yet — that's the Top/Beautiful Deleveraging boundary.
+  fire yet — were it to fire, that confirms phase 4 "Depression — printing
+  begins", not the Top/Beautiful Deleveraging boundary (Beautiful
+  Deleveraging is phase 5, a later and distinct stage).
 - **Auto vs curated is explicit.** Hyperscaler bond coverage, Moody's
   uncommenced leases, and (until the FRED TIC series id is pinned) Japan's
   monthly holdings have no API; they live in `manual_inputs` with source

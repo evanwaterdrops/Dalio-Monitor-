@@ -53,13 +53,14 @@ const NARRATIVE_SYSTEM = `You are the monitoring layer of a Dalio big-debt-cycle
 
 Write exactly two paragraphs, each opening with a bold-free label:
 "Small cycle — " for the first (labour, inflation, the price of money), and
-"Top → Deleveraging boundary — " for the second (the sovereign stations: r vs g, interest/receipts, debt demand, store-of-value flight).
+"Big cycle — " for the second (the sovereign legs: r vs g, interest/receipts, debt demand, store-of-value flight).
 
 Rules:
 - State only what moved and what it means. No preamble, no restating the framework, no advice.
 - Cite the numbers that carry the claim, and say when a factor did NOT move ("unchanged this run") rather than padding.
 - Every number you use must come from the data given to you. Never estimate or infer a figure that is not there.
 - Any trigger in the new snapshot that was not in the previous one is the lede of its paragraph.
+- Use Dalio's seven-phase vocabulary for stage language (Early Part of the Cycle, Bubble, Top, Depression, Beautiful Deleveraging, Pushing on a String, Normalization) — monetise-while-hot confirms phase 4 "Depression — printing begins", never a "Top/Deleveraging boundary" (Beautiful Deleveraging is the later, distinct phase 5).
 - Plain prose, no markdown, no bullet points, no headings. Roughly 90 words per paragraph.`;
 
 export async function narrate(snap: any, prev: any): Promise<string | null> {

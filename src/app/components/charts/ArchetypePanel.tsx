@@ -12,7 +12,7 @@ interface Pt { date: string; value: number }
 
 const ROWS: { key: string; title: string; unit: string; color: string }[] = [
   { key: "totalDebtGdp", title: "TOTAL DEBT / GDP", unit: "%", color: "var(--red)" },
-  { key: "dsrHousehold", title: "DEBT SERVICE / GDP · HOUSEHOLD", unit: "%", color: "var(--amber)" },
+  { key: "dsrHousehold", title: "DEBT SERVICE / INCOME · HOUSEHOLD", unit: "%", color: "var(--amber)" },
   { key: "moneyGdp", title: "MONEY (M2) / GDP", unit: "%", color: "var(--blue)" },
   { key: "equityIndexed", title: "EQUITY, INDEXED TO FIRST VALUE", unit: "", color: "var(--green)" },
   { key: "gold", title: "GOLD", unit: "/oz", color: "var(--purple)" },

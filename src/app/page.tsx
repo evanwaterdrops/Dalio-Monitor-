@@ -382,6 +382,60 @@ export default async function Page() {
           contribution: "The confirming leg: an ABSOLUTE decline (~$1.2trn stock) two months running, not a share-of-debt artefact. FRED TIC country series to be pinned; manual override until then." },
       ],
     },
+    // ---- fast-clock additions (money vs credit, curve decomposition, equity
+    // drawdown ruler, BDC/HY divergence, reserve-premise tripwire) — computed
+    // and persisted by assess() but previously never rendered. Fast clock:
+    // lives on the factor board, not inside the POSITION (SLOW CLOCK) section. ----
+    {
+      key: "MONEY", name: "Money vs Credit (MP2/MP3 signature)", station: "Printing vs private credit", status: st(f.money?.status),
+      headline: `Signature: ${f.money?.signature ?? "—"}`,
+      logic: "M2 y/y vs private bank-credit y/y. M2 ≥10% with credit y/y ≤0% = printing-into-contraction (critical) — the MP3 signature, money created without credit participating. M2 ≥8% with credit trailing the print by ≥5pp = watch. Distinguishes ordinary QE (MP2, credit expands alongside money) from monetizing the deficit directly (MP3).",
+      subInputs: [
+        { key: "signature", label: "Money vs credit signature", value: String(f.money?.signature ?? "—"), source: "derived", sourceName: "computed (FRED M2SL vs TCMDO)",
+          contribution: "Classifies the printing regime: credit expanding alongside money is ordinary transmission; credit flat or contracting while money surges is the debt-monetization signature the S8 valve can't see alone." },
+      ],
+    },
+    {
+      key: "CURVE", name: "Curve Shape (steepening decomposition)", station: "Term-premium decomposition", status: st(f.curve?.status),
+      headline: `Mode: ${f.curve?.mode ?? "—"} · inverted: ${String(f.curve?.inverted ?? "—")}`,
+      logic: "3-month change in front (3mo) vs long (10Y) yields plus the term-premium delta. Long up ≥25bp with front ≤5bp = bear-steepening — the fiscal/demand-side story that fires the T2 bear-steepening-regime trigger; front down ≥25bp with long following = bull-steepening — the small-cycle cut-pricing story. Inversion itself is shown as context, never scored on its own.",
+      subInputs: [
+        { key: "mode", label: "Steepening / flattening mode", value: String(f.curve?.mode ?? "—"), source: "derived", sourceName: "computed (FRED DGS3MO/DGS10 + term premium)",
+          contribution: "Bear-steepening with a rising term premium is the leg that fires the T2 trigger — long end selling off while the front stays anchored." },
+        { key: "inverted", label: "Curve inverted (10Y − 3M < 0)", value: f.curve?.inverted ? "YES" : "no", source: "derived", sourceName: "computed",
+          contribution: "Context only — inversion alone doesn't score; the steepening MODE on the way out is what the trigger watches." },
+      ],
+    },
+    {
+      key: "EQUITY", name: "Equity Drawdown (depression ruler)", station: "The depression ruler", status: st(f.equity?.status),
+      headline: `Drawdown ${fmt(f.equity?.ddPct, "%")} vs rolling 3y high`,
+      logic: "Drawdown from the rolling 3-year high. ≤−10% = watch, ≤−20% = elevated, ≤−40% = critical — Dalio's depression ruler (genuine depressions run close to −50%, P1:1085). Distinct from the small-cycle stall: this is the market's own verdict on the debt-cycle position, not a labour or inflation print.",
+      subInputs: [
+        { key: "ddPct", label: "Drawdown vs rolling 3y high", value: fmt(f.equity?.ddPct, "%"), unit: "%", source: "derived", sourceName: "computed (Stooq/Yahoo SPX)",
+          threshold: { value: -40, label: "≤ −40% = CRITICAL depression-level drawdown", direction: "below", current: f.equity?.ddPct },
+          contribution: "The ruler itself — the depth of decline the framework treats as confirming a genuine depression, not a correction." },
+      ],
+    },
+    {
+      key: "BDC", name: "Private Credit Marks (BDC P/NAV)", station: "Selection-bias check", status: st(f.bdc?.status),
+      headline: `Median P/NAV ${fmt(f.bdc?.medianPnav)} · divergence: ${String(f.bdc?.divergence ?? "—")}`,
+      logic: "BDC basket median price-to-NAV vs its own 5-year percentile, cross-checked against HY OAS momentum. Stressed (≤10th percentile) AND HY OAS 3m delta <+40bp together = critical divergence — private credit repriced while the public HY index, which excludes the weakest borrowers, stayed quiet. Stressed alone = elevated; P/NAV <0.9 alone = watch.",
+      subInputs: [
+        { key: "medianPnav", label: "BDC basket median P/NAV", value: fmt(f.bdc?.medianPnav), unit: "×", source: "derived", sourceName: "computed (Yahoo BDC basket ÷ manual NAV)",
+          contribution: "The live market mark on private-credit books no other leg captures directly." },
+        { key: "divergence", label: "BDC/HY divergence (Tier-3 trigger)", value: f.bdc?.divergence ? "YES" : "no", source: "derived", sourceName: "computed",
+          contribution: "Fires when private marks are stressed but public HY spreads haven't moved — the selection-bias scenario this factor exists to catch." },
+      ],
+    },
+    {
+      key: "PREMISE", name: "Reserve Premise (yield/dollar correlation)", station: "Credibility tripwire", status: st(f.premise?.status),
+      headline: `Regime: ${f.premise?.regime ?? "—"}`,
+      logic: "60-day correlation of Δ10Y yield (bp) vs a dollar composite (avg ΔUSD/JPY%, −ΔEUR/USD%). Persistent corr ≤ −0.35 (yields up, dollar down together) flips the regime to credibility-watch — the falsifier for the deflationary reserve-currency template the rest of the framework otherwise assumes.",
+      subInputs: [
+        { key: "regime", label: "Reserve-premise regime", value: String(f.premise?.regime ?? "—"), source: "derived", sourceName: "computed (FRED DGS10 + OANDA EUR/JPY)",
+          contribution: "reserve-template = yields and the dollar still trade on the old rate-hedge logic; credibility-watch = they've decoupled, the Tier-3 tripwire this factor is named for." },
+      ],
+    },
   ];
 
   const SMALL_KEYS = ["SC", "S8", "S6"];
