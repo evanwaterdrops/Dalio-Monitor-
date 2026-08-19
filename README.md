@@ -11,13 +11,13 @@ trigger crosses.
 | Print / feed | Source | Factor(s) it updates | The connection |
 |---|---|---|---|
 | NFP + ALFRED vintage diffs | FRED `PAYEMS` | Small cycle, r-vs-g, tax base | Revisions are a first-class signal (May+Jun −103k). A payroll contraction knocks ~3pp off nominal g → the r>g crossing is a **recession event**, not a projection |
-| CPI headline/core | FRED `CPIAUCSL`/`CPILFESL` | Monetisation valve (S8) | Core 2.5% means the block is the **war**, not wages. Valve keys off core-to-target, gated by the energy wedge |
+| CPI headline/core | FRED `CPIAUCSL`/`CPILFESL` | Debt Monetization gate (S8) | Core 2.5% means the block is the **war**, not wages. Valve keys off core-to-target, gated by the energy wedge |
 | Brent live | OANDA `BCO_USD` | S8 energy gate | Brent <80 + headline <3 → valve reopens within a quarter |
 | Avg interest rate on debt | FiscalData `avg_interest_rates` | S7 hinge | rAvg (~3.4%) vs g; drift = (10Y − rAvg) × 12m rollover share |
 | 10Y/30Y/2Y, term premium, real 10Y | FRED | S6, SoV | Marginal cost; long-end-on-easing T2 detector; gold/real-yield divergence T3 |
 | MTS table 9 | FiscalData | S1/S3/TAX | TTM interest/receipts (19% → 20% = loss-of-discretion line); receipts YoY ÷ GDP YoY = **revenue beta** (capex-led GDP that doesn't tax like payroll GDP; war supplementals land here) |
 | 10Y auctions | TreasuryDirect `TA_WS` | S5 plumbing | Bid-to-cover + primary-dealer takedown = the bid thinning before the yield shows it |
-| Fed assets + deferred asset | FRED `WALCL`, `RESPPLLOPNWW` | S8 / Stage-5 | Deferred asset = Dalio's Stage-5 metric, literal: **−$243.9bn** Apr-26. Assets rising 3wks while headline >3 = the one unprinted marker → Stage 6 confirmed |
+| Fed assets + deferred asset | FRED `WALCL`, `RESPPLLOPNWW` | S8 / Central-bank losses | Deferred asset = central-bank losses — Dalio's literal metric: **−$243.9bn** Apr-26. Assets rising 3wks while headline >3 = the one unprinted marker → Depression confirmed |
 | Gold + FX | OANDA `XAU_USD`,`EUR_USD`,`USD_JPY` | SoV | Decompose gold into USD/EUR/JPY numeraires: up in all three = credit flight, not a dollar trade |
 | HY/BBB OAS + AI basket | FRED + Yahoo | Private-credit leg | The "skipped" private binge lives here: ~$800bn circular deals, $570bn 2026 AI debt, coverage 5x→<2x. OAS is the best free daily proxy |
 | Japan: TIC + JGB + yen | FRED TIC (Jun-26 addition) + OANDA | JP leg | All three moving together = repatriation of the largest foreign bid ($1.2trn) |
@@ -36,8 +36,8 @@ T3 gold/real-yield divergence, Japan absolute decline, auction plumbing.
   and the false-alarm audit live in [BACKTEST.md](BACKTEST.md).
 - **20/20 selftest** (`npm run selftest`, zero deps): the shipped math
   reproduces every conclusion of the underlying analysis from the raw
-  Aug-2026 numbers, including that the monetisation trigger does *not*
-  fire yet — that's the Top/Deleveraging boundary.
+  Aug-2026 numbers, including that the Debt Monetization trigger does *not*
+  fire yet — that's the Top/Beautiful Deleveraging boundary.
 - **Auto vs curated is explicit.** Hyperscaler bond coverage, Moody's
   uncommenced leases, and (until the FRED TIC series id is pinned) Japan's
   monthly holdings have no API; they live in `manual_inputs` with source

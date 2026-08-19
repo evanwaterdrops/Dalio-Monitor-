@@ -42,7 +42,7 @@ export default function Tabs({
       <div className="cycle-tabs" role="tablist" aria-label="Cycle horizon">
         <button role="tab" aria-selected={tab === "small"} className={`cycle-tab${tab === "small" ? " active" : ""}`} onClick={() => pick("small", "small")}>
           SMALL CYCLE
-          <span className="cycle-tab-sub">labor · inflation · price of money</span>
+          <span className="cycle-tab-sub">labor · inflation · interest rates</span>
         </button>
         <button role="tab" aria-selected={tab === "big"} className={`cycle-tab${tab === "big" ? " active" : ""}`} onClick={() => pick("big", "big")}>
           BIG CYCLE

@@ -60,11 +60,13 @@ eq("but healing (rates lower than 2023 peak-loss era)", da.direction, "healing")
 eq("squeeze at 19% = elevated", interestSqueeze({ ttmInterestBn: 1010, ttmReceiptsBn: 5300 }).status, "elevated");
 eq("squeeze at 20.4% = critical", interestSqueeze({ ttmInterestBn: 1100, ttmReceiptsBn: 5400 }).status, "critical");
 
-// --- big-cycle stage: TOP LATE now; flips to DELEVERAGING only on the unprinted marker
-const st = bigCycleStage({ fedAssetsUp3w: false, coreYoY: 2.5, headlineYoY: 3.4, valveScore: valve.score });
-truthy("stage = TOP, LATE", st.stage.startsWith("TOP"));
-const st2 = bigCycleStage({ fedAssetsUp3w: true, coreYoY: 2.5, headlineYoY: 3.4, valveScore: valve.score });
-truthy("Fed buying while headline>3 → Stage 6 confirmed", st2.stage.startsWith("DELEVERAGING"));
+// --- big-cycle stage: Dalio's seven phases; Top now, flips to Depression only on the unprinted marker
+const st = bigCycleStage({ fedAssetsUp3w: false, coreYoY: 2.5, headlineYoY: 3.4, valveScore: 0.55 });
+eq("phase = Top (Dalio's seven)", st.phase, "Top");
+eq("phaseNum 3/7", st.phaseNum, 3);
+const stM = bigCycleStage({ fedAssetsUp3w: true, coreYoY: 2.5, headlineYoY: 3.4, valveScore: 0.55 });
+eq("monetising while hot → Depression, printing begins", stM.phaseNum, 4);
+truthy("legacy stage string retained", typeof stM.stage === "string" && stM.stage.length > 0);
 
 // --- trigger sweep on today's composite state
 const trig = evaluateTriggers({

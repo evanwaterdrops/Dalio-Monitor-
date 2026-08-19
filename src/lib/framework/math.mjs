@@ -46,7 +46,7 @@ export function smallCyclePhase({ nfp3mma, revisionsSum2m, sahmGap, fundsDelta6m
 }
 
 /* ------------------------------------------------------------------ *
- * Price of money (Station 6) — previously display-only, now real math.
+ * Interest rates, MP1 (S6 — Dalio: the squeeze) — previously display-only, now real math.
  * 2022 lesson (backtest): the −25% bear was a duration shock — a +250bp
  * 12-month surge in the 10Y real yield — that no other leg measures.
  * Impulse thresholds: +75bp/12m watch, +150 elevated, +250 critical.
@@ -81,7 +81,7 @@ export function privateCredit({ hyOasBp, hyOasDelta3mBp }) {
 }
 
 /* ------------------------------------------------------------------ *
- * Monetisation valve (Station 8).
+ * Debt monetization gate (S8 — Dalio: MP2/MP3, printing blocked by inflation).
  * Post-July restatement: core CPI at 2.5% means the block is the
  * ENERGY SHOCK, not a wage-price spiral. Valve openness therefore keys
  * off core distance-to-target, gated by the energy wedge (headline−core)
@@ -116,7 +116,7 @@ export function monetisationValve({ coreYoY, headlineYoY, brent, oilYoYPct = nul
 }
 
 /* ------------------------------------------------------------------ *
- * r vs g — the arithmetic hinge (Station 7).
+ * Nominal Growth vs Nominal Rates (S7 — Dalio: the hinge).
  * rAvg from FiscalData avg_interest_rates (total marketable),
  * rMarg = 10Y, g = nominal GDP YoY. Drift = rollover of maturing stock
  * at marginal cost. Key conclusion encoded here: the crossing is not a
@@ -132,7 +132,7 @@ export function rVsG({ rAvg, rMarg, gNominal, rolloverShare12m, contractionFlag,
   const crossedNow = gap <= 0;
   // Deep-backtest lesson: r > g was the NORM from Volcker to the late 90s —
   // with debt/GDP at 30–60% the compounding it drives is absorbable, and the
-  // hinge is not a crisis signal. Station 7's criticality is conditional on a
+  // hinge is not a crisis signal. S7's criticality is conditional on a
   // large stock (Dalio's own framing): below ~90% debt/GDP a structural
   // crossing reads ELEVATED, not CRITICAL. null (unknown) = treat as large.
   const stockMatters = debtToGdpPct == null || debtToGdpPct >= 90;
@@ -176,7 +176,7 @@ export function goldDecomposition({ dXauUsdPct, dXauEurPct, dXauJpyPct, dRealYie
 }
 
 /* ------------------------------------------------------------------ *
- * Demand leg (Station 5) — auction plumbing.
+ * Supply/Demand for Bonds (S5 — Dalio: the thinning bid) — auction plumbing.
  * Bid-to-cover and primary-dealer takedown on the last two 10Y auctions.
  * Dealers absorbing more = the end-buyer bid thinning before it shows
  * in headline yield.
@@ -191,10 +191,10 @@ export function demandLeg({ auctions }) {
 }
 
 /* ------------------------------------------------------------------ *
- * Fed deferred asset — Dalio Stage-5 metric made literal.
+ * Central-bank losses — Dalio's literal metric.
  * RESPPLLOPNWW is a negative liability when the Fed runs cumulative
  * losses. −$244bn as of Apr-2026. Shrinking toward zero = healing;
- * growing more negative = Stage-5 deepening.
+ * growing more negative = central-bank losses deepening.
  * ------------------------------------------------------------------ */
 export function deferredAsset({ levelBn, deltaBn13w }) {
   const status = levelBn <= -200 ? STATUS.CRITICAL : levelBn < 0 ? STATUS.ELEVATED : STATUS.OK;
@@ -203,7 +203,7 @@ export function deferredAsset({ levelBn, deltaBn13w }) {
 }
 
 /* ------------------------------------------------------------------ *
- * Interest / revenue squeeze (Station 3). TTM interest ÷ TTM receipts
+ * Debt-Service Burden (S3 — Dalio: the red line). TTM interest ÷ TTM receipts
  * from MTS table 9. Historic loss-of-discretion zone starts ~20%.
  * ------------------------------------------------------------------ */
 export function interestSqueeze({ ttmInterestBn, ttmReceiptsBn }) {
@@ -245,12 +245,14 @@ export function japanLeg({ jgb10Delta3mBp, usdJpyDelta3mPct, japanHoldingsDelta2
  * inflation gate is HEADLINE > 3 (energy-shock world), with core > 3 as
  * the stronger form.
  * ------------------------------------------------------------------ */
-export function bigCycleStage({ fedAssetsUp3w, coreYoY, headlineYoY, valveScore }) {
-  const monetising = fedAssetsUp3w && headlineYoY > 3.0;
-  if (monetising) return { stage: "DELEVERAGING (Stage 6 confirmed)", status: STATUS.CRITICAL };
-  if (valveScore >= 0.7)
-    return { stage: "TOP, LATE — valve reopening", status: STATUS.CRITICAL };
-  return { stage: "TOP, LATE", status: STATUS.ELEVATED };
+export function bigCycleStage({ fedAssetsUp3w, coreYoY, headlineYoY, valveScore, printMode = null }) {
+  const hot = headlineYoY > 3.0;
+  const monetising = fedAssetsUp3w && hot && (printMode == null || printMode === "monetization");
+  if (monetising) return { phaseNum: 4, phase: "Depression", detail: "printing while hot — monetization confirmed",
+    stage: "DEPRESSION — printing begins (monetization confirmed)", status: STATUS.CRITICAL };
+  if (valveScore >= 0.7) return { phaseNum: 3, phase: "Top", detail: "monetization gate reopening",
+    stage: "TOP, LATE — monetization gate reopening", status: STATUS.CRITICAL };
+  return { phaseNum: 3, phase: "Top", detail: "late", stage: "TOP, LATE", status: STATUS.ELEVATED };
 }
 
 /* ---------------- alert triggers (machine-checkable watchlist) ------ */

@@ -81,13 +81,8 @@ const STATUS_COLOR: Record<Status, string> = {
 const TIER_COLOR: Record<number, string> = { 1: "var(--red)", 2: "var(--amber)", 3: "var(--blue)" };
 
 const STAGE_LABELS: Record<number, string> = {
-  1: "Early Expansion",
-  2: "Mid Expansion",
-  3: "Late Expansion / Overheating",
-  4: "Tightening / Slowdown",
-  5: "Debt Distress Emerging",
-  6: "Late Deleveraging / Monetisation",
-  7: "Resolution / Reset",
+  1: "Early Part of the Cycle", 2: "Bubble", 3: "Top", 4: "Depression",
+  5: "Beautiful Deleveraging", 6: "Pushing on a String", 7: "Normalization",
 };
 
 export default async function Page() {
@@ -114,8 +109,8 @@ export default async function Page() {
 
   const meta = (k: string) => FACTOR_META[k] ?? { name: k, station: "—" };
   const stageText: string = snap.stage?.stage ?? "—";
-  const stageNum = stageText.includes("Stage 6") || stageText.includes("DELEVERAGING") ? 6 : 5;
-  const stageLabel = STAGE_LABELS[Number(stageNum)] ?? "Unknown Stage";
+  const stageNum: number = snap.stage?.phaseNum ?? (stageText.includes("DELEVERAGING") || stageText.includes("Depression") ? 4 : 3);
+  const stageLabel = STAGE_LABELS[stageNum] ?? "Unknown Phase";
 
   const factorRows: FactorRow[] = [
     {
@@ -143,7 +138,7 @@ export default async function Page() {
     {
       key: "S8", ...meta("S8"), status: st(f.S8?.status),
       headline: `Valve ${f.S8?.label ?? "—"} — score ${fmt(f.S8?.score)}, wedge ${fmt(f.S8?.wedge, "pp")}`,
-      logic: "Valve score = 1 − (core − 2%) / 2%, then gated: headline−core wedge ≥ 0.6pp with Brent ≥ $85 caps it at 0.55 (energy-shock gate); headline ≥ 3% caps at 0.7; core ≥ 3% caps at 0.25 (blocked). The block on monetisation is the war, not a wage-price spiral.",
+      logic: "Valve score = 1 − (core − 2%) / 2%, then gated: headline−core wedge ≥ 0.6pp with Brent ≥ $85 caps it at 0.55 (energy-shock gate); headline ≥ 3% caps at 0.7; core ≥ 3% caps at 0.25 (blocked). The block on Debt Monetization is the war, not a wage-price spiral.",
       subInputs: [
         { key: "core", label: "Core CPI, y/y", value: fmt(i.coreYoY), unit: "%", source: "live", sourceName: "FRED CPILFESL", sourceUrl: SRC.CPILFESL,
           latestActual: fmt(i.coreYoY, "%"), latestPrior: i.coreYoYPrior != null ? `${i.coreYoYPrior}%` : "—",
@@ -169,7 +164,7 @@ export default async function Page() {
     {
       key: "S6", ...meta("S6"), status: st(f.S6?.status),
       headline: `Real-yield impulse ${fmt(f.S6?.realYieldDelta12mBp, "bp")} over 12 months`,
-      logic: "12-month change in the 10Y real yield (TIPS). +75bp = watch, +150bp = elevated, +250bp = critical. Added after the backtest showed the 2022 −25% bear was a duration shock no other leg measured — the price of money repricing faster than the economy can absorb.",
+      logic: "12-month change in the 10Y real yield (TIPS). +75bp = watch, +150bp = elevated, +250bp = critical. Added after the backtest showed the 2022 −25% bear was a duration shock no other leg measured — interest rates (MP1) repricing faster than the economy can absorb.",
       subInputs: [
         { key: "impulse", label: "10Y real yield, 12m change", value: fmt(f.S6?.realYieldDelta12mBp), unit: "bp", source: "live", sourceName: "FRED DFII10", sourceUrl: SRC.DFII10,
           threshold: { value: 250, label: "≥ +250bp/12m = CRITICAL duration shock", direction: "above", current: f.S6?.realYieldDelta12mBp },
@@ -266,7 +261,7 @@ export default async function Page() {
           alsoFeeds: ["JP"],
           contribution: "Distinguishes a weak-dollar trade from a general exit: rising in every currency means the seller is sovereign credit itself." },
         { key: "diverge", label: "Real-yield divergence", value: f.SoV?.divergence ? "YES" : "no", source: "derived", sourceName: "FRED DFII10", sourceUrl: SRC.DFII10,
-          contribution: "Gold up while 10Y real yields rise breaks the rate-hedge model — the store-of-value bid is about credit, not rates." },
+          contribution: "Gold up while 10Y real yields rise breaks the rate-hedge model — the store hold of wealth bid is about credit, not rates." },
       ],
     },
     {
@@ -337,7 +332,7 @@ export default async function Page() {
             <div className="hero-label">BIG DEBT CYCLE POSITION</div>
             <div className="hero-stage">
               <span className="hero-stage-num">{stageNum}</span>
-              <span className="hero-stage-denom">/ 7 STAGES</span>
+              <span className="hero-stage-denom">/ 7 PHASES</span>
             </div>
             <div className="hero-stage-label">
               {stageLabel} — <b>{stageText}</b>
@@ -362,7 +357,7 @@ export default async function Page() {
             <div className="kpi-cell">
               <div className="kpi-label">FED DEFERRED ASSET</div>
               <div className="kpi-value" style={{ color: (i.defLevelBn ?? 0) <= -200 ? "var(--red)" : "var(--amber-bright)" }}>${fmt(i.defLevelBn)}bn</div>
-              <div className="kpi-note">Stage-5 metric · {f.deferred?.direction ?? "—"}</div>
+              <div className="kpi-note">Central-bank losses — Dalio's literal metric · {f.deferred?.direction ?? "—"}</div>
             </div>
             <div className="kpi-cell">
               <div className="kpi-label">GOLD SPOT</div>

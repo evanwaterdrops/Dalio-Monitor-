@@ -169,17 +169,17 @@ export const SERIES: SeriesDef[] = [
 ];
 
 export const FACTOR_META: Record<string, { name: string; station: string }> = {
-  SC:  { name: "Small-cycle phase", station: "Short-term cycle" },
-  S1:  { name: "Structural deficit impulse", station: "Station 1" },
-  S2:  { name: "Debt vs income ratchet", station: "Station 2" },
-  S3:  { name: "Interest compounding", station: "Station 3" },
-  S4:  { name: "Self-referential borrowing", station: "Station 4" },
-  S5:  { name: "Demand for the debt", station: "Station 5" },
-  S6:  { name: "Price of money", station: "Station 6" },
-  S7:  { name: "r vs g hinge", station: "Station 7" },
-  S8:  { name: "Monetisation valve", station: "Station 8" },
+  SC:  { name: "Short-Term Debt Cycle", station: "Business cycle" },
+  S1:  { name: "Structural Deficit", station: "Debts rising faster than incomes" },
+  S2:  { name: "Debt-to-Income (federal)", station: "The blue line" },
+  S3:  { name: "Debt-Service Burden", station: "The red line" },
+  S4:  { name: "Borrowing to Pay Debt Service", station: "Unsustainability sign" },
+  S5:  { name: "Supply/Demand for Bonds", station: "The thinning bid" },
+  S6:  { name: "Interest Rates (MP1)", station: "The squeeze" },
+  S7:  { name: "Nominal Growth vs Nominal Rates", station: "The hinge" },
+  S8:  { name: "Debt Monetization (MP2/MP3)", station: "Printing money" },
   TAX: { name: "Revenue quality (AI beta)", station: "Tax-base leg" },
   PC:  { name: "Private credit / circularity", station: "Private leg" },
   JP:  { name: "Japan repatriation", station: "Demand leg" },
-  SoV: { name: "Store-of-value flight", station: "Exit leg" },
+  SoV: { name: "Store Hold of Wealth", station: "Exit leg" },
 };

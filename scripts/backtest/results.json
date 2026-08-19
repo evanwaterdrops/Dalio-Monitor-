@@ -73,7 +73,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -157,7 +157,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -241,7 +241,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -325,7 +325,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -415,7 +415,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -505,7 +505,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -595,7 +595,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -685,7 +685,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -775,7 +775,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -865,7 +865,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -955,7 +955,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -1045,7 +1045,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 20,
   "heat": 20,
@@ -1129,7 +1129,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 20,
   "heat": 20,
@@ -1213,7 +1213,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 20,
   "heat": 20,
@@ -1297,7 +1297,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 20,
   "heat": 20,
@@ -1381,7 +1381,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 20,
   "heat": 20,
@@ -1465,7 +1465,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 20,
   "heat": 20,
@@ -1549,7 +1549,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -1633,7 +1633,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -1717,7 +1717,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -1801,7 +1801,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -1885,7 +1885,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -1969,7 +1969,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -2053,7 +2053,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -2137,7 +2137,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -2221,7 +2221,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -2305,7 +2305,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -2389,7 +2389,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -2473,7 +2473,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -2557,7 +2557,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -2641,7 +2641,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -2725,7 +2725,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 20,
   "heat": 20,
@@ -2809,7 +2809,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -2899,7 +2899,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -2989,7 +2989,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -3073,7 +3073,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -3157,7 +3157,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -3241,7 +3241,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -3325,7 +3325,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -3409,7 +3409,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -3493,7 +3493,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -3577,7 +3577,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -3661,7 +3661,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -3745,7 +3745,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -3829,7 +3829,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -3913,7 +3913,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -3997,7 +3997,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -4081,7 +4081,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -4165,7 +4165,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -4249,7 +4249,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -4333,7 +4333,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -4417,7 +4417,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -4501,7 +4501,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -4585,7 +4585,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -4669,7 +4669,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -4753,7 +4753,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -4837,7 +4837,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -4921,7 +4921,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -5005,7 +5005,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -5089,7 +5089,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -5173,7 +5173,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -5257,7 +5257,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -5341,7 +5341,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -5425,7 +5425,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -5509,7 +5509,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -5593,7 +5593,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -5677,7 +5677,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -5761,7 +5761,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -5845,7 +5845,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -5929,7 +5929,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -6013,7 +6013,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -6097,7 +6097,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -6181,7 +6181,7 @@
    "TAX": null,
    "JP": null
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -35733,7 +35733,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -37513,7 +37513,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 14.29,
   "heat": 14.29,
@@ -37691,7 +37691,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 14.29,
   "heat": 14.29,
@@ -37780,7 +37780,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -38047,7 +38047,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -38136,7 +38136,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -38225,7 +38225,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -38314,7 +38314,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -38403,7 +38403,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -38492,7 +38492,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -38581,7 +38581,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -38670,7 +38670,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -38759,7 +38759,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -38848,7 +38848,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -38937,7 +38937,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -39026,7 +39026,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -39115,7 +39115,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -39204,7 +39204,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -39293,7 +39293,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -39382,7 +39382,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -39471,7 +39471,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -39560,7 +39560,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -39649,7 +39649,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -39738,7 +39738,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -39827,7 +39827,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -39916,7 +39916,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -40005,7 +40005,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -40094,7 +40094,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -40183,7 +40183,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -40272,7 +40272,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -40361,7 +40361,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -40450,7 +40450,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -40539,7 +40539,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -40628,7 +40628,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -40717,7 +40717,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -40806,7 +40806,7 @@
     "status": "elevated"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -40901,7 +40901,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -40990,7 +40990,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -41079,7 +41079,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -41791,7 +41791,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 7.14,
   "heat": 7.14,
@@ -41979,7 +41979,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -42261,7 +42261,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 2,
@@ -42761,7 +42761,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -43558,7 +43558,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -43657,7 +43657,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -43756,7 +43756,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -43855,7 +43855,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -43954,7 +43954,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -44053,7 +44053,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -44152,7 +44152,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -44251,7 +44251,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -44350,7 +44350,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 12.5,
   "heat": 12.5,
@@ -44443,7 +44443,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 12.5,
   "heat": 12.5,
@@ -44536,7 +44536,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -44634,7 +44634,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -44946,7 +44946,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -45051,7 +45051,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -45156,7 +45156,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -45266,7 +45266,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -45376,7 +45376,7 @@
     "status": "elevated"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -45491,7 +45491,7 @@
     "status": "elevated"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -45606,7 +45606,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 2,
@@ -45711,7 +45711,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 2,
@@ -45821,7 +45821,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 2,
@@ -45925,7 +45925,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 15,
   "heat": 15,
@@ -46023,7 +46023,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 15,
   "heat": 15,
@@ -46121,7 +46121,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 20,
   "heat": 20,
@@ -46219,7 +46219,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -46317,7 +46317,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -46415,7 +46415,7 @@
     "status": "elevated"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -46519,7 +46519,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -46819,7 +46819,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -47021,7 +47021,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -47119,7 +47119,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -47615,7 +47615,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -47719,7 +47719,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -48019,7 +48019,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -48117,7 +48117,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -48515,7 +48515,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -48619,7 +48619,7 @@
     "status": "elevated"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -48832,7 +48832,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -49426,7 +49426,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -49524,7 +49524,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -49830,7 +49830,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -49928,7 +49928,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -50026,7 +50026,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -50124,7 +50124,7 @@
     "status": "elevated"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -50228,7 +50228,7 @@
     "status": "elevated"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -50332,7 +50332,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -51603,7 +51603,7 @@
     "status": "watch"
    }
   },
-  "stage": "DELEVERAGING (Stage 6 confirmed)",
+  "stage": "DEPRESSION — printing begins (monetization confirmed)",
   "triggers": [
    {
     "tier": 1,
@@ -51717,7 +51717,7 @@
     "status": "watch"
    }
   },
-  "stage": "DELEVERAGING (Stage 6 confirmed)",
+  "stage": "DEPRESSION — printing begins (monetization confirmed)",
   "triggers": [
    {
     "tier": 1,
@@ -51831,7 +51831,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -51940,7 +51940,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -52049,7 +52049,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -52158,7 +52158,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -52277,7 +52277,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -52391,7 +52391,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -52500,7 +52500,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -52604,7 +52604,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -52708,7 +52708,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -52812,7 +52812,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -52916,7 +52916,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -53020,7 +53020,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -53124,7 +53124,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -53228,7 +53228,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -53851,7 +53851,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -53949,7 +53949,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -54047,7 +54047,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 15,
   "heat": 15,
@@ -54145,7 +54145,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -54243,7 +54243,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -54341,7 +54341,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -54445,7 +54445,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -54941,7 +54941,7 @@
     "status": "ok"
    }
   },
-  "stage": "DELEVERAGING (Stage 6 confirmed)",
+  "stage": "DEPRESSION — printing begins (monetization confirmed)",
   "triggers": [
    {
     "tier": 1,
@@ -55045,7 +55045,7 @@
     "status": "ok"
    }
   },
-  "stage": "DELEVERAGING (Stage 6 confirmed)",
+  "stage": "DEPRESSION — printing begins (monetization confirmed)",
   "triggers": [
    {
     "tier": 1,
@@ -55639,7 +55639,7 @@
     "status": "ok"
    }
   },
-  "stage": "DELEVERAGING (Stage 6 confirmed)",
+  "stage": "DEPRESSION — printing begins (monetization confirmed)",
   "triggers": [
    {
     "tier": 1,
@@ -56037,7 +56037,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -56135,7 +56135,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -56233,7 +56233,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -56331,7 +56331,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -56429,7 +56429,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -56527,7 +56527,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 15,
   "heat": 15,
@@ -56625,7 +56625,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -56723,7 +56723,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -56821,7 +56821,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -56919,7 +56919,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -57017,7 +57017,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -57115,7 +57115,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -57213,7 +57213,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -57311,7 +57311,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -57409,7 +57409,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -57507,7 +57507,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -57605,7 +57605,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -57709,7 +57709,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -57807,7 +57807,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -57905,7 +57905,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -58003,7 +58003,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -58101,7 +58101,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -58199,7 +58199,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -58297,7 +58297,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -58395,7 +58395,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -58493,7 +58493,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -58591,7 +58591,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -58689,7 +58689,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -58787,7 +58787,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -58885,7 +58885,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -58983,7 +58983,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -59081,7 +59081,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -59179,7 +59179,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -59277,7 +59277,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -59375,7 +59375,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -59473,7 +59473,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -59571,7 +59571,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -59669,7 +59669,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -59767,7 +59767,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -59865,7 +59865,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -59963,7 +59963,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -60067,7 +60067,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -60165,7 +60165,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -60263,7 +60263,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -60361,7 +60361,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -60459,7 +60459,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -60557,7 +60557,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -60655,7 +60655,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -60753,7 +60753,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -60851,7 +60851,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -60949,7 +60949,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -61047,7 +61047,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -61145,7 +61145,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -61243,7 +61243,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -61341,7 +61341,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 0,
   "heat": 0,
@@ -61439,7 +61439,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -61537,7 +61537,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -61635,7 +61635,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -61733,7 +61733,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -61837,7 +61837,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -61941,7 +61941,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -62045,7 +62045,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -62149,7 +62149,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -62253,7 +62253,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -62357,7 +62357,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -62461,7 +62461,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -62565,7 +62565,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -62669,7 +62669,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -62767,7 +62767,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -62865,7 +62865,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -62969,7 +62969,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -63067,7 +63067,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -63165,7 +63165,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -63263,7 +63263,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -63361,7 +63361,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -63459,7 +63459,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -63557,7 +63557,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -63655,7 +63655,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -63753,7 +63753,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -63851,7 +63851,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -63949,7 +63949,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -64047,7 +64047,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 15,
   "heat": 15,
@@ -64145,7 +64145,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -64243,7 +64243,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -64341,7 +64341,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -64439,7 +64439,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -64543,7 +64543,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -64647,7 +64647,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -64751,7 +64751,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -64855,7 +64855,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -64959,7 +64959,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 3,
@@ -65063,7 +65063,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -65161,7 +65161,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 15,
   "heat": 15,
@@ -65259,7 +65259,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 10,
   "heat": 10,
@@ -65357,7 +65357,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -65455,7 +65455,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [],
   "factorHeat": 5,
   "heat": 5,
@@ -65553,7 +65553,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -65662,7 +65662,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -65766,7 +65766,7 @@
     "status": "watch"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -65870,7 +65870,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -65979,7 +65979,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -66088,7 +66088,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -66197,7 +66197,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -66306,7 +66306,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -66415,7 +66415,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -66524,7 +66524,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -66633,7 +66633,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -66747,7 +66747,7 @@
     "status": "ok"
    }
   },
-  "stage": "TOP, LATE — valve reopening",
+  "stage": "TOP, LATE — monetization gate reopening",
   "triggers": [
    {
     "tier": 1,
@@ -67548,7 +67548,7 @@
     "status": "ok"
    }
   },
-  "stage": "DELEVERAGING (Stage 6 confirmed)",
+  "stage": "DEPRESSION — printing begins (monetization confirmed)",
   "triggers": [
    {
     "tier": 1,
@@ -67848,7 +67848,7 @@
     "status": "ok"
    }
   },
-  "stage": "DELEVERAGING (Stage 6 confirmed)",
+  "stage": "DEPRESSION — printing begins (monetization confirmed)",
   "triggers": [
    {
     "tier": 1,
@@ -72679,7 +72679,7 @@
     "status": "watch"
    }
   },
-  "stage": "DELEVERAGING (Stage 6 confirmed)",
+  "stage": "DEPRESSION — printing begins (monetization confirmed)",
   "triggers": [
    {
     "tier": 1,
