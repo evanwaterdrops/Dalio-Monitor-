@@ -1,61 +1,63 @@
 "use client";
 /**
- * Small Cycle / Big Cycle (/ optional Playbook) tab switcher. Hash-routed
- * (#small / #big / #playbook) so a view survives refresh and can be linked.
- * Only the active tab renders — charts must mount visible for their
- * pin-to-present scroll to apply.
+ * Small Cycle / Big Cycle (/ any number of extra tabs, e.g. Playbook,
+ * Archetype) tab switcher. Hash-routed (#small / #big / #<extra.key>) so a
+ * view survives refresh and can be linked. Only the active tab renders —
+ * charts must mount visible for their pin-to-present scroll to apply.
  */
 import { useEffect, useState } from "react";
 
-type TabKey = "small" | "big" | "extra";
+export interface ExtraTab { key: string; label: string; sub: string; content: React.ReactNode }
 
 export default function Tabs({
   small,
   big,
-  extra,
+  extras,
 }: {
   small: React.ReactNode;
   big: React.ReactNode;
-  extra?: { label: string; sub: string; content: React.ReactNode };
+  extras?: ExtraTab[];
 }) {
-  const [tab, setTab] = useState<TabKey>("small");
+  const [tab, setTab] = useState<string>("small");
 
   useEffect(() => {
     const fromHash = () => {
-      const h = window.location.hash;
-      if (h === "#big") setTab("big");
-      else if (h === "#playbook" && extra) setTab("extra");
+      const h = window.location.hash.replace("#", "");
+      if (h === "big") setTab("big");
+      else if (extras?.some(e => e.key === h)) setTab(h);
       else setTab("small");
     };
     fromHash();
     window.addEventListener("hashchange", fromHash);
     return () => window.removeEventListener("hashchange", fromHash);
-  }, [extra]);
+  }, [extras]);
 
-  const pick = (t: TabKey, hash: string) => {
+  const pick = (t: string) => {
     setTab(t);
-    history.replaceState(null, "", `#${hash}`);
+    history.replaceState(null, "", `#${t}`);
   };
+
+  const active = tab === "small" ? small : tab === "big" ? big : extras?.find(e => e.key === tab)?.content;
 
   return (
     <div>
       <div className="cycle-tabs" role="tablist" aria-label="Cycle horizon">
-        <button role="tab" aria-selected={tab === "small"} className={`cycle-tab${tab === "small" ? " active" : ""}`} onClick={() => pick("small", "small")}>
+        <button role="tab" aria-selected={tab === "small"} className={`cycle-tab${tab === "small" ? " active" : ""}`} onClick={() => pick("small")}>
           SMALL CYCLE
           <span className="cycle-tab-sub">labor · inflation · interest rates</span>
         </button>
-        <button role="tab" aria-selected={tab === "big"} className={`cycle-tab${tab === "big" ? " active" : ""}`} onClick={() => pick("big", "big")}>
+        <button role="tab" aria-selected={tab === "big"} className={`cycle-tab${tab === "big" ? " active" : ""}`} onClick={() => pick("big")}>
           BIG CYCLE
           <span className="cycle-tab-sub">sovereign legs · century context</span>
         </button>
-        {extra && (
-          <button role="tab" aria-selected={tab === "extra"} className={`cycle-tab${tab === "extra" ? " active" : ""}`} onClick={() => pick("extra", "playbook")}>
-            {extra.label}
-            <span className="cycle-tab-sub">{extra.sub}</span>
+        {extras?.map(e => (
+          <button key={e.key} role="tab" aria-selected={tab === e.key} className={`cycle-tab${tab === e.key ? " active" : ""}`} onClick={() => pick(e.key)}>
+            {e.label}
+            <span className="cycle-tab-sub">{e.sub}</span>
           </button>
-        )}
+        ))}
       </div>
-      {tab === "small" ? small : tab === "big" ? big : extra?.content}
+      {active}
     </div>
   );
 }

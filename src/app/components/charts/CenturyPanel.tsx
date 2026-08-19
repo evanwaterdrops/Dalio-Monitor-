@@ -5,7 +5,8 @@
  * is the evidence, this is the map users zoom out into.
  */
 import centuryJson from "@/data/century-panel.json";
-import { useTooltip } from "./common";
+import phaseBandsJson from "@/data/phase-bands.json";
+import { annualPhaseMap, Band, PHASE_COLOR, useTooltip } from "./common";
 
 interface YearRow {
   y: number; debtGdp: number | null; intRcptPct: number | null; rEff: number | null;
@@ -13,6 +14,10 @@ interface YearRow {
   baaAaaBp: number | null; longRate: number | null; spxMaxDD: number | null; rec: number;
 }
 const YEARS = centuryJson as YearRow[];
+/** Annual majority-phase map, collapsed from the monthly replay's phase
+ * bands (src/data/phase-bands.json) — years the replay doesn't cover
+ * (pre-1960) simply have no entry, so no band is drawn for them. */
+const YEAR_PHASE = annualPhaseMap(phaseBandsJson as Band[]);
 
 const SERIES: {
   key: keyof YearRow; title: string; unit: string; color: string;
@@ -65,6 +70,12 @@ export default function CenturyPanel() {
             </div>
             <svg viewBox={`0 0 ${W} ${H}`} width="100%" onMouseMove={hover} onMouseLeave={hide}
               role="img" aria-label={s.title}>
+              {YEARS.map((yr, i) => {
+                const p = YEAR_PHASE[yr.y];
+                return p != null ? (
+                  <rect key={`pb${yr.y}`} x={xAt(i) - W / n / 2} y={PT} width={W / n} height={H - PT - PB} fill={PHASE_COLOR[p] ?? "var(--text-faint)"} opacity={0.07} />
+                ) : null;
+              })}
               {YEARS.map((yr, i) => yr.rec === 1 ? (
                 <rect key={yr.y} x={xAt(i) - W / n / 2} y={PT} width={W / n} height={H - PT - PB} fill="var(--rec-band)" />
               ) : null)}

@@ -1,12 +1,15 @@
 import { assess } from "@/lib/framework/assess";
 import { latestSnapshot, recentAlerts } from "@/lib/db";
 import { FACTOR_META } from "@/lib/config/series";
+import { fred, stooqCloses, yahooCloses, oandaCandles, type Obs } from "@/lib/sources/clients";
 import FactorBoard from "./components/FactorBoard";
 import Tabs from "./components/Tabs";
 import HeatTimeline from "./components/charts/HeatTimeline";
 import CenturyPanel from "./components/charts/CenturyPanel";
 import CycleTimeline from "./components/charts/CycleTimeline";
+import ArchetypePanel from "./components/charts/ArchetypePanel";
 import PlaybookTab from "./components/playbook/PlaybookTab";
+import phaseBandsJson from "@/data/phase-bands.json";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -85,6 +88,83 @@ const STAGE_LABELS: Record<number, string> = {
   5: "Beautiful Deleveraging", 6: "Pushing on a String", 7: "Normalization",
 };
 
+/* ---------------- Archetype panel: server-side history fetch ----------------
+ * Dedicated pulls for the Dalio chart grammar (spec §5) — separate from the
+ * factor-board pulls in assess(), since none of these 7 metrics match an
+ * existing sub-input history length. Every source is individually wrapped
+ * so one dead source degrades to an empty row ("no data"), never a crash. */
+const safeFetch = async <T,>(fn: () => Promise<T>, fallback: T): Promise<T> => {
+  try { return await fn(); } catch { return fallback; }
+};
+
+/** Last observation per calendar month — keeps daily series light in the DOM. */
+function thinMonthly(obs: Obs[]): Obs[] {
+  const map = new Map<string, Obs>();
+  for (const o of obs) map.set(o.date.slice(0, 7), o);
+  return [...map.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/** Exact-date ratio (both series on FRED's quarterly date grid) → %. */
+function ratioExact(numer: Obs[], denom: Obs[]): Obs[] {
+  const dMap = new Map(denom.map(o => [o.date, o.value]));
+  return numer
+    .filter(o => dMap.has(o.date) && dMap.get(o.date) !== 0)
+    .map(o => ({ date: o.date, value: Math.round((o.value / dMap.get(o.date)!) * 10000) / 100 }));
+}
+
+/** Monthly ÷ nearest-prior-quarter ratio, for series (e.g. M2SL) that don't share FRED's quarterly date grid. */
+function ratioNearestPrior(numer: Obs[], denomQuarterly: Obs[]): Obs[] {
+  const denomSorted = [...denomQuarterly].sort((a, b) => a.date.localeCompare(b.date));
+  const out: Obs[] = [];
+  for (const o of numer) {
+    let d: Obs | null = null;
+    for (const q of denomSorted) { if (q.date <= o.date) d = q; else break; }
+    if (d && d.value) out.push({ date: o.date, value: Math.round((o.value / d.value) * 10000) / 100 });
+  }
+  return out;
+}
+
+function spreadExact(a: Obs[], b: Obs[]): Obs[] {
+  const bMap = new Map(b.map(o => [o.date, o.value]));
+  return a.filter(o => bMap.has(o.date)).map(o => ({ date: o.date, value: Math.round((o.value - bMap.get(o.date)!) * 100) / 100 }));
+}
+
+function indexToFirst(obs: Obs[]): Obs[] {
+  if (!obs.length || !obs[0].value) return [];
+  const first = obs[0].value;
+  return obs.map(o => ({ date: o.date, value: Math.round((o.value / first) * 10000) / 100 }));
+}
+
+async function buildArchetypeSeries(): Promise<Record<string, Obs[]>> {
+  try {
+    const [tcmdo, gdpQ, tdsp, m2sl, dgs3mo, dgs10] = await Promise.all([
+      safeFetch(() => fred("TCMDO", { limit: 120 }), [] as Obs[]),
+      safeFetch(() => fred("GDP", { limit: 120 }), [] as Obs[]),
+      safeFetch(() => fred("TDSP", { limit: 120 }), [] as Obs[]),
+      safeFetch(() => fred("M2SL", { limit: 360 }), [] as Obs[]),
+      safeFetch(() => fred("DGS3MO", { limit: 1300 }), [] as Obs[]),
+      safeFetch(() => fred("DGS10", { limit: 1300 }), [] as Obs[]),
+    ]);
+    const equityRaw = await safeFetch(async () => {
+      try { return await stooqCloses("^spx"); }
+      catch { return await yahooCloses("^GSPC", "5y"); }
+    }, [] as Obs[]);
+    const goldRaw = await safeFetch(() => oandaCandles("XAU_USD", 500), [] as Obs[]);
+
+    return {
+      totalDebtGdp: ratioExact(tcmdo, gdpQ),
+      dsrHousehold: tdsp,
+      moneyGdp: ratioNearestPrior(m2sl, gdpQ),
+      equityIndexed: indexToFirst(thinMonthly(equityRaw)),
+      gold: thinMonthly(goldRaw),
+      shortRate3mo: thinMonthly(dgs3mo),
+      curveSpread: thinMonthly(spreadExact(dgs10, dgs3mo)),
+    };
+  } catch {
+    return {};
+  }
+}
+
 export default async function Page() {
   let snap: any = null;
   let loadError: string | null = null;
@@ -104,6 +184,7 @@ export default async function Page() {
   }
 
   const alerts = await recentAlerts(12).catch(() => [] as any[]);
+  const archetypeSeries = await buildArchetypeSeries();
   const f = snap.factors ?? {};
   const i = snap.inputs ?? {};
 
@@ -111,6 +192,13 @@ export default async function Page() {
   const stageText: string = snap.stage?.stage ?? "—";
   const stageNum: number = snap.stage?.phaseNum ?? (stageText.includes("DELEVERAGING") || stageText.includes("Depression") ? 4 : 3);
   const stageLabel = STAGE_LABELS[stageNum] ?? "Unknown Phase";
+
+  // slow clock — position layer (Task 5). Quarterly, revised; context-only,
+  // never averaged into the fast factor board or its triggers.
+  const posClock = snap.position?.clock ?? { score: null, label: "no-data", status: "ok" };
+  const posInputs = snap.position?.inputs ?? {};
+  const POSITION_INPUT_KEYS = ["totalDebtGdpPct", "hhDebtNetWorthPct", "dsrHouseholdPct", "wealthRatio"] as const;
+  const posCount = POSITION_INPUT_KEYS.filter(k => posInputs[k] != null && Number.isFinite(posInputs[k])).length;
 
   const factorRows: FactorRow[] = [
     {
@@ -367,6 +455,40 @@ export default async function Page() {
           </div>
         </section>
 
+        <section className="section">
+          <div className="section-header">
+            <span className="section-title">POSITION (SLOW CLOCK)</span>
+            <span className="section-rule" />
+            <span className="section-count" style={{ color: "var(--text-faint)" }}>{posCount} OF 4 INPUTS</span>
+          </div>
+          <div className="position-clock-row">
+            <div className="position-clock-cell">
+              <div className="position-clock-label">CLOCK READING</div>
+              <div className="position-clock-value" style={{ color: STATUS_COLOR[st(posClock.status)] }}>{String(posClock.label ?? "no-data").toUpperCase()}</div>
+              <div className="position-clock-score">score {posClock.score != null ? posClock.score.toFixed(2) : "—"}</div>
+            </div>
+            <div className="position-stats-grid">
+              <div className="position-stat">
+                <div className="position-stat-label">TOTAL DEBT / GDP</div>
+                <div className="position-stat-value">{fmt(posInputs.totalDebtGdpPct, "%")}</div>
+              </div>
+              <div className="position-stat">
+                <div className="position-stat-label">HOUSEHOLD DEBT / NET WORTH</div>
+                <div className="position-stat-value">{fmt(posInputs.hhDebtNetWorthPct, "%")}</div>
+              </div>
+              <div className="position-stat">
+                <div className="position-stat-label">HOUSEHOLD DEBT SERVICE / INCOME</div>
+                <div className="position-stat-value">{fmt(posInputs.dsrHouseholdPct, "%")}</div>
+              </div>
+              <div className="position-stat">
+                <div className="position-stat-label">TOP 0.1% / BOTTOM 90% WEALTH</div>
+                <div className="position-stat-value">{fmt(posInputs.wealthRatio, "×")}</div>
+              </div>
+            </div>
+          </div>
+          <p className="position-caption">Quarterly, revised — context, never averaged into triggers.</p>
+        </section>
+
         {snap.narrative && (
           <details className="narrative-section" open>
             <summary className="narrative-toggle-label" style={{ cursor: "pointer", listStyle: "none" }}>
@@ -453,11 +575,20 @@ export default async function Page() {
               </section>
             </>
           }
-          extra={{
-            label: "PLAYBOOK",
-            sub: "analogs · theme rhymes · horizon returns",
-            content: <PlaybookTab playbook={snap.playbook} />,
-          }}
+          extras={[
+            {
+              key: "playbook",
+              label: "PLAYBOOK",
+              sub: "analogs · theme rhymes · horizon returns",
+              content: <PlaybookTab playbook={snap.playbook} />,
+            },
+            {
+              key: "archetype",
+              label: "ARCHETYPE",
+              sub: "the seven phases · debt · money · markets",
+              content: <ArchetypePanel series={archetypeSeries} bands={phaseBandsJson as any} />,
+            },
+          ]}
         />
 
         {alerts.length > 0 && (
