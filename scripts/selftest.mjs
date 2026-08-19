@@ -181,12 +181,18 @@ truthy("position clock caps at elevated",
   }
   truthy("synthetic anti-correlated yield/dollar → corr ≤ −0.9", yieldDollarCorr(dgs10, eurHist, jpyHist) <= -0.9);
 })();
-truthy("yieldDollarCorr below 40 overlapping days → NaN",
-  Number.isNaN(yieldDollarCorr(
-    [{ date: "2024-01-01", value: 4.0 }, { date: "2024-01-02", value: 4.1 }],
-    [{ date: "2024-01-01", value: 1.1 }, { date: "2024-01-02", value: 1.1 }],
-    [{ date: "2024-01-01", value: 150 }, { date: "2024-01-02", value: 151 }],
-  )));
+(() => {
+  // Boundary probe: 39 overlapping dates (below the ≥41 the function requires),
+  // built the same way the anti-correlated fixture above is, so the ONLY
+  // difference from a passing case is sample size, not shape.
+  const n = 39;
+  const dates = Array.from({ length: n }, (_, i) => `2024-03-${String(i + 1).padStart(2, "0")}`);
+  const dgs10 = dates.map((date, i) => ({ date, value: 4.00 + i * 0.01 }));
+  const eurHist = dates.map(date => ({ date, value: 1.10 }));
+  const jpyHist = dates.map((date, i) => ({ date, value: 150.00 - i * 0.10 }));
+  truthy("yieldDollarCorr at 39 overlapping days (below the 41 floor) → NaN",
+    Number.isNaN(yieldDollarCorr(dgs10, eurHist, jpyHist)));
+})();
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

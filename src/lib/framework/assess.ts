@@ -82,14 +82,29 @@ export async function assess() {
   const [spot, xauHist, eurHist, jpyHist, bcoHist, spxHist, bdcCloses] = await Promise.all([
     t("oanda-spot", () => src.oandaPrices(["XAU_USD", "EUR_USD", "USD_JPY", "BCO_USD"]), {} as Record<string, number>),
     t<src.Obs[]>("XAU-candles", () => src.oandaCandles("XAU_USD", 25), []),
-    t<src.Obs[]>("EUR-candles", () => src.oandaCandles("EUR_USD", 25), []),
-    t<src.Obs[]>("JPY-candles", () => src.oandaCandles("USD_JPY", 25), []),
+    // 90 (not 25): yieldDollarCorr needs ≥41 overlapping dates with DGS10 to ever
+    // resolve past NaN — 25 candles structurally couldn't clear that bar. xauHist
+    // stays at 25 (gold decomposition's own w=min(20,...) window is unaffected —
+    // it's still the binding constraint since eur/jpy are only ever the max side
+    // of that min()).
+    t<src.Obs[]>("EUR-candles", () => src.oandaCandles("EUR_USD", 90), []),
+    t<src.Obs[]>("JPY-candles", () => src.oandaCandles("USD_JPY", 90), []),
     t<src.Obs[]>("BCO-candles", () => src.oandaCandles("BCO_USD", 10), []),
-    // Stooq primary (full ^spx history, keyless); Yahoo ^GSPC fallback if Stooq's
-    // anti-bot challenge blocks this environment. Both dead → one "SPX" problems entry.
+    // Stooq primary (full ^spx history, keyless); Yahoo ^GSPC 5y fallback (not the
+    // 1mo default — spxDdPct needs ≥100 rows for the 3y-high window) if Stooq's
+    // anti-bot challenge blocks this environment. A successful fallback still means
+    // stooq failed, so that's recorded as a problems entry (not silent); if both
+    // fail, t()'s own catch records the "SPX" failure instead.
     t<src.Obs[]>("SPX", async () => {
       try { return await src.stooqCloses("^spx"); }
-      catch { return await src.yahooCloses("^GSPC"); }
+      catch {
+        // yahooCloses can itself throw (total failure) — let that propagate to
+        // t()'s own catch so only ONE problems entry fires for the double-dead
+        // case; the message below only lands when the fallback actually worked.
+        const rows = await src.yahooCloses("^GSPC", "5y");
+        problems.push("spx: stooq unreachable, using yahoo 5y fallback");
+        return rows;
+      }
     }, []),
     Promise.all(["ARCC", "BXSL", "OBDC", "FSK"].map(tkr =>
       t<src.Obs[]>(`BDC-${tkr}`, () => src.yahooCloses(tkr), []))),

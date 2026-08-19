@@ -167,8 +167,10 @@ export async function oandaCandles(instrument: string, count = 30) {
 }
 
 /* ---------------- Yahoo (AI-credit equity basket proxy) ---------------- */
-export async function yahooCloses(symbol: string) {
-  const d = await j(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=1mo&interval=1d`);
+/** `range` defaults to "1mo" (existing basket/BDC call sites); the spx fallback
+ * passes "5y" so drawdown-window math (needs ≥100 rows) has enough history. */
+export async function yahooCloses(symbol: string, range = "1mo") {
+  const d = await j(`https://query1.finance.yahoo.com/v8/finance/chart/${symbol}?range=${range}&interval=1d`);
   const r = d.chart?.result?.[0];
   const ts: number[] = r?.timestamp ?? [];
   const cl: number[] = r?.indicators?.quote?.[0]?.close ?? [];
