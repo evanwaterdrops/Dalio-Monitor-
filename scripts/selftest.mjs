@@ -7,6 +7,8 @@ import {
   smallCyclePhase, monetisationValve, rVsG, goldDecomposition,
   demandLeg, deferredAsset, interestSqueeze, bigCycleStage, evaluateTriggers,
   priceOfMoney, privateCredit,
+  moneyVsCredit, curveShape, printDiscriminator, reservePremise, equityDrawdown,
+  bdcStress, positionClock,
 } from "../src/lib/framework/math.mjs";
 
 let pass = 0, fail = 0;
@@ -109,6 +111,57 @@ truthy("no structural T1 at small stock", !evaluateTriggers({
 }).some(t => t.key === "r_avg_crosses_g"));
 // same crossing at 122% (today) stays critical + T1
 eq("r>g at large stock = critical", rVsG({ rAvg: 6.5, rMarg: 6.0, gNominal: 5.5, rolloverShare12m: 0.30, contractionFlag: false, debtToGdpPct: 122 }).status, "critical");
+
+// --- money vs credit: Dalio's monetization signature (P1:1506)
+eq("2009 shape: money accelerating into credit contraction",
+  moneyVsCredit({ m2YoYPct: 10.3, creditYoYPct: -0.8 }).signature, "printing-into-contraction");
+eq("2004 shape: both expanding = no signature",
+  moneyVsCredit({ m2YoYPct: 5.1, creditYoYPct: 8.9 }).signature, "none");
+
+// --- curve decomposition: bear-steepening = fiscal/term-premium story (S5)
+const cs = curveShape({ dFrontBp3m: 2, dLongBp3m: 41, dTpBp3m: 28, spreadBp: 55 });
+eq("long selling off, front anchored = bear-steepening", cs.mode, "bear-steepening");
+eq("bear-steepening is elevated", cs.status, "elevated");
+eq("bull-steepening (front rallying on cuts) is the small-cycle story",
+  curveShape({ dFrontBp3m: -45, dLongBp3m: -5, dTpBp3m: 3, spreadBp: 80 }).mode, "bull-steepening");
+truthy("inversion flagged as context, not a trigger",
+  curveShape({ dFrontBp3m: 0, dLongBp3m: 0, dTpBp3m: 0, spreadBp: -30 }).inverted);
+
+// --- print discriminator: 2019-style bill buying is plumbing, not the Dalio print
+eq("bills-led expansion = reserve management",
+  printDiscriminator({ fedAssetsUp3w: true, billsShareOfExpansion: 0.85, sofrIorbBp: 12 }).printMode, "reserve-management");
+eq("duration-led expansion = monetization",
+  printDiscriminator({ fedAssetsUp3w: true, billsShareOfExpansion: 0.2, sofrIorbBp: 2 }).printMode, "monetization");
+eq("no expansion = none", printDiscriminator({ fedAssetsUp3w: false, billsShareOfExpansion: 0, sofrIorbBp: 0 }).printMode, "none");
+
+// --- discriminator gates the stage call: same WALCL print, different verdicts
+eq("reserve-management expansion does NOT confirm Depression",
+  bigCycleStage({ fedAssetsUp3w: true, coreYoY: 2.5, headlineYoY: 3.4, valveScore: 0.55, printMode: "reserve-management" }).phaseNum, 3);
+
+// --- valve two-key gate: expectations can close what realized CPI left open
+eq("anchored expectations leave valve as realized-CPI says",
+  monetisationValve({ coreYoY: 2.5, headlineYoY: 2.9, brent: 78, expInfl5yPct: 2.3 }).label, "open");
+eq("unanchored expectations gate the valve on their own",
+  monetisationValve({ coreYoY: 2.5, headlineYoY: 2.9, brent: 78, expInfl5yPct: 3.1 }).label, "gated-by-expectations");
+
+// --- BDC divergence: private stress the public index can't see
+truthy("BDCs at 5y-low discounts while HY stays tight = divergence",
+  bdcStress({ medianPnav: 0.81, pnavPctile5y: 0.06, hyOasDelta3mBp: 12 }).divergence);
+eq("divergence is critical", bdcStress({ medianPnav: 0.81, pnavPctile5y: 0.06, hyOasDelta3mBp: 12 }).status, "critical");
+eq("no NAV data degrades to ok", bdcStress({ medianPnav: null, pnavPctile5y: null, hyOasDelta3mBp: 12 }).status, "ok");
+
+// --- reserve premise tripwire: yields up + dollar down = credibility regime
+eq("persistent negative yield/dollar corr flips the premise",
+  reservePremise({ corr60d: -0.42 }).regime, "credibility-watch");
+eq("normal reserve template", reservePremise({ corr60d: 0.31 }).regime, "reserve-template");
+
+// --- equity drawdown ruler (Dalio: depressions ~50%)
+eq("−22% vs 3y high = elevated", equityDrawdown({ ddPct: -22 }).status, "elevated");
+eq("−45% = critical", equityDrawdown({ ddPct: -45 }).status, "critical");
+
+// --- position clock is slow-layer context and never critical
+truthy("position clock caps at elevated",
+  positionClock({ totalDebtGdpPct: 350, hhDebtNetWorthPct: 18, dsrHouseholdPct: 12, wealthRatio: 1.1, curveSpreadBp: -40 }).status !== "critical");
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

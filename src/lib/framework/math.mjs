@@ -89,7 +89,7 @@ export function privateCredit({ hyOasBp, hyOasDelta3mBp }) {
  * valve is effectively open and the Top→Deleveraging transition becomes
  * available within a quarter.
  * ------------------------------------------------------------------ */
-export function monetisationValve({ coreYoY, headlineYoY, brent, oilYoYPct = null }) {
+export function monetisationValve({ coreYoY, headlineYoY, brent, oilYoYPct = null, expInfl5yPct = null }) {
   const wedge = headlineYoY - coreYoY;
   let score = clamp01(1 - (coreYoY - 2.0) / 2.0); // core 2% → 1.0 open; core 4% → 0
   let label = "open";
@@ -107,6 +107,10 @@ export function monetisationValve({ coreYoY, headlineYoY, brent, oilYoYPct = nul
   if (coreYoY >= 3.0) {
     score = Math.min(score, 0.25);
     label = "blocked-by-underlying-inflation";
+  }
+  if (expInfl5yPct != null && expInfl5yPct >= 2.8 && score > 0.5) {
+    score = Math.min(score, 0.5);
+    label = "gated-by-expectations";
   }
   const status =
     score >= 0.7 ? STATUS.WATCH /* open valve = regime change risk, keep watching */
@@ -255,6 +259,93 @@ export function bigCycleStage({ fedAssetsUp3w, coreYoY, headlineYoY, valveScore,
   return { phaseNum: 3, phase: "Top", detail: "late", stage: "TOP, LATE", status: STATUS.ELEVATED };
 }
 
+/* Money vs credit — Dalio's monetization signature (P1:1506): "money growing at an
+ * extremely fast rate at the same time as credit and real economic activity are
+ * contracting". Thresholds self-calibrated; Task 7 validates 2008-09/2020 fire,
+ * 1999–2007 quiet, or this demotes to context. */
+export function moneyVsCredit({ m2YoYPct, creditYoYPct }) {
+  if (!Number.isFinite(m2YoYPct) || !Number.isFinite(creditYoYPct))
+    return { signature: "none", status: STATUS.OK };
+  if (m2YoYPct >= 10 && creditYoYPct <= 0)
+    return { signature: "printing-into-contraction", status: STATUS.CRITICAL };
+  if (m2YoYPct >= 8 && creditYoYPct < m2YoYPct - 5)
+    return { signature: "printing-into-contraction", status: STATUS.WATCH };
+  return { signature: m2YoYPct > 6 && creditYoYPct > 6 ? "broad-expansion" : "none", status: STATUS.OK };
+}
+
+/* Curve decomposition. Naive "flat or inverted" fired 2022-24 and un-fired; the
+ * trigger-bearing signal is the steepening MODE: bear-steepening (long end sold,
+ * front anchored, term premium rising) is the fiscal/demand story → S5;
+ * bull-steepening is the cut-pricing small-cycle story → SC. Inversion is context. */
+export function curveShape({ dFrontBp3m, dLongBp3m, dTpBp3m, spreadBp }) {
+  const inverted = Number.isFinite(spreadBp) && spreadBp < 0;
+  let mode = "stable";
+  if (dLongBp3m >= 25 && dFrontBp3m <= 5) mode = "bear-steepening";
+  else if (dFrontBp3m <= -25 && dLongBp3m > dFrontBp3m) mode = "bull-steepening";
+  else if (dFrontBp3m >= 25 && dLongBp3m < dFrontBp3m) mode = "bear-flattening";
+  else if (dLongBp3m <= -25 && dFrontBp3m > -10) mode = "bull-flattening";
+  const status = mode === "bear-steepening" && dTpBp3m > 0 ? STATUS.ELEVATED
+    : mode === "bear-steepening" ? STATUS.WATCH : STATUS.OK;
+  return { mode, inverted, status };
+}
+
+/* Print discriminator — a WALCL expansion is only Dalio's print if it takes
+ * DURATION. Bills-led expansion holding reserves ample (2019 precedent) is
+ * plumbing even when SOFR-IORB is stressed. */
+export function printDiscriminator({ fedAssetsUp3w, billsShareOfExpansion, sofrIorbBp }) {
+  const fundingStress = Number.isFinite(sofrIorbBp) && sofrIorbBp >= 10;
+  if (!fedAssetsUp3w) return { printMode: "none", fundingStress };
+  if (Number.isFinite(billsShareOfExpansion) && billsShareOfExpansion >= 0.6)
+    return { printMode: "reserve-management", fundingStress };
+  return { printMode: "monetization", fundingStress };
+}
+
+/* Reserve-premise tripwire — the falsifier for excluding inflationary-archetype
+ * series. Yields up WITH dollar down as a persistent regime = sovereign
+ * credibility repricing, not the deflationary reserve template. */
+export function reservePremise({ corr60d }) {
+  const flip = Number.isFinite(corr60d) && corr60d <= -0.35;
+  return { regime: flip ? "credibility-watch" : "reserve-template",
+           status: flip ? STATUS.ELEVATED : STATUS.OK };
+}
+
+/* Equity drawdown vs rolling 3y high — Dalio's depression ruler (~50% declines,
+ * P1:1085). */
+export function equityDrawdown({ ddPct }) {
+  if (!Number.isFinite(ddPct)) return { ddPct: null, status: STATUS.OK };
+  const status = ddPct <= -40 ? STATUS.CRITICAL : ddPct <= -20 ? STATUS.ELEVATED
+    : ddPct <= -10 ? STATUS.WATCH : STATUS.OK;
+  return { ddPct: round2(ddPct), status };
+}
+
+/* BDC price-to-NAV — live market mark on private-credit books. The divergence
+ * (BDCs stressed while public HY stays tight) is the selection-bias scenario:
+ * risk migrated out of the public index. Group median vs own 5y history. */
+export function bdcStress({ medianPnav, pnavPctile5y, hyOasDelta3mBp }) {
+  if (!Number.isFinite(medianPnav)) return { medianPnav: null, divergence: false, status: STATUS.OK };
+  const stressed = Number.isFinite(pnavPctile5y) && pnavPctile5y <= 0.10;
+  const divergence = stressed && Number.isFinite(hyOasDelta3mBp) && hyOasDelta3mBp < 40;
+  const status = divergence ? STATUS.CRITICAL : stressed ? STATUS.ELEVATED
+    : medianPnav < 0.9 ? STATUS.WATCH : STATUS.OK;
+  return { medianPnav: round2(medianPnav), divergence, status };
+}
+
+/* Position clock — the SLOW layer, scored separately from the fast stress layer
+ * and never averaged into it. Quarterly, revised inputs; context only, so its
+ * ceiling is ELEVATED by construction. */
+export function positionClock({ totalDebtGdpPct, hhDebtNetWorthPct, dsrHouseholdPct, wealthRatio, curveSpreadBp }) {
+  const parts = [];
+  if (Number.isFinite(totalDebtGdpPct)) parts.push(clamp01((totalDebtGdpPct - 150) / 200)); // 150%→0, 350%→1 (Dalio bubble avg ~300%)
+  if (Number.isFinite(hhDebtNetWorthPct)) parts.push(clamp01((hhDebtNetWorthPct - 10) / 10));
+  if (Number.isFinite(dsrHouseholdPct)) parts.push(clamp01((dsrHouseholdPct - 8) / 6));
+  if (Number.isFinite(wealthRatio)) parts.push(clamp01((wealthRatio - 0.6) / 0.6)); // top0.1/bottom90 ≈1 = 1930s/today extreme (P1:1426)
+  if (Number.isFinite(curveSpreadBp)) parts.push(curveSpreadBp < 0 ? 1 : clamp01((100 - curveSpreadBp) / 200));
+  if (!parts.length) return { score: null, label: "no-data", status: STATUS.OK };
+  const score = round2(parts.reduce((s, x) => s + x, 0) / parts.length);
+  const label = score >= 0.7 ? "late-cycle position" : score >= 0.4 ? "mid-cycle position" : "early-cycle position";
+  return { score, label, status: score >= 0.7 ? STATUS.ELEVATED : score >= 0.4 ? STATUS.WATCH : STATUS.OK };
+}
+
 /* ---------------- alert triggers (machine-checkable watchlist) ------ */
 export function evaluateTriggers(s) {
   const out = [];
@@ -264,14 +355,21 @@ export function evaluateTriggers(s) {
       `rAvg ${s.rAvg} ≥ g ${s.gNominal}`);
   add(1, "r_crosses_g_recession_event", s.contractionFlag && s.rvg.stressedCrossed,
       `payroll contraction + stressed g ${round2(s.gNominal - 3)} < rAvg ${s.rAvg}`);
-  add(1, "monetisation_while_hot", s.fedAssetsUp3w && s.headlineYoY > 3,
-      `Fed assets rising 3w with headline CPI ${s.headlineYoY}%`);
+  add(1, "monetisation_while_hot",
+      s.fedAssetsUp3w && s.headlineYoY > 3 && s.printMode !== "reserve-management",
+      `Fed assets rising 3w (${s.printMode ?? "composition unknown"}) with headline CPI ${s.headlineYoY}%`);
   add(2, "interest_over_20pct_revenue", s.squeeze.ratio >= 0.2, `interest/receipts ${(s.squeeze.ratio * 100).toFixed(1)}%`);
   add(2, "long_end_selloff_on_easing", s.easedAndLongEndSold === true, "DGS30 +≥8bp on a cut day");
   add(2, "issuance_front_end_migration", s.billsShareUp3m === true, "bills share of marketable debt up 3 consecutive months");
+  add(2, "bear_steepening_regime", s.curve?.mode === "bear-steepening" && s.curve?.status !== STATUS.OK,
+      "long end selling off with front anchored, term premium rising");
   add(3, "gold_real_yield_divergence", s.gold.divergence, "gold up while real 10Y up (20d)");
   add(3, "japan_absolute_decline", s.japan.hits >= 2, `japan leg hits=${s.japan.hits}`);
   add(3, "auction_plumbing", s.demand.status === STATUS.CRITICAL, `10Y BTC ${s.demand.lastBtc}, dealer ${s.demand.lastDealerPct}%`);
+  add(3, "bdc_hy_divergence", s.bdc?.divergence === true,
+      `BDC median P/NAV ${s.bdc?.medianPnav} at 5y-low percentile while HY OAS quiet`);
+  add(3, "reserve_premise_flip", s.premise?.regime === "credibility-watch",
+      "60d corr(Δ10Y, Δdollar) persistently negative — yields up, dollar down");
   return out;
 }
 
