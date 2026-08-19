@@ -74,11 +74,17 @@ export async function narrate(snap: any, prev: any): Promise<string | null> {
   const readings = (s: any) => s && {
     asOf: s.asOf,
     stage: s.stage,
+    // factors is included wholesale, so the new fast-clock factors (money, curve,
+    // equity, bdc, premise) flow through automatically alongside the existing ones.
     factors: s.factors,
     triggers: s.triggers,
     inputs: Object.fromEntries(
       Object.entries(s.inputs ?? {}).filter(([, v]) => typeof v === "number"),
     ),
+    // slow clock: position layer, clock score only — never the revised inputs it's
+    // built from (position.inputs), keeping the narrative model on the same
+    // fast/slow separation the framework enforces (spec §2).
+    position: s.position ? { clock: s.position.clock } : null,
     playbookLeaderboard: s.playbook?.leaderboard?.map((r: any) => `${r.id}:${r.band}`).join(",") ?? null,
   };
 

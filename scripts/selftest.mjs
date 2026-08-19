@@ -8,7 +8,7 @@ import {
   demandLeg, deferredAsset, interestSqueeze, bigCycleStage, evaluateTriggers,
   priceOfMoney, privateCredit,
   moneyVsCredit, curveShape, printDiscriminator, reservePremise, equityDrawdown,
-  bdcStress, positionClock,
+  bdcStress, positionClock, yieldDollarCorr,
 } from "../src/lib/framework/math.mjs";
 
 let pass = 0, fail = 0;
@@ -162,6 +162,31 @@ eq("−45% = critical", equityDrawdown({ ddPct: -45 }).status, "critical");
 // --- position clock is slow-layer context and never critical
 truthy("position clock caps at elevated",
   positionClock({ totalDebtGdpPct: 350, hhDebtNetWorthPct: 18, dsrHouseholdPct: 12, wealthRatio: 1.1, curveSpreadBp: -40 }).status !== "critical");
+
+// --- yieldDollarCorr: 60d Pearson corr of Δ10Y(bp) vs Δdollar composite
+// (avg of ΔUSD_JPY% and −ΔEUR_USD%), aligned by date. Synthetic anti-correlated
+// series: EUR_USD held flat (ΔEUR%=0), USD_JPY set so ΔUSDJPY% = −ΔYield(bp) each
+// day — an exact negative proportional relationship, so Pearson corr → −1.
+(() => {
+  const deltasBp = [4,-2,3,-5,1,6,-3,2,-4,5,-1,3,-6,2,4,-3,1,-2,5,-4,3,-1,6,-5,2,-3,4,-2,1,-4,5,-6,3,-1,2,-5,4,-3,1,-2,6,-4,3,-1,5];
+  const n = deltasBp.length + 1; // 45 levels → 44 changes
+  const dates = Array.from({ length: n }, (_, i) => `2024-01-${String(i + 1).padStart(2, "0")}`);
+  const dgs10 = [{ date: dates[0], value: 4.00 }];
+  const eurHist = [{ date: dates[0], value: 1.10 }];
+  const jpyHist = [{ date: dates[0], value: 150.00 }];
+  for (let i = 1; i < n; i++) {
+    dgs10.push({ date: dates[i], value: dgs10[i - 1].value + deltasBp[i - 1] / 100 });
+    eurHist.push({ date: dates[i], value: 1.10 }); // flat → ΔEUR% = 0
+    jpyHist.push({ date: dates[i], value: jpyHist[i - 1].value * (1 - deltasBp[i - 1] / 100) });
+  }
+  truthy("synthetic anti-correlated yield/dollar → corr ≤ −0.9", yieldDollarCorr(dgs10, eurHist, jpyHist) <= -0.9);
+})();
+truthy("yieldDollarCorr below 40 overlapping days → NaN",
+  Number.isNaN(yieldDollarCorr(
+    [{ date: "2024-01-01", value: 4.0 }, { date: "2024-01-02", value: 4.1 }],
+    [{ date: "2024-01-01", value: 1.1 }, { date: "2024-01-02", value: 1.1 }],
+    [{ date: "2024-01-01", value: 150 }, { date: "2024-01-02", value: 151 }],
+  )));
 
 console.log(`\n${pass} passed, ${fail} failed`);
 process.exit(fail ? 1 : 0);

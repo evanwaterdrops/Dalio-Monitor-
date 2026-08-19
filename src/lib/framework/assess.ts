@@ -2,7 +2,9 @@ import {
   smallCyclePhase, monetisationValve, rVsG, goldDecomposition, demandLeg,
   deferredAsset, interestSqueeze, revenueBeta, japanLeg, bigCycleStage,
   priceOfMoney, privateCredit,
-  evaluateTriggers, pctChange, sahmGap,
+  moneyVsCredit, curveShape, printDiscriminator, reservePremise, equityDrawdown,
+  bdcStress, positionClock, yieldDollarCorr,
+  evaluateTriggers, pctChange, sahmGap, clamp01,
   // @ts-ignore — plain JS module, single source of truth with selftest
 } from "./math.mjs";
 import * as src from "../sources/clients";
@@ -31,7 +33,9 @@ export async function assess() {
 
   // ---- pulls (tolerant: one dead source must not kill the run) ----
   const [payems, payRev, unrate, cpiH, cpiC, dgs10, dgs30, funds, walcl, defAsset,
-         realY, hyOas, gdp, debtGdpQ, avgRate, debt, mts, auctions, jgb, foreignQ, wti] = await Promise.all([
+         realY, hyOas, gdp, debtGdpQ, avgRate, debt, mts, auctions, jgb, foreignQ, wti,
+         m2, tcmdo, dgs3mo, t5yie, sofr, iorb, bills, cmdebt, tnwbshno, tdsp, pcepilfe, termPrem,
+         wealthTop01, wealthBottom50, wealthMid50to90] = await Promise.all([
     t("PAYEMS", () => src.fred("PAYEMS", { limit: 30 }), []),
     t("PAYEMS-rev", () => src.fredRevisions("PAYEMS", 4), []),
     t("UNRATE", () => src.fred("UNRATE", { limit: 30 }), []),
@@ -40,7 +44,9 @@ export async function assess() {
     t("DGS10", () => src.fred("DGS10", { limit: 260 }), []),  // 260 ≥ 251 trading days + margin, so longRateDelta12mBp isn't always null
     t("DGS30", () => src.fred("DGS30", { limit: 30 }), []),
     t("DFEDTARU", () => src.fred("DFEDTARU", { limit: 200 }), []),
-    t("WALCL", () => src.fred("WALCL", { limit: 8 }), []),
+    // limit 16 (not 8): billsShareOfExpansion needs ago(walcl,13) — a 13-week-back weekly
+    // observation — for the print discriminator to ever resolve "reserve-management".
+    t("WALCL", () => src.fred("WALCL", { limit: 16 }), []),
     t("RESPPLLOPNWW", () => src.fred("RESPPLLOPNWW", { limit: 16 }), []),
     t("DFII10", () => src.fred("DFII10", { limit: 300 }), []),   // 300 ≈ 12m of trading days for the S6 impulse
     t("HY-OAS", () => src.fred("BAMLH0A0HYM2", { limit: 90 }), []), // 90 ≈ 3m for the PC momentum
@@ -53,15 +59,40 @@ export async function assess() {
     t("JGB10", () => src.fred("IRLTLT01JPM156N", { limit: 8 }), []),
     t("FDHBFIN", () => src.fred("FDHBFIN", { limit: 8 }), []),
     t("WTISPLC", () => src.fred("WTISPLC", { limit: 13 }), []),
+    t("M2SL", () => src.fred("M2SL", { limit: 30 }), []),
+    t("TCMDO", () => src.fred("TCMDO", { limit: 10 }), []),
+    t("DGS3MO", () => src.fred("DGS3MO", { limit: 260 }), []),
+    t("T5YIE", () => src.fred("T5YIE", { limit: 90 }), []),
+    t("SOFR", () => src.fred("SOFR", { limit: 90 }), []),
+    t("IORB", () => src.fred("IORB", { limit: 90 }), []),
+    t("WSHOBL", () => src.fred("WSHOBL", { limit: 16 }), []),
+    t("CMDEBT", () => src.fred("CMDEBT", { limit: 8 }), []),
+    t("TNWBSHNO", () => src.fred("TNWBSHNO", { limit: 8 }), []),
+    t("TDSP", () => src.fred("TDSP", { limit: 8 }), []),
+    t("PCEPILFE", () => src.fred("PCEPILFE", { limit: 30 }), []),
+    // THREEFYTP10 (term premium) predates this task in the registry but was never
+    // wired to a pull — curveShape's dTpBp3m needs it, so wiring it is in scope here.
+    t("THREEFYTP10", () => src.fred("THREEFYTP10", { limit: 260 }), []),
+    t("WFRBSTP1300", () => src.fred("WFRBSTP1300", { limit: 8 }), []),
+    t("WFRBSB50215", () => src.fred("WFRBSB50215", { limit: 8 }), []),
+    t("WFRBSN40188", () => src.fred("WFRBSN40188", { limit: 8 }), []),
   ]);
   const claimsYoYPct = await t<number | null>("ICSA", src.claimsYoY, null);
 
-  const [spot, xauHist, eurHist, jpyHist, bcoHist] = await Promise.all([
+  const [spot, xauHist, eurHist, jpyHist, bcoHist, spxHist, bdcCloses] = await Promise.all([
     t("oanda-spot", () => src.oandaPrices(["XAU_USD", "EUR_USD", "USD_JPY", "BCO_USD"]), {} as Record<string, number>),
     t<src.Obs[]>("XAU-candles", () => src.oandaCandles("XAU_USD", 25), []),
     t<src.Obs[]>("EUR-candles", () => src.oandaCandles("EUR_USD", 25), []),
     t<src.Obs[]>("JPY-candles", () => src.oandaCandles("USD_JPY", 25), []),
     t<src.Obs[]>("BCO-candles", () => src.oandaCandles("BCO_USD", 10), []),
+    // Stooq primary (full ^spx history, keyless); Yahoo ^GSPC fallback if Stooq's
+    // anti-bot challenge blocks this environment. Both dead → one "SPX" problems entry.
+    t<src.Obs[]>("SPX", async () => {
+      try { return await src.stooqCloses("^spx"); }
+      catch { return await src.yahooCloses("^GSPC"); }
+    }, []),
+    Promise.all(["ARCC", "BXSL", "OBDC", "FSK"].map(tkr =>
+      t<src.Obs[]>(`BDC-${tkr}`, () => src.yahooCloses(tkr), []))),
   ]);
 
   // ---- derived inputs ----
@@ -103,6 +134,44 @@ export async function assess() {
   const jgbDelta = jgb.length >= 4 ? (last(jgb).value - ago(jgb, 3).value) * 100 : 0;
   const jpyDelta3m = jpyHist.length ? pctChange(last(jpyHist).value, jpyHist[0].value) ?? 0 : 0;
   const japanHoldingsDelta = (await getManual("japan_tic_delta_2m_bn"))?.value ?? 0; // until TIC series id pinned
+
+  // ---- derived inputs: fast-clock factors (money/curve/print discriminator/equity/BDC/premise) ----
+  const m2YoYPct = m2.length > 12 ? round2(yoy(m2, 12)!) : NaN;
+  const creditYoYPct = tcmdo.length > 4 ? round2(yoy(tcmdo, 4)!) : NaN;
+  const dFrontBp3m = dgs3mo.length > 63 ? (last(dgs3mo).value - ago(dgs3mo, 63).value) * 100 : NaN;
+  const dLongBp3m = dgs10.length > 63 ? (last(dgs10).value - ago(dgs10, 63).value) * 100 : NaN;
+  const dTpBp3m = termPrem.length > 63 ? (last(termPrem).value - ago(termPrem, 63).value) * 100 : NaN;
+  const spreadBp = dgs10.length && dgs3mo.length ? (last(dgs10).value - last(dgs3mo).value) * 100 : NaN;
+  const sofrIorbBp = sofr.length && iorb.length ? (last(sofr).value - last(iorb).value) * 100 : NaN;
+  const dWalcl13w = walcl.length >= 14 ? last(walcl).value - ago(walcl, 13).value : NaN;
+  const dBills13w = bills.length >= 14 ? last(bills).value - ago(bills, 13).value : NaN;
+  const billsShareOfExpansion = Number.isFinite(dWalcl13w) && dWalcl13w > 0 ? clamp01(dBills13w / dWalcl13w) : NaN;
+  const spxDdPct = (() => {
+    if (spxHist.length < 100) return NaN;
+    const win = spxHist.slice(-756); // ~3y
+    const hi = Math.max(...win.map(o => o.value));
+    return round2(((last(spxHist).value - hi) / hi) * 100);
+  })();
+  // reserve premise: 60d corr of Δ10Y (bp) vs Δdollar (avg of ΔUSDJPY% and −ΔEURUSD%)
+  const corr60d = yieldDollarCorr(dgs10, eurHist, jpyHist);
+  // BDC: median P/NAV + 5y percentile needs NAV manual inputs; degrade to null cleanly
+  const navs = await Promise.all(["ARCC", "BXSL", "OBDC", "FSK"].map(tkr => getManual(`bdc_nav_${tkr}`)));
+  const pnavs = bdcCloses
+    .map((h, i) => (h.length && navs[i]?.value ? last(h).value / navs[i]!.value : null))
+    .filter((x): x is number => x != null);
+  const medianPnav = pnavs.length >= 2 ? pnavs.sort((a, b) => a - b)[Math.floor(pnavs.length / 2)] : NaN;
+  // pnavPctile5y: requires stored P/NAV history to compute a percentile; no snapshot-history
+  // plumbing yet, so this stays null — bdcStress degrades cleanly per its own contract (Task 3).
+  const pnavPctile5y: number | null = null;
+
+  // position clock (slow layer) inputs — quarterly, revised; context-only, never a trigger input
+  const totalDebtGdpPct = tcmdo.length && gdp.length ? round2((last(tcmdo).value / last(gdp).value) * 100) : NaN;
+  const hhDebtNetWorthPct = cmdebt.length && tnwbshno.length ? round2((last(cmdebt).value / last(tnwbshno).value) * 100) : NaN;
+  const dsrHouseholdPct = tdsp.length ? last(tdsp).value : NaN;
+  const wealthBottom90Share = wealthBottom50.length && wealthMid50to90.length
+    ? last(wealthBottom50).value + last(wealthMid50to90).value : NaN;
+  const wealthRatio = wealthTop01.length && Number.isFinite(wealthBottom90Share) && wealthBottom90Share !== 0
+    ? round2(last(wealthTop01).value / wealthBottom90Share) : NaN;
 
   if (!mts.length) problems.push("mts: fetch succeeded but no usable rows (schema drift?)");
 
@@ -146,11 +215,12 @@ export async function assess() {
   const s6 = priceOfMoney({
     realYieldDelta12mBp: realY.length > 250 ? (last(realY).value - ago(realY, 250).value) * 100 : NaN,
   });
+  const hyOasDelta3mBp = hyOas.length > 63 ? (last(hyOas).value - ago(hyOas, 63).value) * 100 : NaN;
   const pc = privateCredit({
     hyOasBp: hyOas.length ? last(hyOas).value * 100 : NaN,
-    hyOasDelta3mBp: hyOas.length > 63 ? (last(hyOas).value - ago(hyOas, 63).value) * 100 : NaN,
+    hyOasDelta3mBp,
   });
-  const valve = monetisationValve({ coreYoY, headlineYoY, brent });
+  const valve = monetisationValve({ coreYoY, headlineYoY, brent, expInfl5yPct: t5yie.length ? last(t5yie).value : null });
   const contractionFlag = sc.phase === "contraction" || sc.phase === "late-stall-breaking-down";
   const debtToGdpPct = debtGdpQ.length ? last(debtGdpQ).value : null;
   const rvg = rVsG({ rAvg, rMarg, gNominal, rolloverShare12m: rolloverShare, contractionFlag, debtToGdpPct });
@@ -160,13 +230,31 @@ export async function assess() {
   const squeeze = interestSqueeze({ ttmInterestBn, ttmReceiptsBn });
   const revBeta = revenueBeta({ receiptsYoYPct: receiptsYoY, nominalGdpYoYPct: gNominal });
   const japan = japanLeg({ jgb10Delta3mBp: jgbDelta, usdJpyDelta3mPct: jpyDelta3m, japanHoldingsDelta2mBn: japanHoldingsDelta });
-  const stage = bigCycleStage({ fedAssetsUp3w, coreYoY, headlineYoY, valveScore: valve.score });
+
+  // ---- fast-clock additions: money vs credit, curve decomposition, print discriminator,
+  // equity drawdown ruler, BDC/HY divergence, reserve-premise tripwire ----
+  const money = moneyVsCredit({ m2YoYPct, creditYoYPct });
+  const curve = curveShape({ dFrontBp3m, dLongBp3m, dTpBp3m, spreadBp });
+  const disc = printDiscriminator({ fedAssetsUp3w, billsShareOfExpansion, sofrIorbBp });
+  const equity = equityDrawdown({ ddPct: spxDdPct });
+  const bdc = bdcStress({ medianPnav, pnavPctile5y, hyOasDelta3mBp });
+  const premise = reservePremise({ corr60d });
+
+  const stage = bigCycleStage({ fedAssetsUp3w, coreYoY, headlineYoY, valveScore: valve.score, printMode: disc.printMode });
+
+  // ---- slow clock: position layer — quarterly, revised inputs; context-only display +
+  // positionClock score. Never averaged into the fast layer, never a trigger input. ----
+  const position = {
+    clock: positionClock({ totalDebtGdpPct, hhDebtNetWorthPct, dsrHouseholdPct, wealthRatio, curveSpreadBp: spreadBp }),
+    inputs: { totalDebtGdpPct, hhDebtNetWorthPct, dsrHouseholdPct, wealthRatio },
+  };
 
   const triggers = evaluateTriggers({
     rvg, rAvg, gNominal, contractionFlag, fedAssetsUp3w, headlineYoY,
     squeeze, gold, japan, demand,
     easedAndLongEndSold: easedAndLongEndSold(funds, dgs30),
     billsShareUp3m: null, // MSPD automation = roadmap; manual override available
+    printMode: disc.printMode, curve, bdc, premise,
   });
 
   // ---- playbook: live fingerprint → episode leaderboard + theme tripwires ----
@@ -219,6 +307,7 @@ export async function assess() {
       goldSpotHistory: hist(xauHist, 8, dLabel, (x) => Math.round(x)),
       rAvgPrior,
       rAvgHistory: hist(avgRate, 8, mLabel),
+      printMode: disc.printMode,
     },
     factors: {
       SC: sc, S8: valve, S6: s6, PC: pc,
@@ -230,7 +319,9 @@ export async function assess() {
       S3: { ...squeeze, ratioPrior: (() => { const p = ttmRatioAt(1); return p ? p.value / 100 : null; })(),
             ratioHistory: ratioSeries.map(o => ({ period: mLabel(o.date), value: o.value })) },
       TAX: revBeta, JP: japan,
+      money, curve, equity, bdc, premise,
     },
+    position,
     stage,
     triggers,
     playbook,

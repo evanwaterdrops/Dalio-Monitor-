@@ -346,6 +346,40 @@ export function positionClock({ totalDebtGdpPct, hhDebtNetWorthPct, dsrHousehold
   return { score, label, status: score >= 0.7 ? STATUS.ELEVATED : score >= 0.4 ? STATUS.WATCH : STATUS.OK };
 }
 
+/* Yield/dollar 60d correlation — the reserve-premise input. Pearson corr of
+ * Δ10Y (bp) vs a dollar composite (avg of ΔUSD_JPY% and −ΔEUR_USD% per day),
+ * over daily changes aligned by date across the three series, last 60 such
+ * changes. Persistent negative correlation (yields up, dollar down) is the
+ * credibility-regime tripwire reservePremise fires on. Below 40 overlapping
+ * days of data returns NaN — too little signal to trust a correlation. */
+export function yieldDollarCorr(dgs10, eurHist, jpyHist) {
+  const byDate = (arr) => new Map(arr.map(o => [o.date, o.value]));
+  const eurMap = byDate(eurHist), jpyMap = byDate(jpyHist), yMap = byDate(dgs10);
+  const dates = dgs10.map(o => o.date).filter(d => eurMap.has(d) && jpyMap.has(d)).sort();
+  if (dates.length < 41) return NaN;
+  const win = dates.slice(-61);
+  const dY = [], dD = [];
+  for (let i = 1; i < win.length; i++) {
+    const y0 = yMap.get(win[i - 1]), y1 = yMap.get(win[i]);
+    const e0 = eurMap.get(win[i - 1]), e1 = eurMap.get(win[i]);
+    const j0 = jpyMap.get(win[i - 1]), j1 = jpyMap.get(win[i]);
+    dY.push((y1 - y0) * 100);
+    const dEurPct = e0 === 0 ? 0 : ((e1 - e0) / e0) * 100;
+    const dJpyPct = j0 === 0 ? 0 : ((j1 - j0) / j0) * 100;
+    dD.push((dJpyPct - dEurPct) / 2);
+  }
+  if (dY.length < 40) return NaN;
+  const n = dY.length;
+  const mY = dY.reduce((s, x) => s + x, 0) / n, mD = dD.reduce((s, x) => s + x, 0) / n;
+  let cov = 0, vY = 0, vD = 0;
+  for (let i = 0; i < n; i++) {
+    const a = dY[i] - mY, b = dD[i] - mD;
+    cov += a * b; vY += a * a; vD += b * b;
+  }
+  if (vY === 0 || vD === 0) return NaN;
+  return round2(cov / Math.sqrt(vY * vD));
+}
+
 /* ---------------- alert triggers (machine-checkable watchlist) ------ */
 export function evaluateTriggers(s) {
   const out = [];
