@@ -34,7 +34,7 @@ T3 gold/real-yield divergence, Japan absolute decline, auction plumbing.
   vintages — first prints, real-time revisions, publication lags, no
   hindsight. Results, lead times into the GFC and every major stress episode,
   and the false-alarm audit live in [BACKTEST.md](BACKTEST.md).
-- **20/20 selftest** (`npm run selftest`, zero deps): the shipped math
+- **34/34 selftest** (`npm run selftest`, zero deps): the shipped math
   reproduces every conclusion of the underlying analysis from the raw
   Aug-2026 numbers, including that the Debt Monetization trigger does *not*
   fire yet — that's the Top/Beautiful Deleveraging boundary.

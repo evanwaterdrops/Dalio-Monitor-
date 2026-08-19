@@ -46,7 +46,7 @@ export default function Tabs({
         </button>
         <button role="tab" aria-selected={tab === "big"} className={`cycle-tab${tab === "big" ? " active" : ""}`} onClick={() => pick("big", "big")}>
           BIG CYCLE
-          <span className="cycle-tab-sub">sovereign stations · century context</span>
+          <span className="cycle-tab-sub">sovereign legs · century context</span>
         </button>
         {extra && (
           <button role="tab" aria-selected={tab === "extra"} className={`cycle-tab${tab === "extra" ? " active" : ""}`} onClick={() => pick("extra", "playbook")}>

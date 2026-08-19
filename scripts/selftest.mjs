@@ -51,7 +51,7 @@ const dem = demandLeg({ auctions: [
 ]});
 eq("auction plumbing critical", dem.status, "critical");
 
-// --- Fed deferred asset −$243.9bn = Stage-5 metric, literal
+// --- Fed deferred asset −$243.9bn = central-bank losses (Dalio's literal metric)
 const da = deferredAsset({ levelBn: -243.9, deltaBn13w: 1.2 });
 eq("deferred asset critical", da.status, "critical");
 eq("but healing (rates lower than 2023 peak-loss era)", da.direction, "healing");
