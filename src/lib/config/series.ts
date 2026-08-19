@@ -17,7 +17,7 @@
  * SoV (store-of-value flight), SC (small cycle).
  */
 
-export type Source = "fred" | "fred_vintage" | "fiscaldata" | "treasurydirect" | "oanda" | "yahoo" | "manual";
+export type Source = "fred" | "fred_vintage" | "fiscaldata" | "treasurydirect" | "oanda" | "yahoo" | "stooq" | "manual";
 
 export interface SeriesDef {
   key: string;
@@ -166,6 +166,88 @@ export const SERIES: SeriesDef[] = [
     note: "Share of marketable stock maturing ≤12m (MSPD-derived; ~30% default). Drives the r-avg drift rate. v2 backlog: automate from v1/debt/mspd tables.",
     layer: "fast", role: "trigger", retire: "automated from MSPD (roadmap)",
     trigger: { form: "level", spec: "multiplies drift rate in r-vs-g", provenance: "dalio" } },
+
+  // ---------- Money vs credit (S8 signature) ----------
+  { key: "m2", source: "fred", id: "M2SL", cadence: "monthly", factors: ["S8"],
+    layer: "fast", role: "trigger",
+    trigger: { form: "composite", spec: "with total_debt: money y/y ≥8% while credit y/y < money−5pp = watch; money ≥10% & credit ≤0 = critical", provenance: "self-calibrated" },
+    retire: "M2 redefinition breaks continuity again",
+    note: "Dalio's monetization signature needs a money aggregate next to TCMDO: 'money growing at an extremely fast rate at the same time as credit… contracting' (P1:1506). Feeds moneyVsCredit (Task 3)." },
+  { key: "monetary_base", source: "fred", id: "BOGMBASE", cadence: "monthly", factors: ["S8"],
+    layer: "fast", role: "context",
+    retire: "proves redundant next to WALCL",
+    note: "M0 companion to m2 — his 'Money %PGDP' charts may plot M0 rather than M2; the source images from the extraction are lost, so both are carried until one proves redundant." },
+  { key: "total_debt", source: "fred", id: "TCMDO", cadence: "quarterly", factors: ["S2", "S8"],
+    layer: "slow", role: "context",
+    retire: "BIS credit gap goes free & timely",
+    note: "The blue line, all-sectors debt ÷ GDP. Stays slow/context: ALFRED's earliest TCMDO vintage is ~2011-01 (checked 1999→2019 in steps; nothing before 2011), so vintage coverage does NOT reach 1999 and the spec's promote-to-trigger condition fails. The backtest's credit input in moneyVsCredit therefore uses latest-vintage data flagged nonPIT (Task 7), excluded from heat exactly like the century panel." },
+
+  // ---------- Household leverage & wealth position (S2, S3, S8) ----------
+  { key: "hh_debt_networth", source: "fred", id: "CMDEBT,TNWBSHNO", cadence: "quarterly", factors: ["S2"],
+    layer: "slow", role: "context",
+    retire: "no retirement condition specified — persistent household-leverage cross-check",
+    note: "Household debt (CMDEBT) ÷ household net worth (TNWBSHNO): 'debt-to-net-worth ratios go up' (P1:1076). Two FRED ids, one derived ratio entry." },
+  { key: "dsr_household", source: "fred", id: "TDSP", cadence: "quarterly", factors: ["S3"],
+    layer: "slow", role: "context",
+    retire: "BIS total DSR becomes timely",
+    note: "The red line, household leg — Fed's own debt-service-ratio series, quarterly, revised." },
+  { key: "dsr_pnf", source: "fred", id: "PIN_PENDING:BIS-DSR-private-nonfinancial-US", cadence: "quarterly", factors: ["S3"],
+    layer: "slow", role: "context",
+    retire: "BIS total DSR becomes timely",
+    note: "The red line, private-nonfinancial leg (BIS DSR series for the US). UNRESOLVED: none of the brief's candidates (BDSRAMRIXOQ, DSRPUS) resolve on FRED — both 404; QUSPAM770A resolves but is 'Total Credit to Private Non-Financial Sector, Adjusted for Breaks' (a BIS credit-gap series, not a debt-service ratio) so it was rejected rather than mis-pinned. A dozen further keyless guesses (BISDSRPNFUS, DSRPRIVATEUS, DSRUS, DSRUSQ, TDSPNFUS, PNFDSRUSQ, BISDSR, USDSRPNF, DSERPUS, BISPNFUS, DEBTSERVUS) also 404. FRED's search/tags endpoints are unreachable from this environment (connection resets), so a keyed series/search run is required to actually pin this — flagged for Task 7 or a follow-up keyed run of scripts/pin-series.mjs." },
+  { key: "wealth_shares", source: "fred", id: "WFRBSTP1300,WFRBSB50215,WFRBSN40188", cadence: "quarterly", factors: ["S8"],
+    layer: "slow", role: "context",
+    retire: "DFA discontinued",
+    note: "Wealth-gap position input for positionClock (top0.1/bottom90 wealth ratio, P1:1426): top 0.1% share (WFRBSTP1300, verified title match) over bottom 90% share, itself composed as bottom 50% (WFRBSB50215) + 50th–90th percentile (WFRBSN40188) — no single 'bottom 90%' FRED id exists, titles confirmed via /series/<id> page fetch." },
+
+  // ---------- Inflation expectations & short rate (S8, S6, SC) ----------
+  { key: "core_pce", source: "fred", id: "PCEPILFE", cadence: "monthly", factors: ["S8"],
+    layer: "fast", role: "context",
+    retire: "no retirement condition specified",
+    note: "Confirms the CPI gate against the Fed's own target measure (PCE core vs cpi_core)." },
+  { key: "t5yie", source: "fred", id: "T5YIE", cadence: "daily", factors: ["S8"],
+    layer: "fast", role: "trigger",
+    trigger: { form: "level", spec: "valve co-key: ≥2.8% caps monetisationValve score at 0.5 ('gated-by-expectations')", provenance: "self-calibrated" },
+    retire: "no retirement condition specified",
+    note: "Expected-inflation leg of the two-key valve (realized CPI/PCE + expected breakevens). Series starts 2003 — backtest pre-2003 runs realized-only, documented rather than backfilled." },
+  { key: "dgs3mo", source: "fred", id: "DGS3MO", cadence: "daily", factors: ["S6", "SC"],
+    layer: "fast", role: "trigger",
+    trigger: { form: "composite", spec: "curve level = DGS10−DGS3MO (context); steepening decomposition (trigger): bear-steepening (long +25bp/3m while front ≤+5bp, TP rising) → S5; bull-steepening → SC", provenance: "self-calibrated" },
+    retire: "no retirement condition specified",
+    note: "Short-rate leg of curveShape's front-end delta (Task 3)." },
+
+  // ---------- Reserve mechanics / print discriminator (S8) ----------
+  { key: "sofr", source: "fred", id: "SOFR", cadence: "daily", factors: ["S8"],
+    layer: "fast", role: "trigger",
+    trigger: { form: "composite", spec: "SOFR−IORB ≥+10bp = funding-stress annotation only; printDiscriminator composition dominates it — a bills-led WALCL expansion (≥60% of Δ) is reserve management regardless of funding stress (2019 precedent: repo stress + bills purchases was still plumbing); duration-led expansion = monetization", provenance: "self-calibrated" },
+    retire: "Fed abandons ample-reserves regime",
+    note: "Funding-stress leg of printDiscriminator. Amended per spec review: composition (bills- vs duration-led) is the deciding signal, not funding stress — SOFR−IORB only annotates, it never overrides a bills-led read to 'monetization'." },
+  { key: "iorb", source: "fred", id: "IORB", cadence: "daily", factors: ["S8"],
+    layer: "fast", role: "trigger",
+    trigger: { form: "composite", spec: "SOFR−IORB spread reference rate — see sofr entry; composition (billsShareOfExpansion) dominates, not spread level", provenance: "self-calibrated" },
+    retire: "Fed abandons ample-reserves regime",
+    note: "Reference leg of the SOFR−IORB spread; corridor floor under ample-reserves operating regime." },
+  { key: "bills_outright", source: "fred", id: "WSHOBL", cadence: "weekly", factors: ["S8"],
+    layer: "fast", role: "trigger",
+    trigger: { form: "roc", spec: "Δ bills-held-outright ÷ ΔWALCL = billsShareOfExpansion; ≥0.6 = reserve-management read in printDiscriminator", provenance: "self-calibrated" },
+    retire: "H.4.1 stops publishing the bills-held-outright breakout, or Fed abandons ample-reserves regime",
+    note: "H.4.1 weekly bills-held-outright — the composition numerator that makes printDiscriminator's bills- vs duration-led call possible." },
+
+  // ---------- Equities & private credit (SC, PC) ----------
+  { key: "spx", source: "stooq", id: "^spx", cadence: "daily", factors: ["SC"],
+    layer: "fast", role: "trigger",
+    trigger: { form: "level", spec: "drawdown vs 3y high: −20% elevated, −40% critical (Dalio: depressions ~50%, P1:1085)", provenance: "dalio" },
+    retire: "Stooq endpoint dies and Yahoo licensing blocks fallback",
+    note: "Drawdown ruler + normalization clock. FRED SP500 is license-capped at 10y — useless for the ruler; Stooq primary, yahooCloses('^GSPC') fallback. Stooq's CSV endpoint is currently gated behind a JS proof-of-work anti-bot challenge from this environment's IP (HTTP 200 but an HTML challenge page, not CSV) — stooqCloses()'s existing empty-rows guard already throws cleanly on that shape (0 parsed rows), so the Yahoo fallback path is load-bearing until Stooq access is reconfirmed from the deploy environment." },
+  { key: "bdc_basket", source: "yahoo", id: "ARCC,BXSL,OBDC,FSK", cadence: "daily", factors: ["PC"],
+    layer: "fast", role: "trigger",
+    trigger: { form: "composite", spec: "median P/NAV 5y-percentile ≤10th = elevated; AND HY OAS Δ3m <+40bp = divergence critical (private stress the public index can't see — selection-bias fix)", provenance: "self-calibrated" },
+    retire: "private credit marks become observable",
+    note: "Daily Yahoo closes for the BDC basket; P/NAV = daily close ÷ last-filed NAV (see bdc_nav). Feeds bdcStress (Task 3)." },
+  { key: "bdc_nav", source: "manual", id: "manual:bdc_nav", cadence: "quarterly", factors: ["PC"],
+    layer: "slow", role: "context",
+    retire: "an API for BDC NAV appears",
+    note: "No API exists for BDC NAV-per-share. Curated quarterly inputs enter manual_inputs as bdc_nav_ARCC, bdc_nav_BXSL, bdc_nav_OBDC, bdc_nav_FSK — each with source URL (filed 10-Q/10-K NAV disclosure) + 90-day staleness badge, same discipline as hyperscaler_coverage. P/NAV = bdc_basket's daily Yahoo close ÷ the matching ticker's last-filed NAV here." },
 ];
 
 export const FACTOR_META: Record<string, { name: string; station: string }> = {
