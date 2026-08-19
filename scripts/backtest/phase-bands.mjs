@@ -14,17 +14,29 @@
  *      window (and not themselves critical, e.g. via a new window
  *      starting early) → 7 Normalization
  *   3. else, replayed stage text contains "DEPRESSION" or "DELEVERAGING" → 4 Depression
- *   4. else, replayed stage text contains "TOP"                          → 3 Top
- *   5. else — no stage text to lean on — bucket by heat tercile computed
- *      across the FULL replay (bottom third → 1 Early Part of the Cycle,
- *      middle third → 2 Bubble, top third → 3 Top).
+ *   4. else — bucket by heat tercile computed across the FULL replay
+ *      (bottom third → 1 Early Part of the Cycle, middle third → 2 Bubble,
+ *      top third → 3 Top).
  *
  * `bigCycleStage()` as currently implemented only ever returns "TOP, LATE"
  * or "DEPRESSION — printing begins" text (it has no historical debt-level
  * awareness — it's a live-conditions classifier applied uniformly across
- * the replay), so branch 5 is a documented no-op today; it stays in place
- * so this script keeps behaving correctly if bigCycleStage ever grows a
- * "Bubble"/"Early Part of the Cycle" stage string.
+ * the replay). An earlier version of this script had a branch 4 of
+ * "stage text contains TOP → 3 Top" ahead of the tercile bucketing; because
+ * bigCycleStage's stage text is era-independent (virtually every non-
+ * depression month says "TOP"), that branch fired almost everywhere and
+ * swamped the tercile fallback — every quiet 1960s/1990s stretch painted
+ * as "Top" instead of Early/Bubble. It has been removed (it was dead
+ * weight once terciles decide first) so the tercile bucketing actually
+ * gets to differentiate cycle position outside contraction/depression
+ * windows.
+ *
+ * Phases 5 (Beautiful Deleveraging) and 6 (Pushing on a String) are
+ * INTENTIONALLY ABSENT from this mapping — distinguishing a "beautiful"
+ * (balanced, r<g) deleveraging from an "ugly" one, or a liquidity-trap
+ * pushing-on-a-string regime, needs dedicated detection (not available in
+ * results.json today) and would be a follow-up, not a byproduct of this
+ * heat/stage/critical mapping.
  *
  * Run: `node scripts/backtest/phase-bands.mjs` (no deps, plain Node).
  * Output: contiguous bands `[{ from: "YYYY-MM", to: "YYYY-MM", phaseNum }]`
@@ -53,7 +65,8 @@ function buildBands(rows) {
     }
   }
 
-  // Heat terciles across the full replay (branch 5 fallback).
+  // Heat terciles across the full replay — the primary bucketing for every
+  // non-depression/non-normalization month (see header comment).
   const heatsSorted = rows.map(r => r.heat ?? 0).slice().sort((a, b) => a - b);
   const q1 = heatsSorted[Math.floor(n / 3)];
   const q2 = heatsSorted[Math.floor((2 * n) / 3)];
@@ -63,7 +76,6 @@ function buildBands(rows) {
     if (inPost[i]) return 7;
     const stage = rows[i].stage || "";
     if (stage.includes("DEPRESSION") || stage.includes("DELEVERAGING")) return 4;
-    if (stage.includes("TOP")) return 3;
     const h = rows[i].heat ?? 0;
     return h <= q1 ? 1 : h <= q2 ? 2 : 3;
   };

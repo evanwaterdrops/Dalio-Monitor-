@@ -8,6 +8,7 @@ import HeatTimeline from "./components/charts/HeatTimeline";
 import CenturyPanel from "./components/charts/CenturyPanel";
 import CycleTimeline from "./components/charts/CycleTimeline";
 import ArchetypePanel from "./components/charts/ArchetypePanel";
+import { Band, PHASE_NAMES } from "./components/charts/common";
 import PlaybookTab from "./components/playbook/PlaybookTab";
 import phaseBandsJson from "@/data/phase-bands.json";
 
@@ -83,10 +84,11 @@ const STATUS_COLOR: Record<Status, string> = {
 };
 const TIER_COLOR: Record<number, string> = { 1: "var(--red)", 2: "var(--amber)", 3: "var(--blue)" };
 
-const STAGE_LABELS: Record<number, string> = {
-  1: "Early Part of the Cycle", 2: "Bubble", 3: "Top", 4: "Depression",
-  5: "Beautiful Deleveraging", 6: "Pushing on a String", 7: "Normalization",
-};
+// Dalio's seven phases (spec §1) — single source of truth is PHASE_NAMES in
+// components/charts/common.tsx (also used by ArchetypePanel/CenturyPanel's
+// band labels); kept as STAGE_LABELS here only as the name this file's
+// existing usage already expects.
+const STAGE_LABELS = PHASE_NAMES;
 
 /* ---------------- Archetype panel: server-side history fetch ----------------
  * Dedicated pulls for the Dalio chart grammar (spec §5) — separate from the
@@ -142,8 +144,10 @@ async function buildArchetypeSeries(): Promise<Record<string, Obs[]>> {
       safeFetch(() => fred("GDP", { limit: 120 }), [] as Obs[]),
       safeFetch(() => fred("TDSP", { limit: 120 }), [] as Obs[]),
       safeFetch(() => fred("M2SL", { limit: 360 }), [] as Obs[]),
-      safeFetch(() => fred("DGS3MO", { limit: 1300 }), [] as Obs[]),
-      safeFetch(() => fred("DGS10", { limit: 1300 }), [] as Obs[]),
+      // start (not limit) so short-rate/curve span ~30y like the debt rows —
+      // thinMonthly() already caps DOM weight regardless of pull size.
+      safeFetch(() => fred("DGS3MO", { start: "1996-01-01" }), [] as Obs[]),
+      safeFetch(() => fred("DGS10", { start: "1996-01-01" }), [] as Obs[]),
     ]);
     const equityRaw = await safeFetch(async () => {
       try { return await stooqCloses("^spx"); }
@@ -586,7 +590,7 @@ export default async function Page() {
               key: "archetype",
               label: "ARCHETYPE",
               sub: "the seven phases · debt · money · markets",
-              content: <ArchetypePanel series={archetypeSeries} bands={phaseBandsJson as any} />,
+              content: <ArchetypePanel series={archetypeSeries} bands={phaseBandsJson as Band[]} />,
             },
           ]}
         />
