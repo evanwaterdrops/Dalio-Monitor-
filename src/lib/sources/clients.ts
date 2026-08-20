@@ -1,10 +1,11 @@
 /** Thin fetch clients. All return normalised { date, value } rows. */
+import { redactUrl } from "./redact.mjs";
 
 const FRED = "https://api.stlouisfed.org/fred";
 
 async function j(url: string, init?: RequestInit) {
   const r = await fetch(url, { ...init, next: { revalidate: 0 } });
-  if (!r.ok) throw new Error(`${r.status} ${url.slice(0, 120)}`);
+  if (!r.ok) throw new Error(`${r.status} ${redactUrl(url).slice(0, 160)}`);
   return r.json();
 }
 

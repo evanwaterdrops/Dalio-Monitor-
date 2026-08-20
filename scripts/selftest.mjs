@@ -12,6 +12,7 @@ import {
   thinMonthly, spliceMonthly,
 } from "../src/lib/framework/math.mjs";
 import { findBoundaryViolations } from "./check-client-boundary.mjs";
+import { redactUrl } from "../src/lib/sources/redact.mjs";
 import { createRequire } from "node:module";
 const spxMonthly = createRequire(import.meta.url)("../src/data/spx-monthly.json");
 
@@ -196,6 +197,34 @@ truthy("position clock caps at elevated",
   const jpyHist = dates.map((date, i) => ({ date, value: 150.00 - i * 0.10 }));
   truthy("yieldDollarCorr at 39 overlapping days (below the 41 floor) → NaN",
     Number.isNaN(yieldDollarCorr(dgs10, eurHist, jpyHist)));
+})();
+
+(() => {
+  // --- Credential redaction. A FRED 502 puts the failing URL into the snapshot's
+  // `problems` array, which page.tsx renders in the SOURCE PROBLEMS band — so an
+  // unredacted URL shows the API key to every visitor. This is the exact string
+  // that leaked in production on 2026-08-20 (key substituted).
+  const leaked = "https://api.stlouisfed.org/fred/series/observations?series_id=CPILFESL&api_key=deadbeefcafe0123456789abcdef0000&file_type=json&sort_order=desc&limit=400";
+  const safe = redactUrl(leaked);
+  truthy("redactUrl removes the FRED api_key", !safe.includes("deadbeefcafe0123456789abcdef0000"));
+  truthy("redactUrl keeps the series_id (the part that aids debugging)", safe.includes("CPILFESL"));
+  // Token must survive URL.toString() unencoded — "[redacted]" came back as
+  // "%5Bredacted%5D", which reads like corrupted data rather than a redaction.
+  truthy("redactUrl marks the redaction visibly and unencoded", safe.includes("REDACTED"));
+
+  // Truncation alone was the old (broken) defence — prove it is insufficient,
+  // so nobody 'simplifies' this back to a slice().
+  truthy("a 120-char slice of the raw URL still exposes the key",
+    leaked.slice(0, 120).includes("deadbeefcafe0123456789abcdef0000"));
+
+  truthy("redactUrl handles bearer-style token params",
+    !redactUrl("https://x.test/a?access_token=zzz9&b=1").includes("zzz9"));
+  truthy("redactUrl is case-insensitive on the param name",
+    !redactUrl("https://x.test/a?API_KEY=zzz9").includes("zzz9"));
+  truthy("redactUrl redacts even when the URL will not parse",
+    !redactUrl("not a url api_key=zzz9").includes("zzz9"));
+  eq("redactUrl leaves credential-free URLs untouched",
+    redactUrl("https://x.test/a?b=1"), "https://x.test/a?b=1");
 })();
 
 (() => {
