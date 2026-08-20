@@ -178,19 +178,8 @@ export async function yahooCloses(symbol: string, range = "1mo") {
     .filter(o => Number.isFinite(o.value));
 }
 
-/* ---------------- Stooq ---------------- */
-/** Stooq daily closes — keyless CSV, stable, full ^spx history. Yahoo fallback. */
-export async function stooqCloses(symbol: string): Promise<Obs[]> {
-  const r = await fetch(`https://stooq.com/q/d/l/?s=${encodeURIComponent(symbol)}&i=d`, { next: { revalidate: 0 } });
-  if (!r.ok) throw new Error(`stooq ${r.status} ${symbol}`);
-  const text = await r.text();
-  const rows = text.trim().split("\n").slice(1); // Date,Open,High,Low,Close,Volume
-  const out: Obs[] = [];
-  for (const line of rows) {
-    const [date, , , , close] = line.split(",");
-    const v = Number(close);
-    if (date && Number.isFinite(v)) out.push({ date, value: v });
-  }
-  if (!out.length) throw new Error(`stooq empty ${symbol}`);
-  return out;
-}
+/* Stooq removed: its CSV endpoint is permanently gated behind a JavaScript
+ * proof-of-work anti-bot challenge, returning HTTP 200 with an HTML page
+ * instead of CSV, so it never succeeded from here. SPX now comes from FRED
+ * (live, 10y rolling — see assess.ts) and src/data/spx-monthly.json (the
+ * vendored long tail — see scripts/backtest/century.mjs). */

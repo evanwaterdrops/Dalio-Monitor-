@@ -1,7 +1,8 @@
 import { assess } from "@/lib/framework/assess";
 import { latestSnapshot, recentAlerts } from "@/lib/db";
 import { FACTOR_META } from "@/lib/config/series";
-import { fred, stooqCloses, yahooCloses, oandaCandles, type Obs } from "@/lib/sources/clients";
+import { fred, yahooCloses, oandaCandles, type Obs } from "@/lib/sources/clients";
+import { thinMonthly, spliceMonthly } from "@/lib/framework/math.mjs";
 import FactorBoard from "./components/FactorBoard";
 import Tabs from "./components/Tabs";
 import HeatTimeline from "./components/charts/HeatTimeline";
@@ -11,6 +12,7 @@ import ArchetypePanel from "./components/charts/ArchetypePanel";
 import { type Band, PHASE_NAMES } from "./components/charts/phases";
 import PlaybookTab from "./components/playbook/PlaybookTab";
 import phaseBandsJson from "@/data/phase-bands.json";
+import spxMonthlyJson from "@/data/spx-monthly.json";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -99,12 +101,8 @@ const safeFetch = async <T,>(fn: () => Promise<T>, fallback: T): Promise<T> => {
   try { return await fn(); } catch { return fallback; }
 };
 
-/** Last observation per calendar month — keeps daily series light in the DOM. */
-function thinMonthly(obs: Obs[]): Obs[] {
-  const map = new Map<string, Obs>();
-  for (const o of obs) map.set(o.date.slice(0, 7), o);
-  return [...map.values()].sort((a, b) => a.date.localeCompare(b.date));
-}
+// thinMonthly / spliceMonthly live in math.mjs — the tested single source of
+// truth (scripts/selftest.mjs covers the splice's overlap precedence).
 
 /** Exact-date ratio (both series on FRED's quarterly date grid) → %. */
 function ratioExact(numer: Obs[], denom: Obs[]): Obs[] {
@@ -149,17 +147,25 @@ async function buildArchetypeSeries(): Promise<Record<string, Obs[]>> {
       safeFetch(() => fred("DGS3MO", { start: "1996-01-01" }), [] as Obs[]),
       safeFetch(() => fred("DGS10", { start: "1996-01-01" }), [] as Obs[]),
     ]);
-    const equityRaw = await safeFetch(async () => {
-      try { return await stooqCloses("^spx"); }
+    // Equity row spans ~30y like its neighbours, but FRED's SP500 licence is a
+    // rolling 10-year window — it cannot reach 1996. So the pre-2016 tail comes
+    // from spx-monthly.json (vendored at build time by scripts/backtest/
+    // century.mjs) and live FRED is spliced over the recent end, which keeps the
+    // visible tip current and puts no Yahoo call on the request path. Yahoo
+    // stays only as the fallback if FRED itself is down.
+    const equityLive = await safeFetch(async () => {
+      try { return await fred("SP500", { limit: 3000 }); }
       catch { return await yahooCloses("^GSPC", "5y"); }
     }, [] as Obs[]);
+    const equityRaw = spliceMonthly(spxMonthlyJson as Obs[], thinMonthly(equityLive))
+      .filter(o => o.date >= "1996-01-01");
     const goldRaw = await safeFetch(() => oandaCandles("XAU_USD", 500), [] as Obs[]);
 
     return {
       totalDebtGdp: ratioExact(tcmdo, gdpQ),
       dsrHousehold: tdsp,
       moneyGdp: ratioNearestPrior(m2sl, gdpQ),
-      equityIndexed: indexToFirst(thinMonthly(equityRaw)),
+      equityIndexed: indexToFirst(equityRaw),   // already monthly + spliced
       gold: thinMonthly(goldRaw),
       shortRate3mo: thinMonthly(dgs3mo),
       curveSpread: thinMonthly(spreadExact(dgs10, dgs3mo)),
@@ -411,7 +417,7 @@ export default async function Page() {
       headline: `Drawdown ${fmt(f.equity?.ddPct, "%")} vs rolling 3y high`,
       logic: "Drawdown from the rolling 3-year high. ≤−10% = watch, ≤−20% = elevated, ≤−40% = critical — Dalio's depression ruler (genuine depressions run close to −50%, P1:1085). Distinct from the small-cycle stall: this is the market's own verdict on the debt-cycle position, not a labour or inflation print.",
       subInputs: [
-        { key: "ddPct", label: "Drawdown vs rolling 3y high", value: fmt(f.equity?.ddPct, "%"), unit: "%", source: "derived", sourceName: "computed (Stooq/Yahoo SPX)",
+        { key: "ddPct", label: "Drawdown vs rolling 3y high", value: fmt(f.equity?.ddPct, "%"), unit: "%", source: "derived", sourceName: "computed (FRED SP500)",
           threshold: { value: -40, label: "≤ −40% = CRITICAL depression-level drawdown", direction: "below", current: f.equity?.ddPct },
           contribution: "The ruler itself — the depth of decline the framework treats as confirming a genuine depression, not a correction." },
       ],

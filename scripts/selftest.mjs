@@ -9,8 +9,11 @@ import {
   priceOfMoney, privateCredit,
   moneyVsCredit, curveShape, printDiscriminator, reservePremise, equityDrawdown,
   bdcStress, positionClock, yieldDollarCorr,
+  thinMonthly, spliceMonthly,
 } from "../src/lib/framework/math.mjs";
 import { findBoundaryViolations } from "./check-client-boundary.mjs";
+import { createRequire } from "node:module";
+const spxMonthly = createRequire(import.meta.url)("../src/data/spx-monthly.json");
 
 let pass = 0, fail = 0;
 const eq = (name, got, want) => {
@@ -193,6 +196,38 @@ truthy("position clock caps at elevated",
   const jpyHist = dates.map((date, i) => ({ date, value: 150.00 - i * 0.10 }));
   truthy("yieldDollarCorr at 39 overlapping days (below the 41 floor) → NaN",
     Number.isNaN(yieldDollarCorr(dgs10, eurHist, jpyHist)));
+})();
+
+(() => {
+  // --- Archetype equity row: vendored tail + live FRED splice.
+  // FRED's SP500 licence is a rolling 10-year window, so the row's ~30y span
+  // depends on src/data/spx-monthly.json carrying the pre-2016 tail. If that
+  // artifact shrinks or the splice lets the stale tail win, the chart silently
+  // truncates or freezes — neither shows up in tsc or `next build`.
+  const spanYears = (Number(spxMonthly[spxMonthly.length - 1].date.slice(0, 4))
+    - Number(spxMonthly[0].date.slice(0, 4)));
+  truthy(`spx-monthly.json spans ≥30y (got ${spanYears}y, ${spxMonthly[0].date}→${spxMonthly[spxMonthly.length - 1].date})`,
+    spanYears >= 30);
+  truthy("spx-monthly.json reaches back past 1996 (the neighbour rows' start)",
+    spxMonthly[0].date < "1996-01-01");
+  truthy("spx-monthly.json is one row per month, ascending",
+    new Set(spxMonthly.map(o => o.date.slice(0, 7))).size === spxMonthly.length
+    && spxMonthly.every((o, i) => i === 0 || spxMonthly[i - 1].date < o.date));
+
+  // Overlap precedence: live must overwrite the vendored month, not append to it.
+  const base = [{ date: "2020-01-31", value: 1 }, { date: "2020-02-28", value: 2 }];
+  const live = [{ date: "2020-02-27", value: 99 }, { date: "2020-03-31", value: 3 }];
+  const spliced = spliceMonthly(base, live);
+  eq("splice keeps one row per month across the seam", spliced.length, 3);
+  eq("splice: live wins the overlapping month", spliced[1].value, 99);
+  eq("splice: non-overlapping base month survives", spliced[0].value, 1);
+  eq("splice: live-only month is appended", spliced[2].value, 3);
+  truthy("splice output is date-ascending",
+    spliced.every((o, i) => i === 0 || spliced[i - 1].date < o.date));
+
+  // thinMonthly keeps the LAST print of each month (the splice relies on this).
+  eq("thinMonthly keeps the last observation of each month",
+    thinMonthly([{ date: "2020-01-02", value: 1 }, { date: "2020-01-31", value: 7 }])[0].value, 7);
 })();
 
 (() => {

@@ -91,5 +91,25 @@ export async function century() {
   await mkdir(path.join(ROOT, "src", "data"), { recursive: true });
   await writeFile(path.join(ROOT, "src", "data", "century-panel.json"), JSON.stringify(years));
   console.log(`century panel: ${years.length} years → century-panel.json (+ src/data copy)`);
+
+  /* Monthly SPX artifact for the live Archetype chart row.
+   *
+   * The chart needs ~30y of history; FRED's SP500 is licensed as a rolling
+   * 10-year window (covers 2016→ today), and replay.mjs records Shiller and
+   * FRED both failing for the long tail. So the tail is vendored here, at
+   * build time, from the daily history this function already pulled and
+   * cached — rather than fetched from Yahoo on every page request, where a
+   * 429 becomes a user-visible gap.
+   *
+   * page.tsx splices live FRED over the recent end, so only pre-2016 history
+   * is served from this file, and that history does not change. */
+  const monthly = [...spx
+    .reduce((m, o) => m.set(o.date.slice(0, 7), o), new Map())  // last close of each month
+    .values()]
+    .map(o => ({ date: o.date, value: round2(o.value) }))
+    .sort((a, b) => a.date.localeCompare(b.date));
+  await writeFile(path.join(ROOT, "src", "data", "spx-monthly.json"), JSON.stringify(monthly));
+  console.log(`spx monthly: ${monthly.length} months (${monthly[0].date} → ${monthly[monthly.length - 1].date}) → src/data/spx-monthly.json`);
+
   return years;
 }

@@ -407,6 +407,31 @@ export function evaluateTriggers(s) {
   return out;
 }
 
+/* ---------------- series helpers ---------------- */
+
+/** Last observation per calendar month — keeps daily series light in the DOM. */
+export function thinMonthly(obs) {
+  const map = new Map();
+  for (const o of obs) map.set(o.date.slice(0, 7), o);
+  return [...map.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/**
+ * Monthly splice: `recent` wins on any month both cover, `base` supplies the
+ * rest. Extends a short live series backwards over a vendored tail without
+ * letting the stale tail overwrite live months.
+ *
+ * Used for the Archetype equity row: FRED's SP500 licence is a rolling 10-year
+ * window and cannot reach 1996, so src/data/spx-monthly.json supplies the tail
+ * while live FRED owns everything it covers.
+ */
+export function spliceMonthly(base, recent) {
+  const map = new Map();
+  for (const o of base) map.set(o.date.slice(0, 7), o);
+  for (const o of recent) map.set(o.date.slice(0, 7), o);   // live wins on overlap
+  return [...map.values()].sort((a, b) => a.date.localeCompare(b.date));
+}
+
 /* ---------------- helpers ---------------- */
 export const clamp01 = x => Math.max(0, Math.min(1, x));
 export const round2 = x => Math.round(x * 100) / 100;

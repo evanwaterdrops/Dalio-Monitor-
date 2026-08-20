@@ -90,19 +90,20 @@ export async function assess() {
     t<src.Obs[]>("EUR-candles", () => src.oandaCandles("EUR_USD", 90), []),
     t<src.Obs[]>("JPY-candles", () => src.oandaCandles("USD_JPY", 90), []),
     t<src.Obs[]>("BCO-candles", () => src.oandaCandles("BCO_USD", 10), []),
-    // Stooq primary (full ^spx history, keyless); Yahoo ^GSPC 5y fallback (not the
-    // 1mo default — spxDdPct needs ≥100 rows for the 3y-high window) if Stooq's
-    // anti-bot challenge blocks this environment. A successful fallback still means
-    // stooq failed, so that's recorded as a problems entry (not silent); if both
-    // fail, t()'s own catch records the "SPX" failure instead.
+    // FRED SP500 primary — licensed as a rolling 10-year window, which is ample
+    // for spxDdPct's 756-trading-day (~3y) high. limit 3000 > 2520 trading days
+    // in 10y, so it asks for the whole licensed span. Yahoo ^GSPC 5y is the
+    // fallback (not the 1mo default — spxDdPct needs ≥100 rows). A successful
+    // fallback still means FRED failed, so that's recorded as a problems entry
+    // (not silent); if both fail, t()'s own catch records the "SPX" failure.
     t<src.Obs[]>("SPX", async () => {
-      try { return await src.stooqCloses("^spx"); }
+      try { return await src.fred("SP500", { limit: 3000 }); }
       catch {
         // yahooCloses can itself throw (total failure) — let that propagate to
         // t()'s own catch so only ONE problems entry fires for the double-dead
         // case; the message below only lands when the fallback actually worked.
         const rows = await src.yahooCloses("^GSPC", "5y");
-        problems.push("spx: stooq unreachable, using yahoo 5y fallback");
+        problems.push("spx: FRED SP500 unavailable, using yahoo 5y fallback");
         return rows;
       }
     }, []),
